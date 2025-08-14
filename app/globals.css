@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
 :root {
   --white: #FFFFFF;
   --dark: #111928;
   --primary: #1C64F2;
+  --inter-font: 'Inter', sans-serif;
 }
 
 @theme inline {
@@ -17,4 +19,13 @@
     --background: var(--dark);
     --foreground: var(--white);
   }
+}
+
+html, body {
+  overflow-x: hidden !important;
+  font-family: var(--inter-font) !important;
+}
+
+a, button {
+  cursor: pointer !important;
 }
