@@ -11,7 +11,7 @@ const Button = ({
     <button
       {...rest}
       type={type}
-      className={`h-[34px] p-3 rounded-lg text-xs font-medium ${cn} ${
+      className={`h-[34px] p-3 rounded-lg text-xs font-medium transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg ${cn} ${
         bgColor ? bgColor : "bg-primary"
       } ${color ? color : "text-white"} ${
         width ? width : "w-full"
