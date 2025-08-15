@@ -38,18 +38,16 @@ const Dropdown = ({
       ref={dropdownRef}
       style={{ width: width || "100%" }}
     >
-      <label className="block text-[#11111199] text-sm mb-2 font-medium">
-        {label}
-      </label>
+      <label className="text-sm font-medium text-gray-900">{label}</label>
       <button
         type="button"
-        className="shadow-sm border-[1px] border-[#54545499] flex gap-[5px] items-center justify-between rounded-[10px] px-[20px] py-[12px] text-sm md:text-base text-[#54545499]"
+        className="mt-2 outline-none px-4 h-[42px] border border-gray-300 bg-gray-50 rounded-lg w-full text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary flex justify-between items-center"
         onClick={() => setIsOpen(!isOpen)}
         style={{ width: width || "100%" }}
       >
         <span
           className={`text-sm font-[500] ${
-            selected ? "text-[#414141]" : "text-[#9CA3AF]"
+            selected ? "text-gray-900" : "text-gray-500"
           }`}
         >
           {selected ? selected.option : defaultText}
@@ -59,18 +57,23 @@ const Dropdown = ({
             isOpen ? "rotate-180" : "rotate-0"
           }`}
         >
-          <ChevronDown />
+          <ChevronDown className="size-4 text-gray-500" />
         </div>
       </button>
       {isOpen && (
         <ul
-          className="absolute z-10 h-fit rounded-[6px] shadow-md cursor-pointer border-[1px] border-[#54545433] mt-1 bg-white"
+          className="absolute z-10 h-fit rounded-lg shadow-md cursor-pointer border-[1px] border-[#54545433] mt-1 bg-white"
           style={{ width: width || "100%" }}
         >
-          {options.map((option) => (
+          {options.map((option, index) => (
             <li
-              className="py-2 text-xs px-3 border-b border-gray-300 hover:bg-[#00000005]"
-              key={option.value}
+              key={index}
+              className={`px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-primary hover:text-white ${
+                selected?.value === option.value
+                  ? "bg-gray-100 font-medium"
+                  : ""
+              } ${index === 0 ? "hover:rounded-t-lg" : ""}
+                ${index === options.length - 1 ? "hover:rounded-b-lg" : ""}`}
               onClick={() => selectHandler(option)}
             >
               {option.option}

@@ -35,7 +35,7 @@ const ConversationBox = () => {
 
       {modal && (
         <Modal title="Add Contact" onClose={handleCloseModal}>
-          <AddContact />
+          <AddContact onClose={handleCloseModal} />
         </Modal>
       )}
     </div>
