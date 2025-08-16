@@ -71,11 +71,7 @@ const GenerativeToggle = () => {
         <Info className="size-4 text-gray-300 hover:text-gray-500 cursor-pointer" />
 
         {/* Tooltip */}
-        <div
-          className="absolute top-7 -right-5 hidden group-hover:block 
-          bg-gray-800 text-white text-sm p-4 rounded-sm 
-          w-80 z-20 transition-opacity duration-200"
-        >
+        <div className="absolute top-7 -right-5 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 bg-gray-800 text-white text-sm p-4 rounded-sm w-80 z-20 transition-all duration-300 ease-in-out">
           Arnio uses AI to generate a personalized first message based on your
           automation settings
           <div className="absolute -top-2 right-5">
