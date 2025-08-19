@@ -6,6 +6,7 @@ import Dropdown from "../global/small/Dropdown";
 import Input from "../global/small/Input";
 import ToggleButton from "../global/small/ToggleButton";
 import { ArrowDown } from "@/app/assets/svgs/icons";
+import PhoneNumberInput from "../global/small/PhoneNumberInput";
 
 const phoneOptions = [
   { value: "+17865617760", option: "+1 786  561 7760" },
@@ -13,17 +14,15 @@ const phoneOptions = [
 ];
 
 const AddContact = ({ onClose }) => {
+  const [phone, setPhone] = useState("");
+
   const handleSelect = (value) => {
     console.log("Selected phone number:", value);
   };
   return (
     <form className="space-y-5">
       <Input label="Name" placeholder="e.g. Jane Doe" />
-      <Input
-        label="Phone Number"
-        type="tel"
-        placeholder="e.g. +1 123 456 7890"
-      />
+      <PhoneNumberInput value={phone} onChange={setPhone} />
       <Dropdown
         label="Choose a number to send from"
         defaultText="Select a phone"
