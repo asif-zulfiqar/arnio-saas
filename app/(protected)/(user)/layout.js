@@ -1,18 +1,22 @@
-import Header from "@/components/layout/Header"
-import LeftSidebar from "@/components/layout/LeftSidebar"
+"use client";
+import Header from "@/components/layout/Header";
+import LeftSidebar from "@/components/layout/LeftSidebar";
+import { useState } from "react";
 
-const UserLayout = ({children}) => {
+const UserLayout = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleToggle = () => setIsSidebarOpen((s) => !s);
+
   return (
     <main className="min-h-screen min-w-screen bg-[#F9FAFB] flex flex-col">
-      <Header />
+      <Header isSidebarOpen={isSidebarOpen} onToggle={handleToggle} />
       <section className="flex flex-1">
-        <LeftSidebar />
-        <section className="flex-1 p-5">
-            {children}
-        </section>
+        <LeftSidebar isOpen={isSidebarOpen} />
+        <section className="flex-1 p-5">{children}</section>
       </section>
     </main>
-  )
-}
+  );
+};
 
-export default UserLayout
+export default UserLayout;
