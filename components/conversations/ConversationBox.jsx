@@ -82,7 +82,7 @@ const ConversationBox = ({ onStartConversation }) => {
       <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-blue-600 font-semibold">
+            <span className="text-primary font-semibold">
               {getInitials(activeConversation.name)}
             </span>
           </div>
@@ -115,7 +115,7 @@ const ConversationBox = ({ onStartConversation }) => {
           <div className="grid place-items-center h-full">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-semibold text-xl">
+                <span className="text-primary font-semibold text-xl">
                   {getInitials(activeConversation.name)}
                 </span>
               </div>
@@ -139,7 +139,7 @@ const ConversationBox = ({ onStartConversation }) => {
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                     msg.sender === "user"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-primary text-white"
                       : "bg-gray-100 text-gray-900"
                   }`}
                 >
@@ -188,7 +188,7 @@ const ConversationBox = ({ onStartConversation }) => {
           <button
             type="submit"
             disabled={!message.trim()}
-            className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="p-3 bg-primary text-white rounded-full hover:bg-primary/90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>

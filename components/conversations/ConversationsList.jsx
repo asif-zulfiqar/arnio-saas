@@ -48,16 +48,16 @@ const ConversationsList = () => {
         <div
           key={conversation.id}
           onClick={() => setActiveConversation(conversation.id)}
-          className={`px-6 py-4 cursor-pointer transition-colors border-l-4 ${
+          className={`px-6 py-4 cursor-pointer transition-colors ${
             activeConversationId === conversation.id
-              ? "bg-blue-50 border-l-primary"
-              : "bg-white border-l-transparent hover:bg-gray-50"
+              ? "bg-blue-50"
+              : "bg-white hover:bg-gray-50"
           }`}
         >
           <div className="flex items-center gap-3">
             {/* Avatar */}
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-blue-600 font-semibold text-lg">
+              <span className="text-primary font-semibold text-lg">
                 {getInitials(conversation.name)}
               </span>
             </div>
@@ -77,14 +77,14 @@ const ConversationsList = () => {
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-600 truncate">
                   {conversation.isTyping ? (
-                    <span className="text-blue-600">Typing...</span>
+                    <span className="text-primary">Typing...</span>
                   ) : (
                     conversation.lastMessage || "No messages yet"
                   )}
                 </p>
 
                 {conversation.unreadCount > 0 && (
-                  <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center flex-shrink-0 ml-2">
+                  <span className="bg-primary text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center flex-shrink-0 ml-2">
                     {conversation.unreadCount}
                   </span>
                 )}

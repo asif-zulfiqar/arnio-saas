@@ -40,7 +40,7 @@ const AddContact = ({ onClose }) => {
       return toast.error("All fields are required");
     }
 
-    setIsLoading(true);
+    setIsLoading(false);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
