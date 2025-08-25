@@ -1,11 +1,21 @@
+import { useConversationStore } from "@/store/conversation/conversationStore";
 import { SearchIcon, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 
-const SearchBar = ({ searchTerm, setSearchTerm }) => {
+const SearchBar = () => {
+  const { searchTerm, setSearchTerm } = useConversationStore();
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <div className="flex items-center bg-gray-50 rounded-lg border border-gray-300 h-[37px] px-4 py-2 mx-6 mt-2 focus-within:border-primary/80">
       <SearchIcon className="size-4 text-gray-500 mr-[10px] flex-shrink-0" />
       <input
         type="text"
+        ref={inputRef}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Search messages or contact"

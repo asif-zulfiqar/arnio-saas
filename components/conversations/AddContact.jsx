@@ -7,6 +7,8 @@ import Input from "../global/small/Input";
 import ToggleButton from "../global/small/ToggleButton";
 import { ArrowDown } from "@/app/assets/svgs/icons";
 import PhoneNumberInput from "../global/small/PhoneNumberInput";
+import { useConversationStore } from "@/store/conversation/conversationStore";
+import toast from "react-hot-toast";
 
 const phoneOptions = [
   { value: "+17865617760", option: "+1 786  561 7760" },
@@ -14,15 +16,58 @@ const phoneOptions = [
 ];
 
 const AddContact = ({ onClose }) => {
-  const [phone, setPhone] = useState("");
+  const [form, setForm] = useState({ name: "", phone: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const { addConversation } = useConversationStore();
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePhoneChange = (value) => {
+    setForm((prev) => ({ ...prev, phone: value }));
+  };
 
   const handleSelect = (value) => {
     console.log("Selected phone number:", value);
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!form.name.trim() || !form.phone.trim()) {
+      return toast.error("All fields are required");
+    }
+
+    setIsLoading(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      addConversation(form.name.trim(), form.phone.trim());
+      onClose();
+    } catch (error) {
+      console.error("Error adding contact:", error);
+      toast.error("Failed to add contact. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <form className="space-y-5">
-      <Input label="Name" placeholder="e.g. Jane Doe" />
-      <PhoneNumberInput value={phone} onChange={setPhone} />
+    <form className="space-y-5" onSubmit={handleSubmit}>
+      <Input
+        label="Name"
+        name="name"
+        value={form.name}
+        onChange={handleFormChange}
+        placeholder="e.g. Jane Doe"
+      />
+      <PhoneNumberInput
+        name="phone"
+        value={form.phone}
+        onChange={handlePhoneChange}
+      />
       <Dropdown
         label="Choose a number to send from"
         defaultText="Select a phone"

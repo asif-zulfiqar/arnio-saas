@@ -3,19 +3,19 @@ import AddContact from "@/components/conversations/AddContact";
 import AllMessages from "@/components/conversations/AllMessages";
 import ConversationBox from "@/components/conversations/ConversationBox";
 import ConversationsFilter from "@/components/conversations/ConversationsFilter";
+import ConversationsList from "@/components/conversations/ConversationsList";
 import Search from "@/components/conversations/Search";
 import SearchBar from "@/components/conversations/SearchBar";
 import Modal from "@/components/global/Modal";
-import { SearchIcon, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
 const Conversations = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
 
   const handleOpenSearch = () => setIsSearchOpen((prev) => !prev);
+
   const handleCloseSearch = () => {
     setIsSearchOpen(false);
     setSearchTerm("");
@@ -48,15 +48,9 @@ const Conversations = () => {
             </div>
           </div>
 
-          {isSearchOpen && (
-            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          )}
+          {isSearchOpen && <SearchBar />}
         </div>
-        <div className="overflow-y-auto scroll-0 flex-1">
-          <span className="grid place-items-center h-full text-base text-gray-500">
-            No chats yet
-          </span>
-        </div>
+        <ConversationsList />
       </div>
 
       {/* Conversations box */}

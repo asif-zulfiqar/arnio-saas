@@ -76,7 +76,7 @@ const LeftSidebar = ({ isOpen }) => {
           />
         ))}
       </div>
-      <div className="flex flex-col items-center gap-4 w-full border-t border-gray-100 pt-3 px-3">
+      <div className="flex flex-col items-center gap-4 w-full border-t border-gray-100 py-3 px-3">
         {otherPages.map((page, i) => (
           <LinkItem
             key={i}

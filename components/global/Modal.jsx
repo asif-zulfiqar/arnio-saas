@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const Modal = ({ title, onClose, children, width }) => {
   return (
     <motion.div
-      className="modal bg-[#1E293B]/80 fixed top-0 left-0 inset-0 z-[99999] p-6 flex items-center justify-center"
+      className="modal bg-[#1E293B]/80 fixed top-0 left-0 inset-0 z-50 p-6 flex items-center justify-center"
       onClick={onClose}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
