@@ -1,23 +1,26 @@
-import { useState, useRef, useEffect } from "react";
-import {
-  Plus,
-  Send,
-  Phone,
-  Video,
-  MoreVertical,
-  Paperclip,
-  Smile,
-} from "lucide-react";
-import Image from "next/image";
 import { useConversationStore } from "@/store/conversation/conversationStore";
+import { Paperclip, Plus, Send, Smile } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
 
 const ConversationBox = ({ onStartConversation }) => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const { activeConversationId, getActiveConversation, sendMessage } =
     useConversationStore();
 
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   const activeConversation = getActiveConversation();
+
+  const handleCloseDropdown = () => {
+    setDropdownOpen(false);
+  };
+
+  const handleMoveChat = () => {
+    // Toggle dropdown visibility
+    setDropdownOpen((prevState) => !prevState);
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -44,7 +47,7 @@ const ConversationBox = ({ onStartConversation }) => {
   };
 
   const getInitials = (name) => {
-    return name?.charAt(0).toUpperCase() || "?";
+    return `${name.charAt(0).toUpperCase()}${name.charAt(1).toUpperCase()}`;
   };
 
   // Show empty state when no active conversation
@@ -79,33 +82,48 @@ const ConversationBox = ({ onStartConversation }) => {
   return (
     <div className="flex-1 bg-white rounded-2xl shadow-sm flex flex-col">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-primary font-semibold">
+          <div className="size-8 rounded-full bg-primary flex items-center justify-center relative">
+            <span className="text-white font-medium text-sm">
               {getInitials(activeConversation.name)}
             </span>
+            <div
+              className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white ${
+                activeConversation.status === "online"
+                  ? "bg-green-600"
+                  : activeConversation.status === "offline"
+                  ? "bg-gray-300"
+                  : "bg-[#3F83F8]"
+              }`}
+            ></div>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-medium text-base text-gray-900">
               {activeConversation.name}
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs font-medium text-gray-500">
               {activeConversation.phoneNumber}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <Phone className="w-5 h-5 text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <Video className="w-5 h-5 text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <MoreVertical className="w-5 h-5 text-gray-600" />
-          </button>
+        <div className="flex items-center gap-3">
+          <ButtonWithTooltip
+            iconSrc="/svgs/phone.svg"
+            tooltipText="Make a call"
+          />
+          <ButtonWithTooltip
+            iconSrc="/svgs/folder-arrow-right.svg"
+            tooltipText="Move chat"
+            onClick={handleMoveChat}
+          >
+            <Dropdown isOpen={isDropdownOpen} onClose={handleCloseDropdown} />
+          </ButtonWithTooltip>
+          <ButtonWithTooltip
+            iconSrc="/svgs/profile.svg"
+            tooltipText="Open Profile"
+          />
         </div>
       </div>
 
@@ -137,20 +155,20 @@ const ConversationBox = ({ onStartConversation }) => {
                 }`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                  className={`max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] ${
                     msg.sender === "user"
                       ? "bg-primary text-white"
                       : "bg-gray-100 text-gray-900"
                   }`}
                 >
                   <p className="text-sm">{msg.content}</p>
-                  <p
+                  {/* <p
                     className={`text-xs mt-1 ${
                       msg.sender === "user" ? "text-blue-100" : "text-gray-500"
                     }`}
                   >
                     {formatTime(msg.timestamp)}
-                  </p>
+                  </p> */}
                 </div>
               </div>
             ))}

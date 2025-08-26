@@ -1,4 +1,3 @@
-const { conversations } = require("@/data/data");
 const { create } = require("zustand");
 
 const useConversationStore = create((set, get) => ({
@@ -17,6 +16,7 @@ const useConversationStore = create((set, get) => ({
       messages: [],
       isTyping: false,
       unreadCount: 0,
+      status: "online",
     };
 
     set((state) => ({

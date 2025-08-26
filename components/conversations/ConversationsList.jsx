@@ -29,7 +29,7 @@ const ConversationsList = () => {
   };
 
   const getInitials = (name) => {
-    return name.charAt(0).toUpperCase();
+    return `${name.charAt(0).toUpperCase()}${name.charAt(1).toUpperCase()}`;
   };
 
   if (filteredConversations.length === 0) {
@@ -50,41 +50,50 @@ const ConversationsList = () => {
           onClick={() => setActiveConversation(conversation.id)}
           className={`px-6 py-4 cursor-pointer transition-colors ${
             activeConversationId === conversation.id
-              ? "bg-blue-50"
+              ? "bg-[#EBF5FF]"
               : "bg-white hover:bg-gray-50"
           }`}
         >
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-primary font-semibold text-lg">
+            <div className="size-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 relative">
+              <span className="text-white font-medium text-sm">
                 {getInitials(conversation.name)}
               </span>
+              <div
+                className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white ${
+                  conversation.status === "online"
+                    ? "bg-green-600"
+                    : conversation.status === "offline"
+                    ? "bg-gray-300"
+                    : "bg-[#3F83F8]"
+                }`}
+              ></div>
             </div>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <h6 className="font-semibold text-gray-900 truncate">
+              <div className="flex items-center justify-between">
+                <h6 className="font-medium text-sm text-gray-900 truncate">
                   {conversation.name}
                 </h6>
-                <span className="text-xs text-gray-500 flex-shrink-0">
+                <span className="text-xs text-gray-400 flex-shrink-0">
                   {conversation.lastMessageTime &&
                     formatTime(conversation.lastMessageTime)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600 truncate">
+                <p className="text-sm text-gray-500 truncate">
                   {conversation.isTyping ? (
-                    <span className="text-primary">Typing...</span>
+                    <span className="text-gray-400">Typing...</span>
                   ) : (
                     conversation.lastMessage || "No messages yet"
                   )}
                 </p>
 
                 {conversation.unreadCount > 0 && (
-                  <span className="bg-primary text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center flex-shrink-0 ml-2">
+                  <span className="bg-[#E1EFFE] text-[#1E429F] text-[10px] font-medium rounded-full size-4 grid place-items-center flex-shrink-0 ml-2">
                     {conversation.unreadCount}
                   </span>
                 )}
