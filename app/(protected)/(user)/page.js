@@ -7,22 +7,43 @@ import ConversationsList from "@/components/conversations/ConversationsList";
 import Search from "@/components/conversations/Search";
 import SearchBar from "@/components/conversations/SearchBar";
 import Modal from "@/components/global/Modal";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useConversationStore } from "@/store/conversation/conversationStore";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Conversations = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { searchTerm, setSearchTerm } = useConversationStore();
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const handleOpenSearch = () => setIsSearchOpen((prev) => !prev);
 
   const handleCloseSearch = () => {
     setIsSearchOpen(false);
     setSearchTerm("");
+    setIsLoading(false);
   };
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+
+  useEffect(() => {
+    if (debouncedSearchTerm && isSearchOpen) {
+      setIsLoading(true);
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [debouncedSearchTerm, isSearchOpen]);
   return (
     <div className="flex gap-4 h-[calc(100vh-103px)]">
       <div className="max-w-xs w-full bg-white shadow-sm rounded-2xl relative overflow-y-scroll scroll-0 flex flex-col">
@@ -50,7 +71,7 @@ const Conversations = () => {
 
           {isSearchOpen && <SearchBar />}
         </div>
-        <ConversationsList />
+        <ConversationsList isLoading={isLoading} />
       </div>
 
       {/* Conversations box */}

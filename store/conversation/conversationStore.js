@@ -1,7 +1,9 @@
+import { generateDummyConversations } from "@/data/data";
+
 const { create } = require("zustand");
 
 const useConversationStore = create((set, get) => ({
-  conversations: [],
+  conversations: generateDummyConversations(800),
   activeConversationId: null,
   searchTerm: "",
 

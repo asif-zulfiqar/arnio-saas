@@ -1,13 +1,14 @@
 import { useConversationStore } from "@/store/conversation/conversationStore";
 import { getInitials } from "@/utils/utils";
 import { formatDistanceToNow } from "date-fns";
+import Spinner from "../global/small/Spinner";
 
-const ConversationsList = () => {
+const ConversationsList = ({ isLoading }) => {
   const {
-    conversations,
     activeConversationId,
     setActiveConversation,
     getFilteredConversations,
+    searchTerm,
   } = useConversationStore();
 
   const filteredConversations = getFilteredConversations();
@@ -29,11 +30,21 @@ const ConversationsList = () => {
     return formatDistanceToNow(messageDate, { addSuffix: false });
   };
 
+  if (isLoading) {
+    return (
+      <div className="overflow-y-auto scroll-0 flex-1">
+        <div className="grid place-items-center h-full">
+          <Spinner />
+        </div>
+      </div>
+    );
+  }
+
   if (filteredConversations.length === 0) {
     return (
       <div className="overflow-y-auto scroll-0 flex-1">
         <span className="grid place-items-center h-full text-base text-gray-500">
-          No chats yet
+          {searchTerm ? `No results found for "${searchTerm}"` : "No chats yet"}
         </span>
       </div>
     );
