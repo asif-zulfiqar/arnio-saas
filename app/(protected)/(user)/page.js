@@ -26,7 +26,7 @@ const Conversations = () => {
   return (
     <div className="flex gap-4 h-[calc(100vh-103px)]">
       <div className="max-w-xs w-full bg-white shadow-sm rounded-2xl relative overflow-y-scroll scroll-0 flex flex-col">
-        <div className="sticky top-0 left-0 w-full bg-white pb-4">
+        <div className="sticky top-0 left-0 z-50 w-full bg-white pb-4">
           <div className="pt-5 pb-6 px-6 flex items-center justify-between">
             <h5 className="text-gray-900 text-xl font-semibold">
               Conversations

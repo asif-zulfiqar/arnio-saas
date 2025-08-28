@@ -18,6 +18,7 @@ const phoneOptions = [
 const AddContact = ({ onClose }) => {
   const [form, setForm] = useState({ name: "", phone: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [dropdownStatus, setDropdownStatus] = useState("info");
   const { addConversation } = useConversationStore();
 
   const handleFormChange = (e) => {
@@ -31,6 +32,12 @@ const AddContact = ({ onClose }) => {
 
   const handleSelect = (value) => {
     console.log("Selected phone number:", value);
+
+    if (value === "+12342347760") {
+      setDropdownStatus("error");
+    } else {
+      setDropdownStatus(null);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -73,6 +80,13 @@ const AddContact = ({ onClose }) => {
         defaultText="Select a phone"
         options={phoneOptions}
         onSelect={handleSelect}
+        status={dropdownStatus}
+        helperText={
+          dropdownStatus === "error"
+            ? "Something went wrong. Please, try again later."
+            : "Your number may still be activating try again later."
+        }
+        cn="mt-2"
       />
       <GenerativeToggle />
       <hr className="border-gray-200" />

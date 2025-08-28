@@ -1,5 +1,6 @@
 import { useConversationStore } from "@/store/conversation/conversationStore";
-import { Paperclip, Plus, Send, Smile } from "lucide-react";
+import { getInitials } from "@/utils/utils";
+import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
@@ -46,10 +47,6 @@ const ConversationBox = ({ onStartConversation }) => {
     });
   };
 
-  const getInitials = (name) => {
-    return `${name.charAt(0).toUpperCase()}${name.charAt(1).toUpperCase()}`;
-  };
-
   // Show empty state when no active conversation
   if (!activeConversation) {
     return (
@@ -82,7 +79,7 @@ const ConversationBox = ({ onStartConversation }) => {
   return (
     <div className="flex-1 bg-white rounded-2xl shadow-sm flex flex-col">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="size-8 rounded-full bg-primary flex items-center justify-center relative">
             <span className="text-white font-medium text-sm">
@@ -130,20 +127,22 @@ const ConversationBox = ({ onStartConversation }) => {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto scroll-0 p-6">
         {activeConversation.messages.length === 0 ? (
-          <div className="grid place-items-center h-full">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-primary font-semibold text-xl">
-                  {getInitials(activeConversation.name)}
-                </span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-1">
-                {activeConversation.name}
-              </h4>
-              <p className="text-sm text-gray-500">
-                {activeConversation.phoneNumber}
-              </p>
-            </div>
+          <div className="flex flex-col justify-center h-full">
+            <p className="text-center text-base text-gray-500">
+              No messages yet
+            </p>
+            <p className="text-center text-sm text-gray-500 mt-1">
+              Want to start with an AI-generated intro?{" "}
+            </p>
+            <button className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-primary bg-white text-primary text-xs font-medium w-[150px] h-[34px] mx-auto hover:bg-blue-50 transition-colors">
+              <Image
+                src="/svgs/ai-icon.svg"
+                width={12}
+                height={14}
+                alt="icon"
+              />
+              AI Initial Message
+            </button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -154,22 +153,28 @@ const ConversationBox = ({ onStartConversation }) => {
                   msg.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                <div
-                  className={`max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] ${
-                    msg.sender === "user"
-                      ? "bg-primary text-white"
-                      : "bg-gray-100 text-gray-900"
-                  }`}
-                >
-                  <p className="text-sm">{msg.content}</p>
-                  {/* <p
-                    className={`text-xs mt-1 ${
-                      msg.sender === "user" ? "text-blue-100" : "text-gray-500"
-                    }`}
-                  >
-                    {formatTime(msg.timestamp)}
-                  </p> */}
-                </div>
+                {msg.sender === "user" && (
+                  <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
+                    <p className="text-sm">{msg.content}</p>
+                  </div>
+                )}
+                {msg.sender !== "user" && (
+                  <div className="flex gap-2">
+                    <div className="size-8 rounded-full bg-primary flex items-center justify-center">
+                      <span className="text-white font-medium text-sm">
+                        {getInitials(activeConversation.name)}
+                      </span>
+                    </div>
+                    <div>
+                      <h6 className="text-xs font-medium mb-1">
+                        {activeConversation?.name}
+                      </h6>
+                      <p className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-gray-100 text-gray-900 text-sm">
+                        {msg.content}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             <div ref={messagesEndRef} />
@@ -178,38 +183,52 @@ const ConversationBox = ({ onStartConversation }) => {
       </div>
 
       {/* Message Input */}
-      <div className="px-6 py-4 border-t border-gray-200">
-        <form onSubmit={handleSendMessage} className="flex items-center gap-3">
-          <button
-            type="button"
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <Paperclip className="w-5 h-5 text-gray-600" />
-          </button>
-
+      <div className="px-6 py-5">
+        <form
+          onSubmit={handleSendMessage}
+          className="flex flex-col gap-1 border border-gray-100 rounded-2xl"
+        >
           <div className="flex-1 relative">
             <input
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Write a reply ..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder={`Write a ${
+                activeConversation.messages.length === 0 ? "message" : "reply"
+              } ...`}
+              className="w-full border-transparent focus:outline-none text-sm text-gray-900 placeholder:text-gray-400 py-6 px-5"
             />
+          </div>
+          <div className="flex items-center justify-between px-5 pb-4">
+            <div className="flex items-center gap-4">
+              <button>
+                <Image
+                  src="/svgs/paperclip.svg"
+                  width={16}
+                  height={16}
+                  alt="icon"
+                />
+              </button>
+              <button>
+                <Image
+                  src="/svgs/smile.svg"
+                  width={16}
+                  height={16}
+                  alt="icon"
+                />
+              </button>
+              <button>
+                <Image src="/svgs/mic.svg" width={16} height={16} alt="icon" />
+              </button>
+            </div>
             <button
-              type="button"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+              type="submit"
+              disabled={!message.trim()}
+              className="disabled:cursor-not-allowed transition-colors"
             >
-              <Smile className="w-5 h-5 text-gray-600" />
+              <Image src="/svgs/send.svg" width={16} height={16} alt="icon" />
             </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={!message.trim()}
-            className="p-3 bg-primary text-white rounded-full hover:bg-primary/90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            <Send className="w-5 h-5" />
-          </button>
         </form>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useConversationStore } from "@/store/conversation/conversationStore";
+import { getInitials } from "@/utils/utils";
 import { formatDistanceToNow } from "date-fns";
 
 const ConversationsList = () => {
@@ -26,10 +27,6 @@ const ConversationsList = () => {
 
     // Otherwise show relative time
     return formatDistanceToNow(messageDate, { addSuffix: false });
-  };
-
-  const getInitials = (name) => {
-    return `${name.charAt(0).toUpperCase()}${name.charAt(1).toUpperCase()}`;
   };
 
   if (filteredConversations.length === 0) {
