@@ -3,11 +3,11 @@ import { generateDummyConversations } from "@/data/data";
 const { create } = require("zustand");
 
 const useConversationStore = create((set, get) => ({
-  conversations: generateDummyConversations(800),
+  conversations: generateDummyConversations(5),
   activeConversationId: null,
   searchTerm: "",
 
-  addConversation: (name, phoneNumber) => {
+  addConversation: (name, phoneNumber, generateAiMessage = false) => {
     const id = `convo-${Date.now()}`;
     const newConversation = {
       id,
@@ -19,12 +19,28 @@ const useConversationStore = create((set, get) => ({
       isTyping: false,
       unreadCount: 0,
       status: "online",
+      pendingAIMessage: null,
+      draftMessage: "",
     };
 
     set((state) => ({
       conversations: [newConversation, ...state.conversations],
       activeConversationId: id,
     }));
+
+    if (generateAiMessage) {
+      setTimeout(() => {
+        const firstName = name.split(" ")[0];
+        const aiMessage = `Hi ${firstName}, hope you're well! Just wanted to introduce myself — we're working on something I think you'll find useful. Happy to share more if you're interested.`;
+
+        // Directly set the AI message as draft instead of pending
+        set((state) => ({
+          conversations: state.conversations.map((conv) =>
+            conv.id === id ? { ...conv, draftMessage: aiMessage } : conv
+          ),
+        }));
+      }, 100);
+    }
 
     return id;
   },
@@ -46,7 +62,7 @@ const useConversationStore = create((set, get) => ({
       content,
       sender: "user",
       timestamp: new Date(),
-      status: "sent",
+      status: "delivered",
     };
 
     set((state) => ({
@@ -94,6 +110,37 @@ const useConversationStore = create((set, get) => ({
     }));
   },
 
+  setDraftMessageFromAI: (conversationId) => {
+    const state = get();
+    const conversation = state.conversations.find(
+      (conv) => conv.id === conversationId
+    );
+
+    if (conversation?.pendingAIMessage) {
+      set((state) => ({
+        conversations: state.conversations.map((conv) =>
+          conv.id === conversationId
+            ? {
+                ...conv,
+                draftMessage: conv.pendingAIMessage,
+                pendingAIMessage: null,
+              }
+            : conv
+        ),
+      }));
+      return conversation.pendingAIMessage;
+    }
+    return null;
+  },
+
+  setDraftMessage: (conversationId, draft) => {
+    set((state) => ({
+      conversations: state.conversations.map((conv) =>
+        conv.id === conversationId ? { ...conv, draftMessage: draft } : conv
+      ),
+    }));
+  },
+
   generateAutoReply: (userMessage) => {
     const responses = [
       "Thanks for your message!",
@@ -135,6 +182,45 @@ const useConversationStore = create((set, get) => ({
         conv.id === conversationId ? { ...conv, isTyping } : conv
       ),
     }));
+  },
+
+  // Generate AI initial message
+  generateAIInitialMessage: (conversationId, name) => {
+    const firstName = name.split(" ")[0];
+    const aiMessage = `Hi ${firstName}, hope you're well! Just wanted to introduce myself — we're working on something I think you'll find useful. Happy to share more if you're interested.`;
+
+    set((state) => ({
+      conversations: state.conversations.map((conv) =>
+        conv.id === conversationId
+          ? { ...conv, pendingAIMessage: aiMessage }
+          : conv
+      ),
+    }));
+  },
+
+  // Set pending AI message to input
+  setPendingMessageToInput: (conversationId) => {
+    const state = get();
+    const conversation = state.conversations.find(
+      (conv) => conv.id === conversationId
+    );
+
+    if (conversation?.pendingAIMessage) {
+      // Clear the pending message
+      set((state) => ({
+        conversations: state.conversations.map((conv) =>
+          conv.id === conversationId
+            ? { ...conv, pendingAIMessage: null }
+            : conv
+        ),
+      }));
+
+      return conversation.pendingAIMessage;
+    }
+
+    // Generate new AI message if none pending
+    const firstName = conversation?.name?.split(" ")[0] || "there";
+    return `Hi ${firstName}, hope you're well! Just wanted to introduce myself — we're working on something I think you'll find useful. Happy to share more if you're interested.`;
   },
 
   // Search conversations

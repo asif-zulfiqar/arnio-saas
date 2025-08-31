@@ -37,7 +37,7 @@ const pages = [
 ];
 
 const otherPages = [
-  { name: "Docs", icon: <DocsIcon />, url: "#" },
+  { name: "Docs", icon: <DocsIcon />, url: "https://docs.arnio.co/" },
   { name: "Help and first steps", icon: <HelpIcon />, url: "#" },
 ];
 

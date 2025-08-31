@@ -53,7 +53,7 @@ const generateDummyConversations = (num) => {
     const lastMessage = getRandomMessage();
     const lastMessageTime = new Date();
     const isTyping = false;
-    const unreadCount = Math.floor(Math.random() * 10); // Random unread count between 0-9
+    const unreadCount = 0;
     const status = "offline";
     const messages = [];
 

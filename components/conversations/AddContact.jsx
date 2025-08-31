@@ -19,6 +19,7 @@ const AddContact = ({ onClose }) => {
   const [form, setForm] = useState({ name: "", phone: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [dropdownStatus, setDropdownStatus] = useState("info");
+  const [generateAIMessage, setGenerateAIMessage] = useState(false);
   const { addConversation } = useConversationStore();
 
   const handleFormChange = (e) => {
@@ -51,7 +52,7 @@ const AddContact = ({ onClose }) => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      addConversation(form.name.trim(), form.phone.trim());
+      addConversation(form.name.trim(), form.phone.trim(), generateAIMessage);
       onClose();
     } catch (error) {
       console.error("Error adding contact:", error);
@@ -88,7 +89,10 @@ const AddContact = ({ onClose }) => {
         }
         cn="mt-2"
       />
-      <GenerativeToggle />
+      <GenerativeToggle
+        isChecked={generateAIMessage}
+        setIsChecked={setGenerateAIMessage}
+      />
       <hr className="border-gray-200" />
       <div className="flex items-center justify-end gap-4">
         <Button
@@ -107,8 +111,7 @@ const AddContact = ({ onClose }) => {
 
 export default AddContact;
 
-const GenerativeToggle = () => {
-  const [isChecked, setIsChecked] = useState(false);
+const GenerativeToggle = ({ isChecked, setIsChecked }) => {
   const handleToggle = () => {
     setIsChecked((prev) => !prev);
   };

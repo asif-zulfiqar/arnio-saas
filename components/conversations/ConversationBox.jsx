@@ -1,18 +1,31 @@
 import { useConversationStore } from "@/store/conversation/conversationStore";
-import { getInitials } from "@/utils/utils";
+import { formatPhoneNumber, getFirstName, getInitials } from "@/utils/utils";
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
+import { set } from "date-fns";
 
 const ConversationBox = ({ onStartConversation }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const { activeConversationId, getActiveConversation, sendMessage } =
-    useConversationStore();
+  const {
+    activeConversationId,
+    getActiveConversation,
+    sendMessage,
+    setPendingMessageToInput,
+    setDraftMessage,
+  } = useConversationStore();
 
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   const activeConversation = getActiveConversation();
+
+  const handleAIInitialMessage = () => {
+    if (!activeConversationId) return;
+
+    const aiMessage = setPendingMessageToInput(activeConversationId);
+    setMessage(aiMessage);
+  };
 
   const handleCloseDropdown = () => {
     setDropdownOpen(false);
@@ -22,10 +35,6 @@ const ConversationBox = ({ onStartConversation }) => {
     // Toggle dropdown visibility
     setDropdownOpen((prevState) => !prevState);
   };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [activeConversation?.messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -37,6 +46,15 @@ const ConversationBox = ({ onStartConversation }) => {
 
     sendMessage(activeConversationId, message.trim());
     setMessage("");
+    setDraftMessage(activeConversationId, "");
+  };
+
+  const handleMessageChange = (e) => {
+    const newMessage = e.target.value;
+    setMessage(newMessage);
+    if (activeConversationId) {
+      setDraftMessage(activeConversationId, newMessage);
+    }
   };
 
   const formatTime = (timestamp) => {
@@ -46,6 +64,18 @@ const ConversationBox = ({ onStartConversation }) => {
       hour12: false,
     });
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [activeConversation?.messages]);
+
+  useEffect(() => {
+    if (activeConversation) {
+      setMessage(activeConversation.draftMessage || "");
+    } else {
+      setMessage("");
+    }
+  }, [activeConversationId, activeConversation?.draftMessage]);
 
   // Show empty state when no active conversation
   if (!activeConversation) {
@@ -100,7 +130,7 @@ const ConversationBox = ({ onStartConversation }) => {
               {activeConversation.name}
             </h3>
             <p className="text-xs font-medium text-gray-500">
-              {activeConversation.phoneNumber}
+              {formatPhoneNumber(activeConversation?.phoneNumber)}
             </p>
           </div>
         </div>
@@ -132,9 +162,12 @@ const ConversationBox = ({ onStartConversation }) => {
               No messages yet
             </p>
             <p className="text-center text-sm text-gray-500 mt-1">
-              Want to start with an AI-generated intro?{" "}
+              Want to start with an AI-generated intro?
             </p>
-            <button className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-primary bg-white text-primary text-xs font-medium w-[150px] h-[34px] mx-auto hover:bg-blue-50 transition-colors">
+            <button
+              onClick={handleAIInitialMessage}
+              className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-primary bg-white text-primary text-xs font-medium w-[150px] h-[34px] mx-auto hover:bg-blue-50 transition-colors"
+            >
               <Image
                 src="/svgs/ai-icon.svg"
                 width={12}
@@ -189,15 +222,23 @@ const ConversationBox = ({ onStartConversation }) => {
           className="flex flex-col gap-1 border border-gray-100 rounded-2xl"
         >
           <div className="flex-1 relative">
-            <input
-              type="text"
+            <textarea
+              rows={1}
+              name="message"
+              id="message"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={handleMessageChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage(e);
+                }
+              }}
               placeholder={`Write a ${
                 activeConversation.messages.length === 0 ? "message" : "reply"
               } ...`}
-              className="w-full border-transparent focus:outline-none text-sm text-gray-900 placeholder:text-gray-400 py-6 px-5"
-            />
+              className="scroll-0 w-full border-transparent focus:outline-none text-sm text-gray-900 placeholder:text-gray-400 py-6 px-5 resize-none"
+            ></textarea>
           </div>
           <div className="flex items-center justify-between px-5 pb-4">
             <div className="flex items-center gap-4">
