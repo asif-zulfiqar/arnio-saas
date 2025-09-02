@@ -1,6 +1,7 @@
 "use client";
 import {
   AnalyticsIcon,
+  ArrowDown,
   ConversationIcon,
   DocsIcon,
   HelpIcon,
@@ -96,19 +97,30 @@ export default LeftSidebar;
 
 const LinkItem = ({ name, icon, url, active, expanded }) => {
   return (
-    <Link
-      href={url}
-      className={`flex items-center gap-3 w-full p-2 rounded-lg hover:bg-gray-100 transition-all duration-150
+    <div className="relative group w-full">
+      <Link
+        href={url}
+        className={`flex items-center gap-3 w-full p-2 rounded-lg hover:bg-gray-100 transition-all duration-150
         ${active ? "bg-gray-100" : "bg-transparent"} ${
-        expanded ? "justify-start px-3" : "justify-center"
-      }`}
-    >
-      <div className="min-w-5">{React.cloneElement(icon, { active })}</div>
-      {expanded && (
-        <span className="text-base font-medium text-gray-900 whitespace-nowrap overflow-hidden truncate">
+          expanded ? "justify-start px-3" : "justify-center"
+        }`}
+      >
+        <div className="min-w-5">{React.cloneElement(icon, { active })}</div>
+        {expanded && (
+          <span className="text-base font-medium text-gray-900 whitespace-nowrap overflow-hidden truncate">
+            {name}
+          </span>
+        )}
+      </Link>
+
+      {!expanded && (
+        <span className="absolute left-[calc(100%+12px)] top-1/2 transform -translate-y-1/2 opacity-0 translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 bg-gray-800 text-white text-sm p-4 rounded-sm z-[999] transition-all duration-200 ease-in-out whitespace-nowrap">
           {name}
+          <span className="absolute -left-3 top-1/2 transform -translate-y-1/2 rotate-[270deg]">
+            <ArrowDown />
+          </span>
         </span>
       )}
-    </Link>
+    </div>
   );
 };

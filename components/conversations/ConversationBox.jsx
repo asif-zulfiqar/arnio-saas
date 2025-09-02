@@ -14,11 +14,14 @@ const ConversationBox = ({ onStartConversation }) => {
     sendMessage,
     setPendingMessageToInput,
     setDraftMessage,
+    conversations,
   } = useConversationStore();
 
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   const activeConversation = getActiveConversation();
+
+  console.log("conversations", conversations);
 
   const handleAIInitialMessage = () => {
     if (!activeConversationId) return;
@@ -161,21 +164,25 @@ const ConversationBox = ({ onStartConversation }) => {
             <p className="text-center text-base text-gray-500">
               No messages yet
             </p>
-            <p className="text-center text-sm text-gray-500 mt-1">
-              Want to start with an AI-generated intro?
-            </p>
-            <button
-              onClick={handleAIInitialMessage}
-              className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-primary bg-white text-primary text-xs font-medium w-[150px] h-[34px] mx-auto hover:bg-blue-50 transition-colors"
-            >
-              <Image
-                src="/svgs/ai-icon.svg"
-                width={12}
-                height={14}
-                alt="icon"
-              />
-              AI Initial Message
-            </button>
+            {!message && (
+              <div>
+                <p className="text-center text-sm text-gray-500 mt-1">
+                  Want to start with an AI-generated intro?
+                </p>
+                <button
+                  onClick={handleAIInitialMessage}
+                  className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-primary bg-white text-primary text-xs font-medium w-[150px] h-[34px] mx-auto hover:bg-blue-50 transition-colors"
+                >
+                  <Image
+                    src="/svgs/ai-icon.svg"
+                    width={12}
+                    height={14}
+                    alt="icon"
+                  />
+                  AI Initial Message
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
