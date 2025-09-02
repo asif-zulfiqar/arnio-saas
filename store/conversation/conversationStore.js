@@ -3,7 +3,7 @@ import { generateDummyConversations } from "@/data/data";
 const { create } = require("zustand");
 
 const useConversationStore = create((set, get) => ({
-  conversations: generateDummyConversations(3),
+  conversations: generateDummyConversations(5),
   activeConversationId: null,
   searchTerm: "",
 
@@ -80,7 +80,7 @@ const useConversationStore = create((set, get) => ({
 
     setTimeout(() => {
       get().receiveMessage(conversationId, get().generateAutoReply(content));
-    }, 1000 + Math.random() * 2000);
+    }, 8000 + Math.random() * 2000);
   },
 
   receiveMessage: (conversationId, content) => {
