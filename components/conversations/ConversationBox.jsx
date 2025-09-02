@@ -14,14 +14,11 @@ const ConversationBox = ({ onStartConversation }) => {
     sendMessage,
     setPendingMessageToInput,
     setDraftMessage,
-    conversations,
   } = useConversationStore();
 
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   const activeConversation = getActiveConversation();
-
-  console.log("conversations", conversations);
 
   const handleAIInitialMessage = () => {
     if (!activeConversationId) return;

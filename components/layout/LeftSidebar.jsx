@@ -8,10 +8,11 @@ import {
   IntegrationsIcon,
   SettingsIcon,
 } from "@/app/assets/svgs/icons";
-import { CircleQuestionMark } from "lucide-react";
+import { devLog } from "@/data/data";
+import { useConversationStore } from "@/store/conversation/conversationStore";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import React from "react";
 
 const pages = [
@@ -55,6 +56,13 @@ const variants = {
 
 const LeftSidebar = ({ isOpen }) => {
   const pathname = usePathname();
+  const conversations = useConversationStore((state) => state.conversations);
+  const totalUnreadCount = conversations.reduce(
+    (total, convo) => total + convo.unreadCount,
+    0
+  );
+
+  devLog("conversations", conversations, totalUnreadCount);
 
   return (
     <motion.aside
@@ -74,6 +82,7 @@ const LeftSidebar = ({ isOpen }) => {
             url={page.url}
             active={pathname === page.url}
             expanded={isOpen}
+            unreadCount={page.name === "Conversations" ? totalUnreadCount : 0}
           />
         ))}
       </div>
@@ -95,7 +104,7 @@ const LeftSidebar = ({ isOpen }) => {
 
 export default LeftSidebar;
 
-const LinkItem = ({ name, icon, url, active, expanded }) => {
+const LinkItem = ({ name, icon, url, active, expanded, unreadCount }) => {
   return (
     <div className="relative group w-full">
       <Link
@@ -105,7 +114,14 @@ const LinkItem = ({ name, icon, url, active, expanded }) => {
           expanded ? "justify-start px-3" : "justify-center"
         }`}
       >
-        <div className="min-w-5">{React.cloneElement(icon, { active })}</div>
+        <div className="min-w-5 relative">
+          {React.cloneElement(icon, { active })}
+          {unreadCount > 0 && (
+            <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full min-w-4 h-4 flex items-center justify-center px-1">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </div>
+          )}
+        </div>
         {expanded && (
           <span className="text-base font-medium text-gray-900 whitespace-nowrap overflow-hidden truncate">
             {name}

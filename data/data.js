@@ -75,4 +75,10 @@ const generateDummyConversations = (num) => {
   return conversations;
 };
 
-export { generateDummyConversations };
+function devLog(...args) {
+  if (process.env.NODE_ENV === "development") {
+    console.log(...args);
+  }
+}
+
+export { generateDummyConversations, devLog };
