@@ -41,8 +41,6 @@ const generateDummyConversations = (num) => {
   const getRandomName = () => names[Math.floor(Math.random() * names.length)];
   const getRandomPhoneNumber = () =>
     phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)];
-  const getRandomMessage = () =>
-    responses[Math.floor(Math.random() * responses.length)];
 
   const conversations = [];
 
@@ -50,7 +48,7 @@ const generateDummyConversations = (num) => {
     const id = `convo-${Date.now() + i}`;
     const name = getRandomName();
     const phoneNumber = getRandomPhoneNumber();
-    const lastMessage = getRandomMessage();
+    const lastMessage = "";
     const lastMessageTime = new Date();
     const isTyping = false;
     const unreadCount = 0;
