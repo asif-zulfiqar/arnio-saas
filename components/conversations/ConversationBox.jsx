@@ -1,5 +1,11 @@
 import { useConversationStore } from "@/store/conversation/conversationStore";
-import { formatPhoneNumber, getFirstName, getInitials } from "@/utils/utils";
+import {
+  formatMessageDate,
+  formatPhoneNumber,
+  getFirstName,
+  getInitials,
+  shouldShowTimestamp,
+} from "@/utils/utils";
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -61,8 +67,17 @@ const ConversationBox = ({ onStartConversation }) => {
     return new Date(timestamp).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false,
+      hour12: true,
     });
+  };
+
+  const isLastUserMessage = (currentMsg, messages) => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].sender === "user") {
+        return messages[i].id === currentMsg.id;
+      }
+    }
+    return false;
   };
 
   useEffect(() => {
@@ -183,37 +198,67 @@ const ConversationBox = ({ onStartConversation }) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {activeConversation.messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${
-                  msg.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {msg.sender === "user" && (
-                  <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
-                    <p className="text-sm">{msg.content}</p>
-                  </div>
-                )}
-                {msg.sender !== "user" && (
-                  <div className="flex gap-2">
-                    <div className="size-8 rounded-full bg-primary flex items-center justify-center">
-                      <span className="text-white font-medium text-sm">
-                        {getInitials(activeConversation.name)}
+            {activeConversation.messages.map((msg, index) => {
+              const showTimestamp = shouldShowTimestamp(
+                msg,
+                index,
+                activeConversation.messages
+              );
+              return (
+                <div key={msg.id}>
+                  {showTimestamp && (
+                    <div className="flex justify-center my-4">
+                      <span className="text-xs text-gray-400">
+                        {formatMessageDate(msg.timestamp)}
                       </span>
                     </div>
-                    <div>
-                      <h6 className="text-xs font-medium mb-1">
-                        {activeConversation?.name}
-                      </h6>
-                      <p className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-gray-100 text-gray-900 text-sm">
-                        {msg.content}
-                      </p>
-                    </div>
+                  )}
+                  <div
+                    className={`flex ${
+                      msg.sender === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    {msg.sender === "user" && (
+                      <div className="flex flex-col items-end">
+                        <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
+                          <p className="text-sm">{msg.content}</p>
+                        </div>
+                        {isLastUserMessage(
+                          msg,
+                          activeConversation.messages
+                        ) && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-xs text-gray-400">
+                              {msg.status === "read" ? "Read" : "Delivered"}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {formatTime(msg.timestamp)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {msg.sender !== "user" && (
+                      <div className="flex gap-2">
+                        <div className="size-8 rounded-full bg-primary flex items-center justify-center">
+                          <span className="text-white font-medium text-sm">
+                            {getInitials(activeConversation.name)}
+                          </span>
+                        </div>
+                        <div>
+                          <h6 className="text-xs font-medium mb-1">
+                            {activeConversation?.name}
+                          </h6>
+                          <p className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-gray-100 text-gray-900 text-sm">
+                            {msg.content}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
         )}

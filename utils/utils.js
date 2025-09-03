@@ -45,4 +45,54 @@ function formatPhoneNumber(phone) {
   return `+1 ${a} ${b} ${c}`;
 }
 
-export { getInitials, formatPhoneNumber, getFirstName };
+function formatMessageDate(timestamp) {
+  const now = new Date();
+  const messageDate = new Date(timestamp);
+  const diffInHours = Math.abs(now - messageDate) / (1000 * 60 * 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  const timeString = messageDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  if (diffInDays === 0) {
+    return `Today ${timeString}`;
+  } else if (diffInDays === 1) {
+    return `Yesterday ${timeString}`;
+  } else if (diffInDays < 7) {
+    const dayName = messageDate.toLocaleDateString("en-US", {
+      weekday: "long",
+    });
+    return `${dayName} ${timeString}`;
+  } else {
+    return (
+      messageDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: diffInDays > 365 ? "numeric" : undefined,
+      }) + ` ${timeString}`
+    );
+  }
+}
+
+function shouldShowTimestamp(currentMsg, index, messages) {
+  if (index === 0) return true;
+
+  const prevMsg = messages[index - 1];
+  const currentTime = new Date(currentMsg.timestamp);
+  const prevTime = new Date(prevMsg.timestamp);
+
+  // Show timestamp if more than 1 hour difference
+  const hoursDiff = Math.abs(currentTime - prevTime) / (1000 * 60 * 60);
+  return hoursDiff >= 1;
+}
+
+export {
+  getInitials,
+  formatPhoneNumber,
+  getFirstName,
+  formatMessageDate,
+  shouldShowTimestamp,
+};

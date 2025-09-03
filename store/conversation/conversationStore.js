@@ -79,6 +79,19 @@ const useConversationStore = create((set, get) => ({
     }));
 
     setTimeout(() => {
+      set((state) => ({
+        conversations: state.conversations.map((conv) =>
+          conv.id === conversationId
+            ? {
+                ...conv,
+                messages: conv.messages.map((msg) =>
+                  msg.id === messageId ? { ...msg, status: "read" } : msg
+                ),
+              }
+            : conv
+        ),
+      }));
+
       get().receiveMessage(conversationId, get().generateAutoReply(content));
     }, 8000 + Math.random() * 2000);
   },
