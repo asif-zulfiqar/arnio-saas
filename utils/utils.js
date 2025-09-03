@@ -84,9 +84,8 @@ function shouldShowTimestamp(currentMsg, index, messages) {
   const currentTime = new Date(currentMsg.timestamp);
   const prevTime = new Date(prevMsg.timestamp);
 
-  // Show timestamp if more than 1 hour difference
-  const hoursDiff = Math.abs(currentTime - prevTime) / (1000 * 60 * 60);
-  return hoursDiff >= 1;
+  const minutesDiff = Math.abs(currentTime - prevTime) / (1000 * 60);
+  return minutesDiff >= 30;
 }
 
 export {
