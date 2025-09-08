@@ -9,6 +9,8 @@ import { ArrowDown } from "@/app/assets/svgs/icons";
 import PhoneNumberInput from "../global/small/PhoneNumberInput";
 import { useConversationStore } from "@/store/conversation/conversationStore";
 import toast from "react-hot-toast";
+import { formatPhoneNumber } from "@/utils/utils";
+import DuplicatePhone from "./DuplicatePhone";
 
 const phoneOptions = [
   { value: "+17865617760", option: "+1 786  561 7760" },
@@ -20,7 +22,7 @@ const AddContact = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [dropdownStatus, setDropdownStatus] = useState("info");
   const [generateAIMessage, setGenerateAIMessage] = useState(false);
-  const [duplicateDialog, setDuplicateDialog] = useState(null);
+  const [duplicateContact, setDuplicateContact] = useState(null);
   const { addConversation, conversations, setActiveConversation } =
     useConversationStore();
 
@@ -50,7 +52,16 @@ const AddContact = ({ onClose }) => {
       return toast.error("All fields are required");
     }
 
-    setIsLoading(false);
+    const existing = conversations.find(
+      (c) => c.phoneNumber === form.phone.trim()
+    );
+
+    if (existing) {
+      setDuplicateContact(existing);
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -65,49 +76,60 @@ const AddContact = ({ onClose }) => {
   };
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
-      <Input
-        label="Name"
-        name="name"
-        value={form.name}
-        onChange={handleFormChange}
-        placeholder="e.g. Jane Doe"
-      />
-      <PhoneNumberInput
-        name="phone"
-        value={form.phone}
-        onChange={handlePhoneChange}
-      />
-      <Dropdown
-        label="Choose a number to send from"
-        defaultText="Select a phone"
-        options={phoneOptions}
-        onSelect={handleSelect}
-        status={dropdownStatus}
-        helperText={
-          dropdownStatus === "error"
-            ? "Something went wrong. Please, try again later."
-            : "Your number may still be activating try again later."
-        }
-        cn="mt-2"
-      />
-      <GenerativeToggle
-        isChecked={generateAIMessage}
-        setIsChecked={setGenerateAIMessage}
-      />
-      <hr className="border-gray-200" />
-      <div className="flex items-center justify-end gap-4">
-        <Button
-          onClick={onClose}
-          text="Cancel"
-          width="64px"
-          color="text-gray-900"
-          bgColor="bg-white"
-          cn="border border-gray-200"
+    <>
+      {duplicateContact && (
+        <DuplicatePhone
+          duplicateContact={duplicateContact}
+          onClose={onClose}
+          setActiveConversation={setActiveConversation}
         />
-        <Button type="submit" text="Add Contact" width="97px" />
-      </div>
-    </form>
+      )}
+      {!duplicateContact && (
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          <Input
+            label="Name"
+            name="name"
+            value={form.name}
+            onChange={handleFormChange}
+            placeholder="e.g. Jane Doe"
+          />
+          <PhoneNumberInput
+            name="phone"
+            value={form.phone}
+            onChange={handlePhoneChange}
+          />
+          <Dropdown
+            label="Choose a number to send from"
+            defaultText="Select a phone"
+            options={phoneOptions}
+            onSelect={handleSelect}
+            status={dropdownStatus}
+            helperText={
+              dropdownStatus === "error"
+                ? "Something went wrong. Please, try again later."
+                : "Your number may still be activating try again later."
+            }
+            cn="mt-2"
+          />
+          <GenerativeToggle
+            isChecked={generateAIMessage}
+            setIsChecked={setGenerateAIMessage}
+          />
+          <hr className="border-gray-200" />
+          <div className="flex items-center justify-end gap-4">
+            <Button
+              onClick={onClose}
+              text="Cancel"
+              width="64px"
+              color="text-gray-900"
+              bgColor="bg-white"
+              cn="border border-gray-200"
+            />
+            <Button type="submit" text="Add Contact" width="97px" />
+          </div>
+        </form>
+      )}
+    </>
   );
 };
 
