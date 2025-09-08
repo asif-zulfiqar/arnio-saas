@@ -20,7 +20,9 @@ const AddContact = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [dropdownStatus, setDropdownStatus] = useState("info");
   const [generateAIMessage, setGenerateAIMessage] = useState(false);
-  const { addConversation } = useConversationStore();
+  const [duplicateDialog, setDuplicateDialog] = useState(null);
+  const { addConversation, conversations, setActiveConversation } =
+    useConversationStore();
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
