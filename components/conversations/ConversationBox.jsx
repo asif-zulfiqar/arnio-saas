@@ -2,7 +2,6 @@ import { useConversationStore } from "@/store/conversation/conversationStore";
 import {
   formatMessageDate,
   formatPhoneNumber,
-  getFirstName,
   getInitials,
   shouldShowTimestamp,
 } from "@/utils/utils";
@@ -10,10 +9,10 @@ import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
-import { set } from "date-fns";
 
 const ConversationBox = ({ onStartConversation }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isAiDraft, setIsAiDraft] = useState(false);
   const {
     activeConversationId,
     getActiveConversation,
@@ -31,6 +30,7 @@ const ConversationBox = ({ onStartConversation }) => {
 
     const aiMessage = setPendingMessageToInput(activeConversationId);
     setMessage(aiMessage);
+    setIsAiDraft(true);
   };
 
   const handleCloseDropdown = () => {
@@ -50,14 +50,20 @@ const ConversationBox = ({ onStartConversation }) => {
     e.preventDefault();
     if (!message.trim() || !activeConversationId) return;
 
-    sendMessage(activeConversationId, message.trim());
+    sendMessage(
+      activeConversationId,
+      message.trim(),
+      isAiDraft ? "ai" : "manual"
+    );
     setMessage("");
+    setIsAiDraft(false);
     setDraftMessage(activeConversationId, "");
   };
 
   const handleMessageChange = (e) => {
     const newMessage = e.target.value;
     setMessage(newMessage);
+    setIsAiDraft(false);
     if (activeConversationId) {
       setDraftMessage(activeConversationId, newMessage);
     }
@@ -222,6 +228,17 @@ const ConversationBox = ({ onStartConversation }) => {
                       <div className="flex flex-col items-end">
                         <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
                           <p className="text-sm">{msg.content}</p>
+                          {msg.origin === "ai" && (
+                            <span className="mt-2 text-xs text-[#C3DDFD] flex items-center gap-[6px]">
+                              <Image
+                                src="/svgs/ai-icon-white.svg"
+                                width={12}
+                                height={14}
+                                alt="icon"
+                              />
+                              Generated with AI
+                            </span>
+                          )}
                         </div>
                         {isLastUserMessage(
                           msg,

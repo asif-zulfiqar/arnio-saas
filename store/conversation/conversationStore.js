@@ -55,7 +55,7 @@ const useConversationStore = create((set, get) => ({
     }));
   },
 
-  sendMessage: (conversationId, content) => {
+  sendMessage: (conversationId, content, origin = "manual") => {
     const messageId = `msg-${Date.now()}`;
     const message = {
       id: messageId,
@@ -63,10 +63,11 @@ const useConversationStore = create((set, get) => ({
       sender: "user",
       timestamp: new Date(),
       status: "delivered",
+      origin,
     };
 
-    set((state) => ({
-      conversations: state.conversations.map((conv) =>
+    set((state) => {
+      const updatedConversations = state.conversations.map((conv) =>
         conv.id === conversationId
           ? {
               ...conv,
@@ -75,8 +76,16 @@ const useConversationStore = create((set, get) => ({
               lastMessageTime: new Date(),
             }
           : conv
-      ),
-    }));
+      );
+
+      // ✅ Move the updated conversation to the top
+      const sortedConversations = [
+        updatedConversations.find((c) => c.id === conversationId),
+        ...updatedConversations.filter((c) => c.id !== conversationId),
+      ];
+
+      return { conversations: sortedConversations };
+    });
 
     setTimeout(() => {
       set((state) => ({
@@ -108,8 +117,8 @@ const useConversationStore = create((set, get) => ({
     const state = get();
     const isActiveConversation = state.activeConversationId === conversationId;
 
-    set((state) => ({
-      conversations: state.conversations.map((conv) =>
+    set((state) => {
+      const updatedConversations = state.conversations.map((conv) =>
         conv.id === conversationId
           ? {
               ...conv,
@@ -119,8 +128,15 @@ const useConversationStore = create((set, get) => ({
               unreadCount: isActiveConversation ? 0 : conv.unreadCount + 1,
             }
           : conv
-      ),
-    }));
+      );
+
+      const sortedConversations = [
+        updatedConversations.find((c) => c.id === conversationId),
+        ...updatedConversations.filter((c) => c.id !== conversationId),
+      ];
+
+      return { conversations: sortedConversations };
+    });
   },
 
   setDraftMessageFromAI: (conversationId) => {
