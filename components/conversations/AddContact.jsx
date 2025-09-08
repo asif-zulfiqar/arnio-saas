@@ -1,15 +1,14 @@
 "user client";
+import { ArrowDown } from "@/app/assets/svgs/icons";
+import { useConversationStore } from "@/store/conversation/conversationStore";
 import { Info } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import Button from "../global/small/Button";
 import Dropdown from "../global/small/Dropdown";
 import Input from "../global/small/Input";
-import ToggleButton from "../global/small/ToggleButton";
-import { ArrowDown } from "@/app/assets/svgs/icons";
 import PhoneNumberInput from "../global/small/PhoneNumberInput";
-import { useConversationStore } from "@/store/conversation/conversationStore";
-import toast from "react-hot-toast";
-import { formatPhoneNumber } from "@/utils/utils";
+import ToggleButton from "../global/small/ToggleButton";
 import DuplicatePhone from "./DuplicatePhone";
 
 const phoneOptions = [
