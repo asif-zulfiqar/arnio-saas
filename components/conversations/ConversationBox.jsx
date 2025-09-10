@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
+import { ArrowDown } from "@/app/assets/svgs/icons";
 
 const ConversationBox = ({ onStartConversation }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -137,14 +138,25 @@ const ConversationBox = ({ onStartConversation }) => {
               {getInitials(activeConversation.name)}
             </span>
             <div
-              className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white ${
+              className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white group cursor-pointer ${
                 activeConversation.deviceType === "andriod"
                   ? "bg-green-600"
                   : activeConversation.deviceType === "apple"
                   ? "bg-[#3F83F8]"
                   : "bg-gray-300"
               }`}
-            ></div>
+            >
+              <span className="absolute top-[calc(100%+8px)] left-1/2 transform -translate-x-1/2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 bg-gray-800 text-white text-sm p-4 rounded-sm z-20 transition-all duration-300 ease-in-out text-nowrap capitalize">
+                {activeConversation.deviceType === "andriod"
+                  ? "Android"
+                  : activeConversation.deviceType === "apple"
+                  ? "Apple"
+                  : "Unknown"}
+                <span className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                  <ArrowDown />
+                </span>
+              </span>
+            </div>
           </div>
           <div>
             <h3 className="font-medium text-base text-gray-900">

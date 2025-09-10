@@ -3,7 +3,7 @@ import { generateDummyConversations } from "@/data/data";
 const { create } = require("zustand");
 
 const useConversationStore = create((set, get) => ({
-  conversations: generateDummyConversations(5),
+  conversations: generateDummyConversations(10),
   activeConversationId: null,
   searchTerm: "",
 

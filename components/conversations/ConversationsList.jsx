@@ -2,6 +2,7 @@ import { useConversationStore } from "@/store/conversation/conversationStore";
 import { getInitials } from "@/utils/utils";
 import { formatDistanceToNow } from "date-fns";
 import Spinner from "../global/small/Spinner";
+import { ArrowDown } from "@/app/assets/svgs/icons";
 
 const ConversationsList = ({ isLoading }) => {
   const {
@@ -69,14 +70,25 @@ const ConversationsList = ({ isLoading }) => {
                 {getInitials(conversation.name)}
               </span>
               <div
-                className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white ${
+                className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white group ${
                   conversation.deviceType === "andriod"
                     ? "bg-green-600"
                     : conversation.deviceType === "apple"
                     ? "bg-[#3F83F8]"
                     : "bg-gray-300"
                 }`}
-              ></div>
+              >
+                <span className="absolute top-[calc(100%+8px)] left-1/2 transform -translate-x-1/2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 bg-gray-800 text-white text-sm p-4 rounded-sm z-20 transition-all duration-300 ease-in-out text-nowrap capitalize">
+                  {conversation.deviceType === "andriod"
+                    ? "Android"
+                    : conversation.deviceType === "apple"
+                    ? "Apple"
+                    : "Unknown"}
+                  <span className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                    <ArrowDown />
+                  </span>
+                </span>
+              </div>
             </div>
 
             {/* Content */}

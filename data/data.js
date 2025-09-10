@@ -42,6 +42,11 @@ const generateDummyConversations = (num) => {
   const getRandomPhoneNumber = () =>
     phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)];
 
+  const getRandomDeviceType = () => {
+    const types = ["andriod", "apple", "unknown"];
+    return types[Math.floor(Math.random() * types.length)];
+  };
+
   const conversations = [];
 
   for (let i = 0; i < num; i++) {
@@ -52,7 +57,7 @@ const generateDummyConversations = (num) => {
     const lastMessageTime = new Date();
     const isTyping = false;
     const unreadCount = 0;
-    const status = "offline";
+    const deviceType = getRandomDeviceType();
     const messages = [];
 
     const conversation = {
@@ -64,7 +69,7 @@ const generateDummyConversations = (num) => {
       messages,
       isTyping,
       unreadCount,
-      status,
+      deviceType,
     };
 
     conversations.push(conversation);
