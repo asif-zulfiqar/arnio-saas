@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
 import { ArrowDown } from "@/app/assets/svgs/icons";
 
-const ConversationBox = ({ onStartConversation }) => {
+const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isAiDraft, setIsAiDraft] = useState(false);
   const {
@@ -183,6 +183,7 @@ const ConversationBox = ({ onStartConversation }) => {
           <ButtonWithTooltip
             iconSrc="/svgs/profile.svg"
             tooltipText="Open Profile"
+            onClick={() => setIsProfileOpen(true)}
           />
         </div>
       </div>

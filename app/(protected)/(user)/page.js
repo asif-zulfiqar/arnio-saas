@@ -7,8 +7,10 @@ import ConversationsList from "@/components/conversations/ConversationsList";
 import Search from "@/components/conversations/Search";
 import SearchBar from "@/components/conversations/SearchBar";
 import Modal from "@/components/global/Modal";
+import Profile from "@/components/profile/Profile";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useConversationStore } from "@/store/conversation/conversationStore";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -16,6 +18,7 @@ const Conversations = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const { searchTerm, setSearchTerm } = useConversationStore();
 
@@ -75,7 +78,25 @@ const Conversations = () => {
       </div>
 
       {/* Conversations box */}
-      <ConversationBox onStartConversation={handleOpenModal} />
+      <ConversationBox
+        onStartConversation={handleOpenModal}
+        setIsProfileOpen={setIsProfileOpen}
+      />
+
+      {/* Profile Box */}
+      <AnimatePresence>
+        {isProfileOpen && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: "320px", opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            // transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="bg-white rounded-2xl shadow-sm overflow-hidden py-4 px-5"
+          >
+            <Profile setIsProfileOpen={setIsProfileOpen} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isModalOpen && (
         <Modal title="Add Contact" onClose={handleCloseModal}>
