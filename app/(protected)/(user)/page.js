@@ -90,7 +90,7 @@ const Conversations = () => {
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: "320px", opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            // transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="bg-white rounded-2xl shadow-sm overflow-hidden py-4 px-5"
           >
             <Profile setIsProfileOpen={setIsProfileOpen} />
