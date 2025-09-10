@@ -13,6 +13,7 @@ const useConversationStore = create((set, get) => ({
       id,
       phoneNumber,
       name,
+      deviceType: "andriod",
       lastMessage: "",
       lastMessageTime: new Date(),
       messages: [],

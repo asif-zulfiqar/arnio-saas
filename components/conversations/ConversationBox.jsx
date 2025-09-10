@@ -138,11 +138,11 @@ const ConversationBox = ({ onStartConversation }) => {
             </span>
             <div
               className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white ${
-                activeConversation.status === "online"
+                activeConversation.deviceType === "andriod"
                   ? "bg-green-600"
-                  : activeConversation.status === "offline"
-                  ? "bg-gray-300"
-                  : "bg-[#3F83F8]"
+                  : activeConversation.deviceType === "apple"
+                  ? "bg-[#3F83F8]"
+                  : "bg-gray-300"
               }`}
             ></div>
           </div>

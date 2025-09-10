@@ -70,11 +70,11 @@ const ConversationsList = ({ isLoading }) => {
               </span>
               <div
                 className={`absolute -bottom-[1px] -right-[1px] size-3 rounded-full border-[1.5px] border-white ${
-                  conversation.status === "online"
+                  conversation.deviceType === "andriod"
                     ? "bg-green-600"
-                    : conversation.status === "offline"
-                    ? "bg-gray-300"
-                    : "bg-[#3F83F8]"
+                    : conversation.deviceType === "apple"
+                    ? "bg-[#3F83F8]"
+                    : "bg-gray-300"
                 }`}
               ></div>
             </div>
