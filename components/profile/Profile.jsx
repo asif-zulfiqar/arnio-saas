@@ -4,6 +4,7 @@ import SentFrom from "./SentFrom";
 import Image from "next/image";
 import { useConversationStore } from "@/store/conversation/conversationStore";
 import { useRef } from "react";
+import CopyButton from "./CopyButton";
 
 const Profile = ({ setIsProfileOpen }) => {
   const conversations = useConversationStore((s) => s.conversations);
@@ -80,14 +81,7 @@ const Profile = ({ setIsProfileOpen }) => {
           <p className="text-base text-gray-500">
             {activeConversation.phoneNumber}
           </p>
-          <button>
-            <Image
-              src="/svgs/copy-icon.svg"
-              width={11}
-              height={14}
-              alt="icon"
-            />
-          </button>
+          <CopyButton phoneNumber={activeConversation.phoneNumber} />
         </div>
       </div>
       {/* Profile End */}
