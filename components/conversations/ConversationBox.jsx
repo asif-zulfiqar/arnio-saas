@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
 import { ArrowDown } from "@/app/assets/svgs/icons";
+import DeleteChat from "./DeleteChat";
 
 const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -185,6 +186,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
             tooltipText="Open Profile"
             onClick={() => setIsProfileOpen(true)}
           />
+          <DeleteChat />
         </div>
       </div>
 

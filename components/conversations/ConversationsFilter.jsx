@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { SlidersHorizontal, Check } from "lucide-react";
+import { useOutsideClick } from "@/hooks/useOutsideClick";
+import { Check, SlidersHorizontal } from "lucide-react";
+import { useRef, useState } from "react";
 
 const ConversationsFilter = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,20 +14,7 @@ const ConversationsFilter = () => {
     Object.values(selectedFilters).filter(Boolean).length;
 
   const dropdownRef = useRef(null);
-
-  // Handle click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  useOutsideClick(dropdownRef, () => setIsOpen(false));
 
   const toggleFilter = (filterKey) => {
     setSelectedFilters((prev) => ({
