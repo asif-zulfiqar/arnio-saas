@@ -15,12 +15,14 @@ import FileAttachmentDropdown from "./FileAttachmentDropdown";
 import FilePreview from "./FilePreview";
 import FileMessage from "../chat/FileMessage";
 import VoiceMessage from "../chat/VoiceMessage";
+import EmojiPickerComponent from "./EmojiPicker";
 
 const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isAiDraft, setIsAiDraft] = useState(false);
   const [isAttachmentDropdownOpen, setIsAttachmentDropdownOpen] =
     useState(false);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
 
@@ -165,6 +167,16 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   const handleRetryFile = (uploadId) => {
     if (activeConversationId) {
       retryFileUpload(activeConversationId, uploadId);
+    }
+  };
+
+  // Emoji selection handler
+  const handleEmojiSelect = (emoji) => {
+    const newMessage = message + emoji;
+    setMessage(newMessage);
+    setIsAiDraft(false);
+    if (activeConversationId) {
+      setDraftMessage(activeConversationId, newMessage);
     }
   };
 
@@ -585,16 +597,30 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                 />
               </div>
 
-              <button type="button">
-                <Smile className="size-4 text-gray-400 hover:text-primary" />
-              </button>
+              {/* Emoji Picker Button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
+                  className={`transition-colors ${
+                    isEmojiPickerOpen ? 'text-primary' : 'text-gray-600'
+                  }`}
+                >
+                  <Smile className="size-4 text-gray-400 hover:text-primary" />
+                </button>
+                <EmojiPickerComponent
+                  isOpen={isEmojiPickerOpen}
+                  onClose={() => setIsEmojiPickerOpen(false)}
+                  onEmojiSelect={handleEmojiSelect}
+                />
+              </div>
 
               {/* Voice Recording Button */}
               <button
                 type="button"
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onMouseLeave={stopRecording}
+                // onMouseDown={startRecording}
+                // onMouseUp={stopRecording}
+                // onMouseLeave={stopRecording}
                 className={`transition-colors ${
                   isRecording ? "text-red-500" : "text-gray-600"
                 }`}
