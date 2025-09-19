@@ -5,27 +5,48 @@ import {
   getInitials,
   shouldShowTimestamp,
 } from "@/utils/utils";
-import { Plus } from "lucide-react";
+import { Mic, Paperclip, Plus, Smile } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
 import { ArrowDown } from "@/app/assets/svgs/icons";
 import DeleteChat from "./DeleteChat";
+import FileAttachmentDropdown from "./FileAttachmentDropdown";
+import FilePreview from "./FilePreview";
+import FileMessage from "../chat/FileMessage";
+import VoiceMessage from "../chat/VoiceMessage";
 
 const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isAiDraft, setIsAiDraft] = useState(false);
+  const [isAttachmentDropdownOpen, setIsAttachmentDropdownOpen] =
+    useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+
   const {
     activeConversationId,
     getActiveConversation,
     sendMessage,
     setPendingMessageToInput,
     setDraftMessage,
+    addFileUpload,
+    getFileUploads,
+    removeFileUpload,
+    retryFileUpload,
+    clearFileUploads,
+    startVoiceRecording,
+    stopVoiceRecording,
+    updateVoiceDuration,
+    clearVoiceMessage,
+    getVoiceMessageState,
   } = useWorkspaceStore();
 
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   const activeConversation = getActiveConversation();
+  const mediaRecorderRef = useRef(null);
+  const recordingIntervalRef = useRef(null);
 
   const handleAIInitialMessage = () => {
     if (!activeConversationId) return;
@@ -50,16 +71,67 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!message.trim() || !activeConversationId) return;
+    if (!activeConversationId) return;
 
-    sendMessage(
-      activeConversationId,
-      message.trim(),
-      isAiDraft ? "ai" : "manual"
-    );
+    const fileUploads = getFileUploads(activeConversationId);
+    const voiceState = getVoiceMessageState(activeConversationId);
+
+    // Check if we have content to send
+    const hasText = message.trim();
+    const hasFiles = fileUploads.some((upload) => upload.status === "success");
+    const hasVoice = voiceState && voiceState.audioBlob;
+
+    if (!hasText && !hasFiles && !hasVoice) return;
+
+    // Send text message if there's text
+    if (hasText) {
+      sendMessage(
+        activeConversationId,
+        message.trim(),
+        isAiDraft ? "ai" : "manual"
+      );
+    }
+
+    // Send file messages for each successful upload
+    if (hasFiles) {
+      fileUploads.forEach((upload) => {
+        if (upload.status === "success") {
+          sendMessage(
+            activeConversationId,
+            message.trim() || "", // Include text if any
+            "manual",
+            {
+              name: upload.name,
+              size: upload.size,
+              type: upload.type,
+              url: upload.url,
+            }
+          );
+        }
+      });
+    }
+
+    // Send voice message if available
+    if (hasVoice) {
+      const audioUrl = URL.createObjectURL(voiceState.audioBlob);
+      sendMessage(
+        activeConversationId,
+        message.trim() || "", // Include text if any
+        "manual",
+        null,
+        {
+          url: audioUrl,
+          duration: voiceState.duration,
+        }
+      );
+    }
+
+    // Clear everything after sending
     setMessage("");
     setIsAiDraft(false);
     setDraftMessage(activeConversationId, "");
+    clearFileUploads(activeConversationId);
+    clearVoiceMessage(activeConversationId);
   };
 
   const handleMessageChange = (e) => {
@@ -68,6 +140,87 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     setIsAiDraft(false);
     if (activeConversationId) {
       setDraftMessage(activeConversationId, newMessage);
+    }
+  };
+
+  // File attachment handlers
+  const handleFileSelect = (file) => {
+    if (activeConversationId) {
+      addFileUpload(activeConversationId, file);
+    }
+  };
+
+  const handlePhotoSelect = (file) => {
+    if (activeConversationId) {
+      addFileUpload(activeConversationId, file);
+    }
+  };
+
+  const handleRemoveFile = (uploadId) => {
+    if (activeConversationId) {
+      removeFileUpload(activeConversationId, uploadId);
+    }
+  };
+
+  const handleRetryFile = (uploadId) => {
+    if (activeConversationId) {
+      retryFileUpload(activeConversationId, uploadId);
+    }
+  };
+
+  // Voice recording handlers
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        if (activeConversationId) {
+          stopVoiceRecording(activeConversationId, audioBlob);
+        }
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      mediaRecorderRef.current = mediaRecorder;
+      setIsRecording(true);
+      setRecordingDuration(0);
+
+      if (activeConversationId) {
+        startVoiceRecording(activeConversationId);
+      }
+
+      // Start duration counter
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingDuration((prev) => {
+          const newDuration = prev + 1;
+          if (activeConversationId) {
+            updateVoiceDuration(activeConversationId, newDuration);
+          }
+          return newDuration;
+        });
+      }, 1000);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setRecordingDuration(0);
+
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
     }
   };
 
@@ -241,20 +394,29 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                   >
                     {msg.sender === "user" && (
                       <div className="flex flex-col items-end">
-                        <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
-                          <p className="text-sm">{msg.content}</p>
-                          {msg.origin === "ai" && (
-                            <span className="mt-2 text-xs text-[#C3DDFD] flex items-center gap-[6px]">
-                              <Image
-                                src="/svgs/ai-icon-white.svg"
-                                width={12}
-                                height={14}
-                                alt="icon"
-                              />
-                              Generated with AI
-                            </span>
-                          )}
-                        </div>
+                        {/* File Message */}
+                        {msg.type === "file" ? (
+                          <FileMessage message={msg} isUser={true} />
+                        ) : msg.type === "voice" ? (
+                          <VoiceMessage message={msg} isUser={true} />
+                        ) : (
+                          /* Text Message */
+                          <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
+                            <p className="text-sm">{msg.content}</p>
+                            {msg.origin === "ai" && (
+                              <span className="mt-2 text-xs text-[#C3DDFD] flex items-center gap-[6px]">
+                                <Image
+                                  src="/svgs/ai-icon-white.svg"
+                                  width={12}
+                                  height={14}
+                                  alt="icon"
+                                />
+                                Generated with AI
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         {isLastUserMessage(
                           msg,
                           activeConversation.messages
@@ -281,9 +443,18 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                           <h6 className="text-xs font-medium mb-1">
                             {activeConversation?.name}
                           </h6>
-                          <p className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-gray-100 text-gray-900 text-sm">
-                            {msg.content}
-                          </p>
+
+                          {/* File Message */}
+                          {msg.type === "file" ? (
+                            <FileMessage message={msg} isUser={false} />
+                          ) : msg.type === "voice" ? (
+                            <VoiceMessage message={msg} isUser={false} />
+                          ) : (
+                            /* Text Message */
+                            <p className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-gray-100 text-gray-900 text-sm">
+                              {msg.content}
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}
@@ -302,6 +473,75 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
           onSubmit={handleSendMessage}
           className="flex flex-col gap-1 border border-gray-100 rounded-2xl"
         >
+          {/* File Previews */}
+          {activeConversationId &&
+            getFileUploads(activeConversationId).length > 0 && (
+              <div className="px-5 pt-4 space-y-2">
+                {getFileUploads(activeConversationId).map((upload) => (
+                  <FilePreview
+                    key={upload.id}
+                    upload={upload}
+                    onRemove={handleRemoveFile}
+                    onRetry={handleRetryFile}
+                  />
+                ))}
+              </div>
+            )}
+
+          {/* Voice Message Preview */}
+          {activeConversationId &&
+            getVoiceMessageState(activeConversationId) && (
+              <div className="px-5 pt-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isRecording
+                            ? "bg-red-500 animate-pulse"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        <Image
+                          src="/svgs/mic.svg"
+                          width={16}
+                          height={16}
+                          alt="mic"
+                          className={
+                            isRecording ? "text-white" : "text-gray-600"
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {isRecording ? "Recording..." : "Voice message ready"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {Math.floor(recordingDuration / 60)}:
+                        {(recordingDuration % 60).toString().padStart(2, "0")}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (activeConversationId) {
+                          clearVoiceMessage(activeConversationId);
+                        }
+                      }}
+                      className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    >
+                      <Image
+                        src="/svgs/trash.svg"
+                        width={16}
+                        height={16}
+                        alt="delete"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           <div className="flex-1 relative">
             <textarea
               rows={1}
@@ -321,31 +561,57 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
               className="scroll-0 w-full border-transparent focus:outline-none text-sm text-gray-900 placeholder:text-gray-400 py-6 px-5 resize-none"
             ></textarea>
           </div>
-          <div className="flex items-center justify-between px-5 pb-4">
+
+          <div className="flex items-center justify-between px-5 pb-4 relative">
             <div className="flex items-center gap-4">
-              <button>
-                <Image
-                  src="/svgs/paperclip.svg"
-                  width={16}
-                  height={16}
-                  alt="icon"
+              {/* File Attachment Button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsAttachmentDropdownOpen(!isAttachmentDropdownOpen)
+                  }
+                  className={`transition-colors ${
+                    isAttachmentDropdownOpen ? "text-primary" : "text-gray-600"
+                  }`}
+                >
+                  <Paperclip className="size-4 text-gray-400 hover:text-primary" />
+                </button>
+                <FileAttachmentDropdown
+                  isOpen={isAttachmentDropdownOpen}
+                  onClose={() => setIsAttachmentDropdownOpen(false)}
+                  onFileSelect={handleFileSelect}
+                  onPhotoSelect={handlePhotoSelect}
                 />
+              </div>
+
+              <button type="button">
+                <Smile className="size-4 text-gray-400 hover:text-primary" />
               </button>
-              <button>
-                <Image
-                  src="/svgs/smile.svg"
-                  width={16}
-                  height={16}
-                  alt="icon"
-                />
-              </button>
-              <button>
-                <Image src="/svgs/mic.svg" width={16} height={16} alt="icon" />
+
+              {/* Voice Recording Button */}
+              <button
+                type="button"
+                onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onMouseLeave={stopRecording}
+                className={`transition-colors ${
+                  isRecording ? "text-red-500" : "text-gray-600"
+                }`}
+              >
+                <Mic className="size-4 text-gray-400 hover:text-primary" />
               </button>
             </div>
+
             <button
               type="submit"
-              disabled={!message.trim()}
+              disabled={
+                !message.trim() &&
+                (!activeConversationId ||
+                  getFileUploads(activeConversationId).length === 0) &&
+                (!activeConversationId ||
+                  !getVoiceMessageState(activeConversationId))
+              }
               className="disabled:cursor-not-allowed transition-colors"
             >
               <Image src="/svgs/send.svg" width={16} height={16} alt="icon" />

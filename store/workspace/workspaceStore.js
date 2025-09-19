@@ -147,6 +147,10 @@ const useWorkspaceStore = create((set, get) => ({
     hasData: true,
   },
 
+  // File Upload State
+  fileUploads: {}, // conversationId -> array of file uploads
+  voiceMessages: {}, // conversationId -> voice message state
+
   // ===== CONVERSATION METHODS (migrated from conversationStore) =====
   
   addConversation: (name, phoneNumber, generateAiMessage = false) => {
@@ -199,7 +203,7 @@ const useWorkspaceStore = create((set, get) => ({
     }));
   },
 
-  sendMessage: (conversationId, content, origin = "manual") => {
+  sendMessage: (conversationId, content, origin = "manual", attachments = null, voiceMessage = null) => {
     const messageId = `msg-${Date.now()}`;
     const message = {
       id: messageId,
@@ -209,6 +213,17 @@ const useWorkspaceStore = create((set, get) => ({
       status: "delivered",
       origin,
       sentBy: get().currentUser.id, // Track who sent the message
+      type: attachments ? "file" : voiceMessage ? "voice" : "text",
+      ...(attachments && {
+        fileName: attachments.name,
+        fileSize: attachments.size,
+        fileType: attachments.type,
+        fileUrl: attachments.url,
+      }),
+      ...(voiceMessage && {
+        audioUrl: voiceMessage.url,
+        duration: voiceMessage.duration,
+      }),
     };
 
     set((state) => {
@@ -521,6 +536,187 @@ const useWorkspaceStore = create((set, get) => ({
       totalConversations: state.conversations.length,
       activeConversations: state.conversations.filter(c => c.unreadCount > 0).length,
     };
+  },
+
+  // ===== FILE UPLOAD METHODS =====
+
+  // Add file to upload queue
+  addFileUpload: (conversationId, file) => {
+    const uploadId = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const fileUpload = {
+      id: uploadId,
+      file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      status: "uploading", // uploading, success, error
+      progress: 0,
+      error: null,
+      url: null,
+    };
+
+    set((state) => ({
+      fileUploads: {
+        ...state.fileUploads,
+        [conversationId]: [
+          ...(state.fileUploads[conversationId] || []),
+          fileUpload,
+        ],
+      },
+    }));
+
+    // Simulate upload process
+    get().simulateFileUpload(conversationId, uploadId);
+    return uploadId;
+  },
+
+  // Simulate file upload with progress
+  simulateFileUpload: (conversationId, uploadId) => {
+    const updateProgress = (progress) => {
+      set((state) => ({
+        fileUploads: {
+          ...state.fileUploads,
+          [conversationId]: state.fileUploads[conversationId]?.map((upload) =>
+            upload.id === uploadId ? { ...upload, progress } : upload
+          ),
+        },
+      }));
+    };
+
+    // Simulate upload progress
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 30;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        
+        // Simulate success or failure (90% success rate)
+        const isSuccess = Math.random() > 0.1;
+        
+        set((state) => ({
+          fileUploads: {
+            ...state.fileUploads,
+            [conversationId]: state.fileUploads[conversationId]?.map((upload) =>
+              upload.id === uploadId
+                ? {
+                    ...upload,
+                    progress: 100,
+                    status: isSuccess ? "success" : "error",
+                    error: isSuccess ? null : "Upload failed. Try again.",
+                    url: isSuccess ? URL.createObjectURL(upload.file) : null,
+                  }
+                : upload
+            ),
+          },
+        }));
+      } else {
+        updateProgress(progress);
+      }
+    }, 200);
+  },
+
+  // Remove file upload
+  removeFileUpload: (conversationId, uploadId) => {
+    set((state) => ({
+      fileUploads: {
+        ...state.fileUploads,
+        [conversationId]: state.fileUploads[conversationId]?.filter(
+          (upload) => upload.id !== uploadId
+        ),
+      },
+    }));
+  },
+
+  // Retry file upload
+  retryFileUpload: (conversationId, uploadId) => {
+    set((state) => ({
+      fileUploads: {
+        ...state.fileUploads,
+        [conversationId]: state.fileUploads[conversationId]?.map((upload) =>
+          upload.id === uploadId
+            ? { ...upload, status: "uploading", progress: 0, error: null }
+            : upload
+        ),
+      },
+    }));
+
+    get().simulateFileUpload(conversationId, uploadId);
+  },
+
+  // Get file uploads for conversation
+  getFileUploads: (conversationId) => {
+    const state = get();
+    return state.fileUploads[conversationId] || [];
+  },
+
+  // Clear all file uploads for conversation
+  clearFileUploads: (conversationId) => {
+    set((state) => ({
+      fileUploads: {
+        ...state.fileUploads,
+        [conversationId]: [],
+      },
+    }));
+  },
+
+  // ===== VOICE MESSAGE METHODS =====
+
+  // Start voice recording
+  startVoiceRecording: (conversationId) => {
+    set((state) => ({
+      voiceMessages: {
+        ...state.voiceMessages,
+        [conversationId]: {
+          isRecording: true,
+          duration: 0,
+          audioBlob: null,
+        },
+      },
+    }));
+  },
+
+  // Stop voice recording
+  stopVoiceRecording: (conversationId, audioBlob) => {
+    set((state) => ({
+      voiceMessages: {
+        ...state.voiceMessages,
+        [conversationId]: {
+          isRecording: false,
+          duration: 0,
+          audioBlob,
+        },
+      },
+    }));
+  },
+
+  // Update voice recording duration
+  updateVoiceDuration: (conversationId, duration) => {
+    set((state) => ({
+      voiceMessages: {
+        ...state.voiceMessages,
+        [conversationId]: {
+          ...state.voiceMessages[conversationId],
+          duration,
+        },
+      },
+    }));
+  },
+
+  // Clear voice message
+  clearVoiceMessage: (conversationId) => {
+    set((state) => ({
+      voiceMessages: {
+        ...state.voiceMessages,
+        [conversationId]: null,
+      },
+    }));
+  },
+
+  // Get voice message state
+  getVoiceMessageState: (conversationId) => {
+    const state = get();
+    return state.voiceMessages[conversationId] || null;
   },
 }));
 
