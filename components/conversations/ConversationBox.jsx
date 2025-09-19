@@ -1,4 +1,4 @@
-import { useConversationStore } from "@/store/conversation/conversationStore";
+import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import {
   formatMessageDate,
   formatPhoneNumber,
@@ -21,7 +21,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     sendMessage,
     setPendingMessageToInput,
     setDraftMessage,
-  } = useConversationStore();
+  } = useWorkspaceStore();
 
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);

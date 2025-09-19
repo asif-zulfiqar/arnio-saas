@@ -1,6 +1,6 @@
 "user client";
 import { ArrowDown } from "@/app/assets/svgs/icons";
-import { useConversationStore } from "@/store/conversation/conversationStore";
+import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { Info } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -23,7 +23,7 @@ const AddContact = ({ onClose }) => {
   const [generateAIMessage, setGenerateAIMessage] = useState(false);
   const [duplicateContact, setDuplicateContact] = useState(null);
   const { addConversation, conversations, setActiveConversation } =
-    useConversationStore();
+    useWorkspaceStore();
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;

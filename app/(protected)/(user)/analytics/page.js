@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
-import useAnalyticsStore from "../../../../store/conversation/AnalyticsStore";
+import { useWorkspaceStore } from "../../../../store/workspace/workspaceStore";
 import { ExportDropdown } from "../../../../components/Analytics/ExportDropdown";
 import { MetricCard } from "../../../../components/Analytics/MetricCard";
 import { EmptyState } from "../../../../components/Analytics/EmptyState";
@@ -12,18 +12,26 @@ import DateRangePickerWrapper from "@/components/Analytics/DateRangePickerWrappe
 
 const Analytics = () => {
   const {
-    customerEngagement,
-    chartData,
-    metrics,
-    showCalendar,
-    showExportDropdown,
-    hoveredPoint,
-    hasData,
+    analytics,
+    ui,
     toggleCalendar,
     toggleExportDropdown,
     setHoveredPoint,
     loadData,
-  } = useAnalyticsStore();
+  } = useWorkspaceStore();
+
+  const {
+    customerEngagement,
+    chartData,
+    metrics,
+  } = analytics;
+
+  const {
+    showCalendar,
+    showExportDropdown,
+    hoveredPoint,
+    hasData,
+  } = ui;
 
   useEffect(() => {
     loadData();

@@ -9,7 +9,7 @@ import SearchBar from "@/components/conversations/SearchBar";
 import Modal from "@/components/global/Modal";
 import Profile from "@/components/profile/Profile";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useConversationStore } from "@/store/conversation/conversationStore";
+import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ const Conversations = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const { searchTerm, setSearchTerm } = useConversationStore();
+  const { searchTerm, setSearchTerm } = useWorkspaceStore();
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 

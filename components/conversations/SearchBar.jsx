@@ -1,9 +1,9 @@
-import { useConversationStore } from "@/store/conversation/conversationStore";
+import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { SearchIcon, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 const SearchBar = () => {
-  const { searchTerm, setSearchTerm } = useConversationStore();
+  const { searchTerm, setSearchTerm } = useWorkspaceStore();
   const inputRef = useRef(null);
 
   useEffect(() => {

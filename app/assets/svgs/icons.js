@@ -5,6 +5,7 @@ import SettingsIcon from "./sidebar/SettingsIcon";
 import ArrowDown from "./default/ArrowDown";
 import DocsIcon from "./sidebar/DocsIcon";
 import HelpIcon from "./sidebar/HelpIcon";
+import ProfileSettingIcon from "./default/ProfileSettingIcon";
 
 export {
   ConversationIcon,
@@ -14,4 +15,5 @@ export {
   ArrowDown,
   DocsIcon,
   HelpIcon,
+  ProfileSettingIcon,
 };

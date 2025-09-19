@@ -9,7 +9,7 @@ import {
   SettingsIcon,
 } from "@/app/assets/svgs/icons";
 import { devLog } from "@/data/data";
-import { useConversationStore } from "@/store/conversation/conversationStore";
+import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -56,7 +56,7 @@ const variants = {
 
 const LeftSidebar = ({ isOpen }) => {
   const pathname = usePathname();
-  const conversations = useConversationStore((state) => state.conversations);
+  const conversations = useWorkspaceStore((state) => state.conversations);
   const totalUnreadCount = conversations.reduce(
     (total, convo) => total + convo.unreadCount,
     0
