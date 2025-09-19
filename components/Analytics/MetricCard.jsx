@@ -32,13 +32,26 @@ export const MetricCard = ({ title, value, change, isPositive, hasChart }) => {
   const createSparklinePath = (data, width, height) => {
     const max = Math.max(...data);
     const min = Math.min(...data);
-    return data
-      .map((point, index) => {
-        const x = (index / (data.length - 1)) * width;
-        const y = height - ((point - min) / (max - min)) * height;
-        return `${index === 0 ? "M" : "L"} ${x} ${y}`;
-      })
-      .join(" ");
+    const normalizedData = data.map(
+      (point) => height - ((point - min) / (max - min)) * height
+    );
+
+    let path = `M 0 ${normalizedData[0]}`;
+
+    for (let i = 1; i < normalizedData.length; i++) {
+      const x = (i / (normalizedData.length - 1)) * width;
+      const y = normalizedData[i];
+      const prevX = ((i - 1) / (normalizedData.length - 1)) * width;
+      const prevY = normalizedData[i - 1];
+
+      // Create smooth curve using previous and current points
+      const controlX1 = prevX + (x - prevX) / 2;
+      const controlX2 = prevX + (x - prevX) / 2;
+
+      path += ` C ${controlX1} ${prevY}, ${controlX2} ${y}, ${x} ${y}`;
+    }
+
+    return path;
   };
 
   const gradientId = `gradient-${title
@@ -46,31 +59,33 @@ export const MetricCard = ({ title, value, change, isPositive, hasChart }) => {
     .replace(/[()]/g, "")}`;
 
   return (
-    <div className="bg-white">
-      <div className="flex justify-between items-start mb-2">
+    <div className="bg-white ">
+      <div className="flex justify-between items-start mb-0">
         <h3 className="text-sm text-gray-600">{title}</h3>
         <span
           className={`px-2 py-1 rounded-md text-xs font-medium ${
-            isPositive ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"
+            isPositive
+              ? "text-green-700 bg-[#DEF7EC]"
+              : "text-red-700 bg-red-50"
           }`}
         >
           {isPositive ? "+" : ""}
           {change}%
         </span>
       </div>
-      <div className="text-2xl font-bold text-gray-900 mb-4">{value}</div>
+      <div className="text-3xl font-bold text-gray-900 mb-4">{value}</div>
       {hasChart && (
-        <div className="w-full h-12 mt-4">
+        <div className="w-full h-[61px] mt-4 p-0">
           <svg
             width="100%"
-            height="48"
-            viewBox="0 0 280 48"
+            height="49"
+            viewBox="0 0 280 49"
             className="w-full h-full"
             preserveAspectRatio="none"
           >
             <defs>
               <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3" />
+                <stop offset="10%" stopColor="#3B82F6" stopOpacity="0.35" />
                 <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.05" />
               </linearGradient>
             </defs>
@@ -83,9 +98,9 @@ export const MetricCard = ({ title, value, change, isPositive, hasChart }) => {
               fill={`url(#${gradientId})`}
             />
             <path
-              d={createSparklinePath(sparklineData, 280, 48)}
+              d={createSparklinePath(sparklineData, 280, 46)}
               stroke="#3B82F6"
-              strokeWidth="2.5"
+              strokeWidth="2"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"

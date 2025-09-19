@@ -210,7 +210,7 @@ const DateRangePickerWrapper = ({
                   ${
                     isSelected ? "bg-blue-500 text-white hover:bg-blue-600" : ""
                   }
-                  ${inRange && !isSelected ? "bg-blue-50" : ""}
+                  ${inRange && !isSelected ? "bg-[#F3F4F6]" : ""}
                   ${
                     isToday && !isSelected && !inRange
                       ? "font-bold text-blue-600"
@@ -271,7 +271,7 @@ const DateRangePickerWrapper = ({
                 py-3 px-4 rounded-lg text-sm font-medium transition-colors
                 ${
                   isCurrentMonth
-                    ? "bg-blue-500 text-white"
+                    ? "bg-[#1A56DB] text-white"
                     : "hover:bg-gray-100 text-gray-700"
                 }
               `}
@@ -284,7 +284,7 @@ const DateRangePickerWrapper = ({
 
       <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-gray-200">
         <button
-          className="px-6 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+          className="px-6 py-2 bg-[#1A56DB] text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
           onClick={() => {
             const today = new Date();
             setCurrentMonth(today);
@@ -353,7 +353,7 @@ const DateRangePickerWrapper = ({
                   py-3 px-4 rounded-lg text-sm font-medium transition-colors
                   ${
                     isCurrentYear
-                      ? "bg-blue-500 text-white"
+                      ? "bg-[#1A56DB] text-white"
                       : isOutOfRange
                       ? "text-gray-400 hover:bg-gray-50"
                       : "hover:bg-gray-100 text-gray-700"
@@ -368,7 +368,7 @@ const DateRangePickerWrapper = ({
 
         <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-gray-200">
           <button
-            className="px-6 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+            className="px-6 py-2 bg-[#1A56DB] text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
             onClick={() => {
               const today = new Date();
               setViewYear(today.getFullYear());
@@ -417,7 +417,7 @@ const DateRangePickerWrapper = ({
           </span>
           <ChevronDown
             className={`w-4 h-4 flex-shrink-0 ${
-              isOpen ? "text-blue-600" : "text-gray-400"
+              isOpen ? "text-[#1A56DB]" : "text-gray-400"
             }`}
             style={{ verticalAlign: "middle", display: "inline-block" }}
           />
@@ -483,7 +483,7 @@ const DateRangePickerWrapper = ({
 
               <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-gray-200">
                 <button
-                  className="px-6 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+                  className="px-6 py-2 bg-[#1A56DB] text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
                   onClick={() => {
                     const today = new Date();
                     setSelectedStart(today);

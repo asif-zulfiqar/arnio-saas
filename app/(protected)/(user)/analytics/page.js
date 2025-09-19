@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useWorkspaceStore } from "../../../../store/workspace/workspaceStore";
+import useAnalyticsStore from "../../../../store/conversation/AnalyticsStore";
 import { ExportDropdown } from "../../../../components/Analytics/ExportDropdown";
 import { MetricCard } from "../../../../components/Analytics/MetricCard";
 import { EmptyState } from "../../../../components/Analytics/EmptyState";
@@ -12,26 +12,18 @@ import DateRangePickerWrapper from "@/components/Analytics/DateRangePickerWrappe
 
 const Analytics = () => {
   const {
-    analytics,
-    ui,
-    toggleCalendar,
-    toggleExportDropdown,
-    setHoveredPoint,
-    loadData,
-  } = useWorkspaceStore();
-
-  const {
     customerEngagement,
     chartData,
     metrics,
-  } = analytics;
-
-  const {
     showCalendar,
     showExportDropdown,
     hoveredPoint,
     hasData,
-  } = ui;
+    toggleCalendar,
+    toggleExportDropdown,
+    setHoveredPoint,
+    loadData,
+  } = useAnalyticsStore();
 
   useEffect(() => {
     loadData();
@@ -51,8 +43,13 @@ const Analytics = () => {
 
   if (!hasData) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="mx-auto">
+      <div className="bg-gray-50 h-[calc(100vh-103px)] overflow-hidden">
+        <div
+          className="mx-auto flex-1 overflow-y-auto h-full pt-2 pb-2
+          [&::-webkit-scrollbar]:hidden
+          [-ms-overflow-style]:none
+          [scrollbar-width]:none"
+        >
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-semibold text-gray-900">Analytics</h1>
             <div className="flex items-center space-x-4">
@@ -83,8 +80,13 @@ const Analytics = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="mx-auto">
+    <div className="bg-gray-50 h-[calc(100vh-103px)] overflow-hidden">
+      <div
+        className="mx-auto flex-1 overflow-y-auto h-full
+        [&::-webkit-scrollbar]:hidden
+        [-ms-overflow-style]:none
+        [scrollbar-width]:none"
+      >
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">Analytics</h1>
@@ -101,22 +103,24 @@ const Analytics = () => {
         </div>
 
         {/* Main Chart Section */}
-        <div className="bg-white rounded-lg border border-gray-200 mb-8">
+        <div className="bg-white rounded-lg border border-gray-200 mb-8 shadow-sm">
           {/* Chart Header with Percentage */}
           <div className="p-6 pb-4">
             <div className="flex items-baseline space-x-3 mb-2">
-              <span className="text-4xl font-bold text-gray-900">
+              <span className="text-2xl font-bold text-gray-900">
                 {customerEngagement.percentage}%
               </span>
               <div
-                className={`flex items-center space-x-1 px-2 py-0.5 rounded-md ${
-                  customerEngagement.isPositive ? "bg-green-50" : "bg-red-50"
+                className={`flex items-center space-x-1 px-2 t py-1.5 rounded-md  ${
+                  customerEngagement.isPositive
+                    ? "bg-[#DEF7EC] text-3xl font-bold"
+                    : "bg-red-50 text-3xl font-bold"
                 }`}
               >
                 <svg
                   className={`w-4 h-3  ${
                     customerEngagement.isPositive
-                      ? "text-green-900"
+                      ? "text-[#03543F]"
                       : "text-red-600 rotate-180"
                   }`}
                   fill="currentColor"
@@ -129,9 +133,9 @@ const Analytics = () => {
                   />
                 </svg>
                 <span
-                  className={`text-sm font-bold  ${
+                  className={`text-[12px] font-medium  ${
                     customerEngagement.isPositive
-                      ? "text-green-900"
+                      ? "text-[#03543F]"
                       : "text-red-600"
                   }`}
                 >
@@ -163,7 +167,7 @@ const Analytics = () => {
           {metrics.map((metric, index) => (
             <div
               key={index}
-              className="bg-white p-6 rounded-lg border border-gray-200"
+              className="bg-white p-4 rounded-lg border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.05)]"
             >
               <MetricCard {...metric} />
             </div>

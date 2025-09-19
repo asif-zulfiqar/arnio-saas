@@ -14,33 +14,44 @@ const CustomTooltip = ({ active, payload, label, coordinate }) => {
   const iMessageData = payload.find((p) => p.dataKey === "iMessage");
   const smsData = payload.find((p) => p.dataKey === "SMS");
 
-  // Position tooltip to the left of the cursor position
+  // Dynamic positioning: show on right if too close to left edge, otherwise on left
+  const tooltipWidth = 155;
+  const showOnRight = coordinate.x < tooltipWidth + 20; // Add some padding
+
   const tooltipStyle = {
     position: "absolute",
-    left: `${coordinate.x - 240}px`, // Position to the left of cursor
-    top: `${coordinate.y - 80}px`, // Center vertically relative to cursor
+    left: showOnRight
+      ? `${coordinate.x + 15}px` // Position to the right of cursor
+      : `${coordinate.x - tooltipWidth}px`, // Position to the left of cursor
+    top: `${coordinate.y - 140}px`, // Center vertically relative to cursor
     pointerEvents: "none",
-    zIndex: 1000,
+    zIndex: 9999, // Higher z-index
   };
 
   return (
     <div style={tooltipStyle}>
-      <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 min-w-[200px] relative">
-        {/* Arrow pointer on the right side */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 min-w-[135px] relative">
+        {/* Arrow pointer - dynamically positioned */}
         <div
-          className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-r border-b border-gray-200 rotate-[-45deg]"
+          className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border border-gray-200 ${
+            showOnRight
+              ? "left-[-6px] border-r-0 border-t-0 rotate-45" // Arrow on left when tooltip is on right
+              : "right-[-6px] border-l-0 border-b-0 rotate-45" // Arrow on right when tooltip is on left
+          }`}
           style={{ boxShadow: "1px 1px 2px rgba(0,0,0,0.05)" }}
         />
 
-        <div className="text-sm font-medium text-gray-900 mb-3">{label}</div>
+        <div className="text-sm font-medium text-gray-900 bg-gray-100 px-4 py-2">
+          {label}
+        </div>
 
         {iMessageData && (
-          <div className="mb-3">
-            <div className="flex items-center space-x-2 mb-1">
+          <div className="px-4 py-2">
+            <div className="flex items-center space-x-2">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               <span className="text-sm text-gray-700">iMessage</span>
             </div>
-            <div className="text-xs text-gray-500 space-y-1">
+            <div className="text-xs text-gray-500 space-y-1 pl-4">
               <div>Sent 1,200</div>
               <div>Opened 94%</div>
               <div>Replied 54%</div>
@@ -50,12 +61,12 @@ const CustomTooltip = ({ active, payload, label, coordinate }) => {
         )}
 
         {smsData && (
-          <div>
+          <div className="px-4 py-2">
             <div className="flex items-center space-x-2 mb-1">
               <div className="w-2 h-2 rounded-full bg-green-500"></div>
               <span className="text-sm text-gray-700">SMS</span>
             </div>
-            <div className="text-xs text-gray-500 space-y-1">
+            <div className="text-xs text-gray-500 space-y-1 pl-4">
               <div>Sent 1,150</div>
               <div>Opened 54%</div>
               <div>Replied 22%</div>
@@ -88,7 +99,7 @@ const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
             onMouseMove={(e) => {
               if (e && e.activeLabel) {
                 onHover(e.activePayload);
@@ -98,11 +109,11 @@ const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
           >
             <defs>
               <linearGradient id="iMessageGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.4} />
+                <stop offset="10%" stopColor="#3B82F6" stopOpacity={0.4} />
                 <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="smsGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#32CD32" stopOpacity={0.4} />
+                <stop offset="40%" stopColor="#32CD32" stopOpacity={0.4} />
                 <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
               </linearGradient>
             </defs>
@@ -146,7 +157,7 @@ const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
                 r: 6,
                 stroke: "#3B82F6",
                 strokeWidth: 2,
-                fill: "white",
+                fill: "#3B82F6",
               }}
             />
 
@@ -162,7 +173,7 @@ const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
                 r: 6,
                 stroke: "#10B981",
                 strokeWidth: 2,
-                fill: "white",
+                fill: "#10B981",
               }}
             />
           </AreaChart>
