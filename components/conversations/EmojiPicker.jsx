@@ -44,12 +44,12 @@ const EmojiPickerComponent = ({ isOpen, onClose, onEmojiSelect }) => {
               backgroundColor: "transparent",
             },
             search: {
-              border: "1px solid #1C64F2",
+              border: "1px solid #1C64F2 !important",
               borderRadius: "6px",
               backgroundColor: "#F9FAFB",
             },
             searchInput: {
-              color: "#374151 !important",
+              color: "#374151",
               fontSize: "14px",
             },
             searchIcon: {
