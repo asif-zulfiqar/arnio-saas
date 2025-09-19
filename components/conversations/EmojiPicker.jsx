@@ -1,11 +1,10 @@
 "use client";
-import { useRef, useState } from "react";
-import { useOutsideClick } from "../../hooks/useOutsideClick";
 import EmojiPicker from "emoji-picker-react";
+import { useRef } from "react";
+import { useOutsideClick } from "../../hooks/useOutsideClick";
 
 const EmojiPickerComponent = ({ isOpen, onClose, onEmojiSelect }) => {
   const pickerRef = useRef(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
   useOutsideClick(pickerRef, onClose);
 
@@ -44,6 +43,18 @@ const EmojiPickerComponent = ({ isOpen, onClose, onEmojiSelect }) => {
               borderRadius: "0",
               backgroundColor: "transparent",
             },
+            search: {
+              border: "1px solid #1C64F2",
+              borderRadius: "6px",
+              backgroundColor: "#F9FAFB",
+            },
+            searchInput: {
+              color: "#374151 !important",
+              fontSize: "14px",
+            },
+            searchIcon: {
+              color: "#1C64F2",
+            },
             category: {
               fontSize: "12px",
               fontWeight: "600",
@@ -61,10 +72,10 @@ const EmojiPickerComponent = ({ isOpen, onClose, onEmojiSelect }) => {
               padding: "4px",
             },
             emojiButtonHover: {
-              backgroundColor: "#F3F4F6",
+              backgroundColor: "#EBF4FF",
             },
             emojiButtonSelected: {
-              backgroundColor: "#E5E7EB",
+              backgroundColor: "#DBEAFE",
             },
             categories: {
               backgroundColor: "transparent",
@@ -74,6 +85,16 @@ const EmojiPickerComponent = ({ isOpen, onClose, onEmojiSelect }) => {
             },
             activeCategoryIndicator: {
               backgroundColor: "#1C64F2",
+            },
+            categoryButton: {
+              color: "#6B7280",
+            },
+            categoryButtonHover: {
+              backgroundColor: "#EBF4FF",
+            },
+            categoryButtonActive: {
+              backgroundColor: "#1C64F2",
+              color: "#FFFFFF",
             },
           }}
         />
