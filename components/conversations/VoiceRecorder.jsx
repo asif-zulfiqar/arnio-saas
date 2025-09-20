@@ -20,6 +20,9 @@ const VoiceRecorder = ({
 
   // Format time helper
   const formatTime = (seconds) => {
+    if (!seconds || isNaN(seconds) || !isFinite(seconds)) {
+      return '0:00';
+    }
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -40,31 +43,44 @@ const VoiceRecorder = ({
   const waveform = generateWaveform(duration);
 
   // Handle audio playback
-  const togglePlayback = () => {
+  const togglePlayback = async () => {
     if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
+      try {
+        if (isPlaying) {
+          audioRef.current.pause();
+        } else {
+          await audioRef.current.play();
+        }
+      } catch (error) {
+        console.error('Error playing audio:', error);
+        setIsPlaying(false);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
   // Handle audio time updates
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && audioBlob) {
       const audio = audioRef.current;
       
       const updateTime = () => setCurrentTime(audio.currentTime);
-      const handleEnded = () => setIsPlaying(false);
+      const handleEnded = () => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+      };
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
       
       audio.addEventListener('timeupdate', updateTime);
       audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('play', handlePlay);
+      audio.addEventListener('pause', handlePause);
       
       return () => {
         audio.removeEventListener('timeupdate', updateTime);
         audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('play', handlePlay);
+        audio.removeEventListener('pause', handlePause);
       };
     }
   }, [audioBlob]);
@@ -82,15 +98,15 @@ const VoiceRecorder = ({
 
         {/* Waveform animation */}
         <div className="flex-1 flex items-center gap-1">
-          {Array.from({ length: 12 }, (_, i) => (
+          {Array.from({ length: 15 }, (_, i) => (
             <div
               key={i}
-              className="bg-gray-400 rounded-full animate-pulse"
+              className="bg-gray-400 rounded-full"
               style={{
                 width: '3px',
-                height: `${Math.random() * 20 + 8}px`,
-                animationDelay: `${i * 0.1}s`,
-                animationDuration: '0.8s'
+                height: `${Math.random() * 24 + 6}px`,
+                animation: `waveform-pulse ${0.5 + Math.random() * 0.5}s ease-in-out infinite`,
+                animationDelay: `${i * 0.05}s`,
               }}
             />
           ))}
