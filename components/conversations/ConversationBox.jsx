@@ -16,6 +16,7 @@ import FilePreview from "./FilePreview";
 import FileMessage from "../chat/FileMessage";
 import VoiceMessage from "../chat/VoiceMessage";
 import EmojiPickerComponent from "./EmojiPicker";
+import VoiceRecorder from "./VoiceRecorder";
 
 const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -25,6 +26,8 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recordedAudioBlob, setRecordedAudioBlob] = useState(null);
+  const [isRecordingConfirmed, setIsRecordingConfirmed] = useState(false);
 
   const {
     activeConversationId,
@@ -76,12 +79,11 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     if (!activeConversationId) return;
 
     const fileUploads = getFileUploads(activeConversationId);
-    const voiceState = getVoiceMessageState(activeConversationId);
 
     // Check if we have content to send
     const hasText = message.trim();
     const hasFiles = fileUploads.some((upload) => upload.status === "success");
-    const hasVoice = voiceState && voiceState.audioBlob;
+    const hasVoice = recordedAudioBlob && isRecordingConfirmed;
 
     if (!hasText && !hasFiles && !hasVoice) return;
 
@@ -115,7 +117,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
 
     // Send voice message if available
     if (hasVoice) {
-      const audioUrl = URL.createObjectURL(voiceState.audioBlob);
+      const audioUrl = URL.createObjectURL(recordedAudioBlob);
       sendMessage(
         activeConversationId,
         message.trim() || "", // Include text if any
@@ -123,7 +125,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
         null,
         {
           url: audioUrl,
-          duration: voiceState.duration,
+          duration: recordingDuration,
         }
       );
     }
@@ -133,7 +135,9 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     setIsAiDraft(false);
     setDraftMessage(activeConversationId, "");
     clearFileUploads(activeConversationId);
-    clearVoiceMessage(activeConversationId);
+    setRecordedAudioBlob(null);
+    setRecordingDuration(0);
+    setIsRecordingConfirmed(false);
   };
 
   const handleMessageChange = (e) => {
@@ -192,10 +196,8 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-        if (activeConversationId) {
-          stopVoiceRecording(activeConversationId, audioBlob);
-        }
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        setRecordedAudioBlob(audioBlob);
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -204,19 +206,9 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
       setIsRecording(true);
       setRecordingDuration(0);
 
-      if (activeConversationId) {
-        startVoiceRecording(activeConversationId);
-      }
-
       // Start duration counter
       recordingIntervalRef.current = setInterval(() => {
-        setRecordingDuration((prev) => {
-          const newDuration = prev + 1;
-          if (activeConversationId) {
-            updateVoiceDuration(activeConversationId, newDuration);
-          }
-          return newDuration;
-        });
+        setRecordingDuration((prev) => prev + 1);
       }, 1000);
     } catch (error) {
       console.error("Error starting recording:", error);
@@ -227,13 +219,39 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      setRecordingDuration(0);
-
+      
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
       }
     }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setRecordingDuration(0);
+      setRecordedAudioBlob(null);
+      setIsRecordingConfirmed(false);
+      
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+    }
+  };
+
+  const confirmRecording = () => {
+    // Just confirm the recording is ready - don't send yet
+    // The user will click the send button to actually send the message
+    setIsRecordingConfirmed(true);
+  };
+
+  const deleteRecording = () => {
+    setRecordedAudioBlob(null);
+    setRecordingDuration(0);
+    setIsRecordingConfirmed(false);
   };
 
   const formatTime = (timestamp) => {
@@ -500,59 +518,22 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
               </div>
             )}
 
-          {/* Voice Message Preview */}
-          {activeConversationId &&
-            getVoiceMessageState(activeConversationId) && (
-              <div className="px-5 pt-4">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          isRecording
-                            ? "bg-red-500 animate-pulse"
-                            : "bg-gray-300"
-                        }`}
-                      >
-                        <Image
-                          src="/svgs/mic.svg"
-                          width={16}
-                          height={16}
-                          alt="mic"
-                          className={
-                            isRecording ? "text-white" : "text-gray-600"
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {isRecording ? "Recording..." : "Voice message ready"}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {Math.floor(recordingDuration / 60)}:
-                        {(recordingDuration % 60).toString().padStart(2, "0")}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (activeConversationId) {
-                          clearVoiceMessage(activeConversationId);
-                        }
-                      }}
-                      className="p-1 hover:bg-gray-200 rounded transition-colors"
-                    >
-                      <Image
-                        src="/svgs/trash.svg"
-                        width={16}
-                        height={16}
-                        alt="delete"
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* Voice Recorder */}
+          {(isRecording || recordedAudioBlob) && (
+            <div className="px-5 pt-4">
+              <VoiceRecorder
+                isRecording={isRecording}
+                duration={recordingDuration}
+                audioBlob={recordedAudioBlob}
+                isConfirmed={isRecordingConfirmed}
+                onStartRecording={startRecording}
+                onStopRecording={stopRecording}
+                onCancelRecording={cancelRecording}
+                onConfirmRecording={confirmRecording}
+                onDeleteRecording={deleteRecording}
+              />
+            </div>
+          )}
 
           <div className="flex-1 relative">
             <textarea
@@ -618,9 +599,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
               {/* Voice Recording Button */}
               <button
                 type="button"
-                // onMouseDown={startRecording}
-                // onMouseUp={stopRecording}
-                // onMouseLeave={stopRecording}
+                onClick={startRecording}
                 className={`transition-colors ${
                   isRecording ? "text-red-500" : "text-gray-600"
                 }`}
@@ -635,8 +614,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                 !message.trim() &&
                 (!activeConversationId ||
                   getFileUploads(activeConversationId).length === 0) &&
-                (!activeConversationId ||
-                  !getVoiceMessageState(activeConversationId))
+                !(recordedAudioBlob && isRecordingConfirmed)
               }
               className="disabled:cursor-not-allowed transition-colors"
             >

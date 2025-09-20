@@ -1,4 +1,4 @@
-import { useConversationStore } from "@/store/conversation/conversationStore";
+import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { getInitials } from "@/utils/utils";
 import { formatDistanceToNow } from "date-fns";
 import Spinner from "../global/small/Spinner";
@@ -10,7 +10,7 @@ const ConversationsList = ({ isLoading }) => {
     setActiveConversation,
     getFilteredConversations,
     searchTerm,
-  } = useConversationStore();
+  } = useWorkspaceStore();
 
   const filteredConversations = getFilteredConversations();
 
