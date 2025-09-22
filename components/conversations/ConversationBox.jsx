@@ -219,7 +219,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      
+
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
@@ -234,7 +234,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
       setRecordingDuration(0);
       setRecordedAudioBlob(null);
       setIsRecordingConfirmed(false);
-      
+
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
@@ -353,7 +353,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <ButtonWithTooltip
+          {/* <ButtonWithTooltip
             iconSrc="/svgs/phone.svg"
             tooltipText="Make a call"
           />
@@ -363,7 +363,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
             onClick={handleMoveChat}
           >
             <Dropdown isOpen={isDropdownOpen} onClose={handleCloseDropdown} />
-          </ButtonWithTooltip>
+          </ButtonWithTooltip> */}
           <ButtonWithTooltip
             iconSrc="/svgs/profile.svg"
             tooltipText="Open Profile"
@@ -584,7 +584,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                   type="button"
                   onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
                   className={`transition-colors ${
-                    isEmojiPickerOpen ? 'text-primary' : 'text-gray-600'
+                    isEmojiPickerOpen ? "text-primary" : "text-gray-600"
                   }`}
                 >
                   <Smile className="size-4 text-gray-400 hover:text-primary" />
