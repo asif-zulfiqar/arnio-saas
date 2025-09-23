@@ -14,7 +14,7 @@ const SentFrom = () => {
     <div className="mt-8">
       <h6 className="font-medium text-xs text-gray-500 mb-1">Sent From</h6>
       <Dropdown
-        initialValue={options[0]}
+        defaultText={options[0].option}
         options={options}
         onSelect={handleSelect}
         width="140px"
