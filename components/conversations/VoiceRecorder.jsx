@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Check, X, Play, Pause } from "lucide-react";
+import { Check, X, Play, Pause, Trash2 } from "lucide-react";
 
 const VoiceRecorder = ({ 
   isRecording, 
@@ -15,8 +15,16 @@ const VoiceRecorder = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [waveformData, setWaveformData] = useState([]);
+  const [recordingWaveform, setRecordingWaveform] = useState([]);
+  
   const audioRef = useRef(null);
-  const animationRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const dataArrayRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   // Format time helper
   const formatTime = (seconds) => {
@@ -28,19 +36,87 @@ const VoiceRecorder = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Generate waveform data for visualization
-  const generateWaveform = (duration) => {
-    const bars = 20; // Number of bars in waveform
-    const waveform = [];
+  // Real-time waveform visualization for recording
+  const updateRecordingWaveform = () => {
+    if (!analyserRef.current || !dataArrayRef.current) return;
+
+    analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+    
+    // Process audio data into waveform bars
+    const bars = 25;
+    const barWidth = Math.floor(dataArrayRef.current.length / bars);
+    const newWaveform = [];
+
     for (let i = 0; i < bars; i++) {
-      // Simulate different heights for visual effect
-      const height = Math.random() * 0.8 + 0.2; // Random height between 0.2 and 1.0
-      waveform.push(height);
+      let sum = 0;
+      for (let j = 0; j < barWidth; j++) {
+        sum += dataArrayRef.current[i * barWidth + j];
+      }
+      const average = sum / barWidth;
+      // Normalize to 0-1 range and apply some smoothing
+      const normalized = Math.min(average / 128, 1);
+      const height = Math.max(normalized * 0.8 + 0.1, 0.1);
+      newWaveform.push(height);
     }
-    return waveform;
+
+    setRecordingWaveform(newWaveform);
+    
+    if (isRecording) {
+      animationFrameRef.current = requestAnimationFrame(updateRecordingWaveform);
+    }
   };
 
-  const waveform = generateWaveform(duration);
+  // Initialize audio context for real-time visualization
+  const initializeAudioContext = async (stream) => {
+    try {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      analyserRef.current.fftSize = 256;
+      
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      source.connect(analyserRef.current);
+      
+      dataArrayRef.current = new Uint8Array(analyserRef.current.frequencyBinCount);
+      updateRecordingWaveform();
+    } catch (error) {
+      console.error('Error initializing audio context:', error);
+    }
+  };
+
+  // Generate waveform from audio blob for playback
+  const generateWaveformFromAudio = async (audioBlob) => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      const rawData = audioBuffer.getChannelData(0);
+      const samples = 25; // Number of bars
+      const blockSize = Math.floor(rawData.length / samples);
+      const filteredData = [];
+
+      for (let i = 0; i < samples; i++) {
+        const blockStart = blockSize * i;
+        let sum = 0;
+        for (let j = 0; j < blockSize; j++) {
+          sum += Math.abs(rawData[blockStart + j]);
+        }
+        filteredData.push(sum / blockSize);
+      }
+
+      // Normalize the waveform data
+      const maxVal = Math.max(...filteredData);
+      const normalizedData = filteredData.map(val => 
+        Math.max((val / maxVal) * 0.8 + 0.1, 0.1)
+      );
+
+      setWaveformData(normalizedData);
+    } catch (error) {
+      console.error('Error generating waveform:', error);
+      // Fallback to simple waveform
+      setWaveformData(Array.from({ length: 25 }, () => Math.random() * 0.6 + 0.2));
+    }
+  };
 
   // Handle audio playback
   const togglePlayback = async () => {
@@ -64,6 +140,9 @@ const VoiceRecorder = ({
       const audio = audioRef.current;
       
       const updateTime = () => setCurrentTime(audio.currentTime);
+      const handleLoadedMetadata = () => {
+        setAudioDuration(audio.duration);
+      };
       const handleEnded = () => {
         setIsPlaying(false);
         setCurrentTime(0);
@@ -72,12 +151,14 @@ const VoiceRecorder = ({
       const handlePause = () => setIsPlaying(false);
       
       audio.addEventListener('timeupdate', updateTime);
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
       audio.addEventListener('ended', handleEnded);
       audio.addEventListener('play', handlePlay);
       audio.addEventListener('pause', handlePause);
       
       return () => {
         audio.removeEventListener('timeupdate', updateTime);
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('play', handlePlay);
         audio.removeEventListener('pause', handlePause);
@@ -85,53 +166,87 @@ const VoiceRecorder = ({
     }
   }, [audioBlob]);
 
-  // Recording state - show waveform animation
+  // Generate waveform when audio blob is available
+  useEffect(() => {
+    if (audioBlob) {
+      generateWaveformFromAudio(audioBlob);
+    }
+  }, [audioBlob]);
+
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  // Recording state - show real-time waveform animation
   if (isRecording) {
     return (
-      <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="flex items-center gap-3 px-4 py-3 bg-red-50 rounded-xl border border-red-200">
         {/* Recording indicator */}
         <div className="flex-shrink-0">
-          <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
-            <div className="w-3 h-3 bg-white rounded-full"></div>
+          <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center relative">
+            <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+            {/* Pulse rings */}
+            <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-75"></div>
           </div>
         </div>
 
-        {/* Waveform animation */}
-        <div className="flex-1 flex items-center gap-1">
-          {Array.from({ length: 15 }, (_, i) => (
-            <div
-              key={i}
-              className="bg-gray-400 rounded-full"
-              style={{
-                width: '3px',
-                height: `${Math.random() * 24 + 6}px`,
-                animation: `waveform-pulse ${0.5 + Math.random() * 0.5}s ease-in-out infinite`,
-                animationDelay: `${i * 0.05}s`,
-              }}
-            />
-          ))}
+        {/* Real-time waveform */}
+        <div className="flex-1 flex items-center justify-center gap-1 h-8">
+          {recordingWaveform.length > 0 ? (
+            recordingWaveform.map((height, i) => (
+              <div
+                key={i}
+                className="bg-red-400 rounded-full transition-all duration-100 ease-out"
+                style={{
+                  width: '3px',
+                  height: `${height * 24 + 4}px`,
+                }}
+              />
+            ))
+          ) : (
+            // Fallback bars while initializing
+            Array.from({ length: 25 }, (_, i) => (
+              <div
+                key={i}
+                className="bg-red-300 rounded-full animate-pulse"
+                style={{
+                  width: '3px',
+                  height: `${Math.random() * 20 + 6}px`,
+                  animationDelay: `${i * 0.05}s`,
+                }}
+              />
+            ))
+          )}
         </div>
 
         {/* Duration */}
-        <div className="text-sm font-medium text-gray-700">
+        <div className="text-sm font-medium text-red-700">
           {formatTime(duration)}
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={onStopRecording}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="p-2 hover:bg-red-200 rounded-full transition-colors"
             title="Stop recording"
           >
-            <Check className="w-4 h-4 text-gray-600" />
+            <Check className="w-4 h-4 text-red-600" />
           </button>
           <button
             onClick={onCancelRecording}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="p-2 hover:bg-red-200 rounded-full transition-colors"
             title="Cancel recording"
           >
-            <X className="w-4 h-4 text-gray-600" />
+            <X className="w-4 h-4 text-red-600" />
           </button>
         </div>
       </div>
@@ -140,71 +255,71 @@ const VoiceRecorder = ({
 
   // Review state - show recorded audio with playback controls
   if (audioBlob) {
-    const progress = audioRef.current ? (currentTime / audioRef.current.duration) * 100 : 0;
-    const playedBars = Math.floor((progress / 100) * waveform.length);
+    const progress = audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0;
+    const playedBars = Math.floor((progress / 100) * waveformData.length);
 
     return (
-      <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 rounded-xl border border-blue-200">
         {/* Play/Pause button */}
         <div className="flex-shrink-0">
           <button
             onClick={togglePlayback}
-            className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors"
+            className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm"
           >
             {isPlaying ? (
-              <Pause className="w-4 h-4 text-gray-700" />
+              <Pause className="w-4 h-4 text-white" />
             ) : (
-              <Play className="w-4 h-4 text-gray-700 ml-0.5" />
+              <Play className="w-4 h-4 text-white ml-0.5" />
             )}
           </button>
         </div>
 
-        {/* Waveform visualization */}
-        <div className="flex-1 flex items-center gap-1">
-          {waveform.map((height, i) => (
+        {/* Waveform visualization with progress */}
+        <div className="flex-1 flex items-center justify-center gap-1 h-8 relative">
+          {waveformData.map((height, i) => (
             <div
               key={i}
-              className="rounded-full relative"
+              className="rounded-full transition-all duration-200 relative"
               style={{
                 width: '3px',
-                height: `${height * 20}px`,
-                backgroundColor: i < playedBars ? '#374151' : '#D1D5DB'
+                height: `${height * 24 + 4}px`,
+                backgroundColor: i < playedBars ? '#3B82F6' : '#E5E7EB'
               }}
             >
-              {/* Blue dot for current position */}
-              {i === playedBars && (
-                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
+              {/* Current position indicator */}
+              {i === playedBars && isPlaying && (
+                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full shadow-sm animate-pulse"></div>
               )}
             </div>
           ))}
         </div>
 
-        {/* Duration */}
-        <div className="text-sm font-medium text-gray-700">
-          {formatTime(duration)}
+        {/* Time display */}
+        <div className="text-sm font-medium text-blue-700 min-w-[4rem] text-right">
+          {isPlaying ? formatTime(currentTime) : formatTime(audioDuration || duration)}
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {!isConfirmed ? (
             <>
               <button
                 onClick={onConfirmRecording}
-                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                className="p-2 hover:bg-blue-200 rounded-full transition-colors"
                 title="Confirm recording"
               >
-                <Check className="w-4 h-4 text-gray-600" />
+                <Check className="w-4 h-4 text-blue-600" />
               </button>
               <button
                 onClick={onDeleteRecording}
-                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                className="p-2 hover:bg-blue-200 rounded-full transition-colors"
                 title="Delete recording"
               >
-                <X className="w-4 h-4 text-gray-600" />
+                <Trash2 className="w-4 h-4 text-blue-600" />
               </button>
             </>
           ) : (
-            <div className="text-xs text-green-600 font-medium">
+            <div className="text-xs text-green-600 font-medium px-2 py-1 bg-green-100 rounded-full">
               Ready to send
             </div>
           )}

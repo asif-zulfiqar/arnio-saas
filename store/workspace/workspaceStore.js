@@ -168,7 +168,7 @@ const useWorkspaceStore = create((set, get) => ({
       status: "online",
       pendingAIMessage: null,
       draftMessage: "",
-      assignedTo: get().currentUser.id, // Assign to current user
+      assignedTo: get().currentUser.id,
       workspaceId: get().currentWorkspace.id,
     };
 
@@ -212,7 +212,7 @@ const useWorkspaceStore = create((set, get) => ({
       timestamp: new Date(),
       status: "delivered",
       origin,
-      sentBy: get().currentUser.id, // Track who sent the message
+      sentBy: get().currentUser.id,
       type: attachments ? "file" : voiceMessage ? "voice" : "text",
       ...(attachments && {
         fileName: attachments.name,
@@ -223,6 +223,7 @@ const useWorkspaceStore = create((set, get) => ({
       ...(voiceMessage && {
         audioUrl: voiceMessage.url,
         duration: voiceMessage.duration,
+        waveformData: voiceMessage.waveformData, // Add waveform data
       }),
     };
 
@@ -717,6 +718,31 @@ const useWorkspaceStore = create((set, get) => ({
   getVoiceMessageState: (conversationId) => {
     const state = get();
     return state.voiceMessages[conversationId] || null;
+  },
+
+  // Enhanced voice message methods with real-time support
+  setVoiceRecordingStream: (conversationId, stream) => {
+    set((state) => ({
+      voiceMessages: {
+        ...state.voiceMessages,
+        [conversationId]: {
+          ...state.voiceMessages[conversationId],
+          stream,
+        },
+      },
+    }));
+  },
+
+  setVoiceWaveformData: (conversationId, waveformData) => {
+    set((state) => ({
+      voiceMessages: {
+        ...state.voiceMessages,
+        [conversationId]: {
+          ...state.voiceMessages[conversationId],
+          waveformData,
+        },
+      },
+    }));
   },
 }));
 

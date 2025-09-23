@@ -45,6 +45,8 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     updateVoiceDuration,
     clearVoiceMessage,
     getVoiceMessageState,
+    setVoiceRecordingStream,
+    setVoiceWaveformData,
   } = useWorkspaceStore();
 
   const [message, setMessage] = useState("");
@@ -118,6 +120,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     // Send voice message if available
     if (hasVoice) {
       const audioUrl = URL.createObjectURL(recordedAudioBlob);
+      const voiceState = getVoiceMessageState(activeConversationId);
       sendMessage(
         activeConversationId,
         message.trim() || "", // Include text if any
@@ -126,6 +129,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
         {
           url: audioUrl,
           duration: recordingDuration,
+          waveformData: voiceState?.waveformData || null,
         }
       );
     }
@@ -187,8 +191,20 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   // Voice recording handlers
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 44100
+        }
+      });
+      
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm; codecs=opus') 
+          ? 'audio/webm; codecs=opus' 
+          : 'audio/webm'
+      });
       const audioChunks = [];
 
       mediaRecorder.ondataavailable = (event) => {
@@ -196,22 +212,33 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
         setRecordedAudioBlob(audioBlob);
         stream.getTracks().forEach((track) => track.stop());
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(100); // Collect data every 100ms for real-time feedback
       mediaRecorderRef.current = mediaRecorder;
       setIsRecording(true);
       setRecordingDuration(0);
 
+      // Store the stream for real-time visualization
+      if (activeConversationId) {
+        setVoiceRecordingStream(activeConversationId, stream);
+        startVoiceRecording(activeConversationId);
+      }
+
       // Start duration counter
       recordingIntervalRef.current = setInterval(() => {
         setRecordingDuration((prev) => prev + 1);
+        if (activeConversationId) {
+          updateVoiceDuration(activeConversationId, prev + 1);
+        }
       }, 1000);
+
     } catch (error) {
       console.error("Error starting recording:", error);
+      alert("Could not access microphone. Please check permissions.");
     }
   };
 
@@ -246,6 +273,44 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     // Just confirm the recording is ready - don't send yet
     // The user will click the send button to actually send the message
     setIsRecordingConfirmed(true);
+    
+    // Generate waveform data for the recorded audio
+    if (recordedAudioBlob && activeConversationId) {
+      generateWaveformData(recordedAudioBlob, activeConversationId);
+    }
+  };
+
+  // Generate waveform data from audio blob
+  const generateWaveformData = async (audioBlob, conversationId) => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      const rawData = audioBuffer.getChannelData(0);
+      const samples = 30; // Number of bars for message display
+      const blockSize = Math.floor(rawData.length / samples);
+      const filteredData = [];
+
+      for (let i = 0; i < samples; i++) {
+        const blockStart = blockSize * i;
+        let sum = 0;
+        for (let j = 0; j < blockSize; j++) {
+          sum += Math.abs(rawData[blockStart + j]);
+        }
+        filteredData.push(sum / blockSize);
+      }
+
+      // Normalize the waveform data
+      const maxVal = Math.max(...filteredData);
+      const normalizedData = filteredData.map(val => 
+        Math.max((val / maxVal) * 0.9 + 0.1, 0.15)
+      );
+
+      setVoiceWaveformData(conversationId, normalizedData);
+    } catch (error) {
+      console.error('Error generating waveform data:', error);
+    }
   };
 
   const deleteRecording = () => {
@@ -600,11 +665,13 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
               <button
                 type="button"
                 onClick={startRecording}
-                className={`transition-colors ${
-                  isRecording ? "text-red-500" : "text-gray-600"
+                disabled={isRecording}
+                className={`p-1 rounded transition-colors ${
+                  isRecording ? "text-red-500 cursor-not-allowed" : "text-gray-400 hover:text-primary"
                 }`}
+                title={isRecording ? "Recording in progress..." : "Record voice message"}
               >
-                <Mic className="size-4 text-gray-400 hover:text-primary" />
+                <Mic className={`size-4 ${isRecording ? "animate-pulse" : ""}`} />
               </button>
             </div>
 
