@@ -20,7 +20,7 @@ const DeleteChat = () => {
       <EllipsisVertical className="size-4 text-primary" />
       {isOpen && (
         <div
-          className="absolute bg-white rounded-md shadow-md w-[105px]"
+          className="absolute bg-white rounded-md shadow-md w-[110px]"
           style={{ top: "20px", right: "0%", transform: "translateX(0%)" }}
         >
           <ul className="text-sm">

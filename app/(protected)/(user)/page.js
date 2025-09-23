@@ -67,7 +67,7 @@ const Conversations = () => {
           <div className="px-6 flex items-center justify-between gap-4">
             <AllMessages />
             <div className="flex items-center gap-4">
-              <ConversationsFilter />
+              {/* <ConversationsFilter /> */}
               <Search onClick={handleOpenSearch} />
             </div>
           </div>

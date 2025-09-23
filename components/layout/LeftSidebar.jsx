@@ -27,9 +27,9 @@ const pages = [
     url: "/analytics",
   },
   {
-    name: "Integrations",
+    name: "Campaigns",
     icon: <IntegrationsIcon />,
-    url: "/integrations",
+    url: "/campaigns",
   },
   {
     name: "Settings",
