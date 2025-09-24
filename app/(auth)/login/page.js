@@ -35,39 +35,13 @@ const Login = () => {
   const watchEmail = watch("email");
   const watchPassword = watch("password");
 
-  // Custom validation rules
+  // Simple validation rules
   const validationRules = {
     email: {
       required: "This field is required",
-      pattern: {
-        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: "Please enter a valid email",
-      },
-      validate: {
-        noAccountFound: (value) => {
-          if (value === "user@gmail.com") {
-            return "No account found with this email";
-          }
-          return true;
-        },
-        invalidFormat: (value) => {
-          if (value === "usergmail.com") {
-            return "Please enter a valid email";
-          }
-          return true;
-        },
-      },
     },
     password: {
       required: "This field is required",
-      validate: {
-        incorrectPassword: (value) => {
-          if (value === "**********") {
-            return "Incorrect password";
-          }
-          return true;
-        },
-      },
     },
   };
 
@@ -76,8 +50,8 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call to check if email exists
       await new Promise((resolve) => setTimeout(resolve, 500));
+
       if (data.email === "asif@gmail.com") {
         setError("email", {
           type: "manual",
@@ -86,7 +60,6 @@ const Login = () => {
         return;
       }
 
-      // If email is valid, move to password step
       setStep(2);
     } catch (error) {
       console.error("Email validation failed:", error);
@@ -222,8 +195,8 @@ const Login = () => {
                 type="submit"
                 disabled={getEmailButtonState().disabled}
                 bgColor={getEmailButtonState().bgColor}
-                color={getEmailButtonState().color}
-                cn="h-12 text-sm"
+                height="h-[41px]"
+                cn="!text-sm"
               />
             </form>
           </>
@@ -231,28 +204,9 @@ const Login = () => {
 
         {step === 2 && (
           <>
-            <div className="mt-5 md:mt-8">
-              <button
-                onClick={handleGoogleSignIn}
-                className="flex items-center justify-center gap-2 text-sm font-medium text-gray-900 p-3 rounded-lg border border-gray-300 shadow-sm w-full hover:bg-gray-50 transition-colors duration-200"
-              >
-                <Image
-                  src="/svgs/google-icon.svg"
-                  alt="icon"
-                  width={20}
-                  height={20}
-                />
-                Sign in with Google
-              </button>
-            </div>
-
-            <div className="relative my-8">
-              <hr className="border-gray-200" />
-            </div>
-
             <form
               onSubmit={handleSubmit(handlePasswordSubmit)}
-              className="space-y-4"
+              className="space-y-4 mt-8"
             >
               <Input
                 type="email"
@@ -297,8 +251,8 @@ const Login = () => {
                 type="submit"
                 disabled={getPasswordButtonState().disabled}
                 bgColor={getPasswordButtonState().bgColor}
-                color={getPasswordButtonState().color}
-                cn="h-12 text-sm"
+                height="h-[41px]"
+                cn="!text-sm"
               />
 
               <button

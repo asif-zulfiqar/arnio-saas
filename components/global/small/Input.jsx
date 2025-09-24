@@ -91,9 +91,17 @@ const Input = forwardRef(
               tabIndex={-1}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                <EyeOff
+                  className={`h-4 w-4 ${
+                    error ? "text-red-400" : "text-gray-500"
+                  } hover:text-gray-600`}
+                />
               ) : (
-                <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                <Eye
+                  className={`h-4 w-4 ${
+                    error ? "text-red-400" : "text-gray-500"
+                  } hover:text-gray-600`}
+                />
               )}
             </button>
           )}
