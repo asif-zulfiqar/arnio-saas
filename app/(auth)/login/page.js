@@ -121,7 +121,7 @@ const Login = () => {
 
     return {
       disabled: false,
-      bgColor: "bg-blue-600 hover:bg-blue-700",
+      bgColor: "bg-primary hover:bg-blue-700",
       color: "text-white",
     };
   };
@@ -146,7 +146,7 @@ const Login = () => {
 
     return {
       disabled: false,
-      bgColor: "bg-blue-600 hover:bg-blue-700",
+      bgColor: "bg-primary hover:bg-blue-700",
       color: "text-white",
     };
   };
@@ -231,16 +231,16 @@ const Login = () => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-sm font-medium text-gray-500">
                     Remember me
                   </span>
                 </label>
 
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-500 hover:underline"
+                  className="text-sm font-medium text-primary hover:text-blue-500 hover:underline"
                 >
                   Forgot password?
                 </Link>
