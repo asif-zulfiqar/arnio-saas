@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
-import useAnalyticsStore from "../../../../store/conversation/AnalyticsStore";
+import useAnalyticsStore from "../../../../store/analytics/AnalyticsStore";
 import { ExportDropdown } from "../../../../components/Analytics/ExportDropdown";
 import { MetricCard } from "../../../../components/Analytics/MetricCard";
 import { EmptyState } from "../../../../components/Analytics/EmptyState";
@@ -45,7 +45,7 @@ const Analytics = () => {
     return (
       <div className="bg-gray-50 h-[calc(100vh-103px)] overflow-hidden">
         <div
-          className="mx-auto flex-1 overflow-y-auto h-full pt-2 pb-2
+          className="mx-auto flex-1 overflow-y-auto h-full  pb-2
           [&::-webkit-scrollbar]:hidden
           [-ms-overflow-style]:none
           [scrollbar-width]:none"

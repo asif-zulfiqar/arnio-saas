@@ -7,7 +7,7 @@ import {
   exportToJPEG,
   generateReportData,
 } from "@/utils/Exportutils";
-import useAnalyticsStore from "@/store/conversation/AnalyticsStore";
+import useAnalyticsStore from "@/store/analytics/AnalyticsStore";
 
 export const ExportDropdown = ({ showDropdown, onToggle }) => {
   const storeData = useAnalyticsStore.getState();

@@ -81,7 +81,7 @@ const CustomTooltip = ({ active, payload, label, coordinate }) => {
 
 const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
   return (
-    <div className="bg-white">
+    <div className="bg-white ">
       <div className="mb-8">
         <div className="flex items-center space-x-6 mb-4">
           <div className="flex items-center space-x-2">
@@ -99,7 +99,7 @@ const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
-            margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
+            margin={{ top: 5, right: 7, left: 0, bottom: 5 }}
             onMouseMove={(e) => {
               if (e && e.activeLabel) {
                 onHover(e.activePayload);
@@ -113,7 +113,7 @@ const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
                 <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="smsGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="40%" stopColor="#32CD32" stopOpacity={0.4} />
+                <stop offset="40%" stopColor="#32CD32" stopOpacity={0.7} />
                 <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
               </linearGradient>
             </defs>
