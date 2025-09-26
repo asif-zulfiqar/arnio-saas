@@ -52,7 +52,7 @@ const Login = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      if (data.email === "asif@gmail.com") {
+      if (data.email === "user@gmail.com") {
         setError("email", {
           type: "manual",
           message: "No account found with this email",
@@ -131,8 +131,6 @@ const Login = () => {
     if (isLoading) {
       return {
         disabled: true,
-        bgColor: "bg-gray-200",
-        color: "text-gray-400",
       };
     }
 
@@ -179,7 +177,7 @@ const Login = () => {
 
             <form
               onSubmit={handleSubmit(handleEmailSubmit)}
-              className="space-y-6"
+              className="space-y-5"
             >
               <Input
                 type="email"
@@ -231,7 +229,7 @@ const Login = () => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-blue-500"
+                    className="h-4 w-4 text-primary border-[0.5px] border-gray-50 rounded-sm focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm font-medium text-gray-500">
                     Remember me

@@ -36,7 +36,7 @@ const Input = forwardRef(
       if (error) {
         return (
           baseStyles +
-          "border-red-300 bg-red-50 text-red-900 placeholder:text-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+          "border-red-500 bg-red-50 text-red-700 placeholder:text-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500"
         );
       } else if (disabled) {
         return (
@@ -67,7 +67,7 @@ const Input = forwardRef(
         <div className="relative">
           {icon && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <div className={`${error ? "text-red-400" : "text-gray-500"}`}>
+              <div className={`${error ? "text-red-700" : "text-gray-500"}`}>
                 {icon}
               </div>
             </div>
@@ -107,7 +107,7 @@ const Input = forwardRef(
           )}
         </div>
 
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
     );
   }

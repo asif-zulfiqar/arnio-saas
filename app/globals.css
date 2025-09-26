@@ -34,3 +34,27 @@ a, button {
   display: none;
   width: 0 !important;
 }
+
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  background-color: transparent !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  -webkit-text-fill-color: #000 !important;
+}
+
+input:-moz-autofill,
+textarea:-moz-autofill,
+select:-moz-autofill {
+  background-color: transparent !important;
+  box-shadow: 0 0 0px 1000px transparent inset !important;
+  -moz-text-fill-color: #000 !important;
+}
+
+input:autofill,
+textarea:autofill,
+select:autofill {
+  background-color: transparent !important;
+  box-shadow: 0 0 0px 1000px transparent inset !important;
+  color: #000 !important;
+}
