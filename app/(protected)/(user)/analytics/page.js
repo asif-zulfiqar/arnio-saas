@@ -3,12 +3,12 @@
 
 import { useEffect } from "react";
 import useAnalyticsStore from "../../../../store/analytics/AnalyticsStore";
-import { ExportDropdown } from "../../../../components/Analytics/ExportDropdown";
-import { MetricCard } from "../../../../components/Analytics/MetricCard";
-import { EmptyState } from "../../../../components/Analytics/EmptyState";
+import { ExportDropdown } from "../../../../components/analytics/ExportDropdown";
+import { MetricCard } from "../../../../components/analytics/MetricCard";
+import { EmptyState } from "../../../../components/analytics/EmptyState";
 
-import AnalyticsChart from "../../../../components/Analytics/AnalyticsChart";
-import DateRangePickerWrapper from "@/components/Analytics/DateRangePickerWrapper";
+import AnalyticsChart from "../../../../components/analytics/AnalyticsChart";
+import DateRangePickerWrapper from "@/components/analytics/DateRangePickerWrapper";
 
 const Analytics = () => {
   const {

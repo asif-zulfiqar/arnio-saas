@@ -1,8 +1,12 @@
 "use client";
 
-import TeamManagement from "../../../../components/settings/TeamManagement/TeamManagement";
+import AccountPage from "@/components/settings/account-section/AccountSection";
+import TeamManagement from "../../../../components/settings/team-management/TeamManagement";
 import useSettingsStore from "../../../../store/settings/settingsStore";
-import AppStore from "@/components/settings/AppStoreIntegration/AppStore";
+import AppStore from "@/components/settings/app-store-integration/AppStore";
+
+import ApiSettingsPage from "@/components/settings/api-key-section/ApiSettings";
+import UsageSection from "@/components/settings/usage-section/UsageSection";
 
 const Settings = () => {
   const { activeTab, setActiveTab } = useSettingsStore();
@@ -22,17 +26,11 @@ const Settings = () => {
       case "app-store":
         return <AppStore />;
       case "account":
-        return (
-          <div className="p-8 bg-amber-50">Account Settings coming soon...</div>
-        );
+        return <AccountPage />;
       case "usage":
-        return (
-          <div className="p-8 bg-amber-50">usage Settings coming soon...</div>
-        );
+        return <UsageSection />;
       case "api-settings":
-        return (
-          <div className="p-8 bg-amber-50">API Settings coming soon...</div>
-        );
+        return <ApiSettingsPage />;
       default:
         return <TeamManagement />;
     }

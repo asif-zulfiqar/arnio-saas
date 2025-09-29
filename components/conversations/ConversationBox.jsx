@@ -191,19 +191,19 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   // Voice recording handlers
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 44100
-        }
+          sampleRate: 44100,
+        },
       });
-      
+
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm; codecs=opus') 
-          ? 'audio/webm; codecs=opus' 
-          : 'audio/webm'
+        mimeType: MediaRecorder.isTypeSupported("audio/webm; codecs=opus")
+          ? "audio/webm; codecs=opus"
+          : "audio/webm",
       });
       const audioChunks = [];
 
@@ -212,7 +212,9 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+        const audioBlob = new Blob(audioChunks, {
+          type: mediaRecorder.mimeType,
+        });
         setRecordedAudioBlob(audioBlob);
         stream.getTracks().forEach((track) => track.stop());
       };
@@ -235,7 +237,6 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
           updateVoiceDuration(activeConversationId, prev + 1);
         }
       }, 1000);
-
     } catch (error) {
       console.error("Error starting recording:", error);
       alert("Could not access microphone. Please check permissions.");
@@ -273,7 +274,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     // Just confirm the recording is ready - don't send yet
     // The user will click the send button to actually send the message
     setIsRecordingConfirmed(true);
-    
+
     // Generate waveform data for the recorded audio
     if (recordedAudioBlob && activeConversationId) {
       generateWaveformData(recordedAudioBlob, activeConversationId);
@@ -283,10 +284,11 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   // Generate waveform data from audio blob
   const generateWaveformData = async (audioBlob, conversationId) => {
     try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
       const arrayBuffer = await audioBlob.arrayBuffer();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      
+
       const rawData = audioBuffer.getChannelData(0);
       const samples = 30; // Number of bars for message display
       const blockSize = Math.floor(rawData.length / samples);
@@ -303,13 +305,13 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
 
       // Normalize the waveform data
       const maxVal = Math.max(...filteredData);
-      const normalizedData = filteredData.map(val => 
+      const normalizedData = filteredData.map((val) =>
         Math.max((val / maxVal) * 0.9 + 0.1, 0.15)
       );
 
       setVoiceWaveformData(conversationId, normalizedData);
     } catch (error) {
-      console.error('Error generating waveform data:', error);
+      console.error("Error generating waveform data:", error);
     }
   };
 
@@ -395,11 +397,11 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                   : "bg-gray-300"
               }`}
             >
-              <span className="absolute top-[calc(100%+8px)] left-1/2 transform -translate-x-1/2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 bg-gray-800 text-white text-sm p-4 rounded-sm z-20 transition-all duration-300 ease-in-out text-nowrap">
+              <span className="absolute top-[calc(100%+8px)] left-1/2 transform -translate-x-1/2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 bg-gray-800 text-white text-sm p-4 rounded-sm z-50 transition-all duration-300 ease-in-out text-nowrap">
                 {activeConversation.deviceType === "andriod"
-                  ? "use SMS"
+                  ? "SMS Enabled"
                   : activeConversation.deviceType === "apple"
-                  ? "use iMessage"
+                  ? "iMessage Enabled"
                   : "Unknown"}
                 <span className="absolute -top-2 left-1/2 transform -translate-x-1/2">
                   <ArrowDown />
@@ -667,11 +669,19 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                 onClick={startRecording}
                 disabled={isRecording}
                 className={`p-1 rounded transition-colors ${
-                  isRecording ? "text-red-500 cursor-not-allowed" : "text-gray-400 hover:text-primary"
+                  isRecording
+                    ? "text-red-500 cursor-not-allowed"
+                    : "text-gray-400 hover:text-primary"
                 }`}
-                title={isRecording ? "Recording in progress..." : "Record voice message"}
+                title={
+                  isRecording
+                    ? "Recording in progress..."
+                    : "Record voice message"
+                }
               >
-                <Mic className={`size-4 ${isRecording ? "animate-pulse" : ""}`} />
+                <Mic
+                  className={`size-4 ${isRecording ? "animate-pulse" : ""}`}
+                />
               </button>
             </div>
 

@@ -6,7 +6,7 @@ import {
   exportToPNG,
   exportToJPEG,
   generateReportData,
-} from "@/utils/Exportutils";
+} from "@/utils/utils";
 import useAnalyticsStore from "@/store/analytics/AnalyticsStore";
 
 export const ExportDropdown = ({ showDropdown, onToggle }) => {

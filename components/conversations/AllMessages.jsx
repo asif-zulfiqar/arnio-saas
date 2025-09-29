@@ -3,7 +3,7 @@ import Dropdown from "../global/small/Dropdown";
 const options = [
   { value: "all", option: "All Messages" },
   { value: "unread", option: "Unread" },
-  { value: "pinned", option: "Pinned" },
+  // { value: "pinned", option: "Pinned" },
 ];
 
 const AllMessages = () => {
