@@ -59,11 +59,11 @@ const Profile = ({ setIsProfileOpen }) => {
                 : "bg-gray-300"
             }`}
           >
-            <span className="absolute top-[calc(100%+8px)] left-1/2 transform -translate-x-1/2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 bg-gray-800 text-white text-sm p-4 rounded-sm z-20 transition-all duration-300 ease-in-out text-nowrap">
+            <span className="absolute top-[calc(100%+8px)] left-1/2 transform -translate-x-1/2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 bg-gray-800 text-white text-sm p-4 rounded-sm z-50 transition-all duration-300 ease-in-out text-nowrap">
               {activeConversation.deviceType === "andriod"
-                ? "use SMS"
+                ? "SMS Enabled"
                 : activeConversation.deviceType === "apple"
-                ? "use iMessage"
+                ? "iMessage Enabled"
                 : "Unknown"}
               <span className="absolute -top-2 left-1/2 transform -translate-x-1/2">
                 <ArrowDown />
