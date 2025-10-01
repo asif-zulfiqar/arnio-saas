@@ -160,7 +160,7 @@ const Login = () => {
           <>
             <button
               onClick={handleGoogleSignIn}
-              className="mt-5 md:mt-8 flex items-center justify-center gap-2 text-sm font-medium text-gray-900 p-3 rounded-lg border border-gray-300 shadow-sm w-full hover:bg-gray-50 transition-colors duration-200"
+              className="mt-5 md:mt-8 flex items-center justify-center gap-2 text-sm font-medium text-gray-900 p-3 rounded-lg border border-gray-50 shadow-sm w-full hover:bg-gray-50 transition-colors duration-200"
             >
               <Image
                 src="/svgs/google-icon.svg"
