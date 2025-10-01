@@ -59,7 +59,9 @@ const Dropdown = ({
       style={{ width: width || "100%" }}
     >
       {label && (
-        <label className="text-sm font-medium text-gray-900">{label}</label>
+        <label className="text-sm font-medium text-gray-900 mb-2 block">
+          {label}
+        </label>
       )}
 
       <button

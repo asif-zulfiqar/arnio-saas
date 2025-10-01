@@ -25,39 +25,25 @@ const SignupLayout = ({ children, step = 1 }) => {
 
       case 2: // Workspace page
         return (
-          <div className="flex flex-col justify-center items-center">
-            <div className="relative w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">💬</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Meadowfield Chat
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Preview of your chat workspace
-                </p>
-              </div>
-            </div>
+          <div className="h-full bg-[#FBFBFB] w-full max-w-lg rounded-lg flex justify-end items-end">
+            <Image
+              src="/images/workspace.png"
+              width={400}
+              height={511}
+              alt="image"
+            />
           </div>
         );
 
       case 3: // Team members page
         return (
-          <div className="flex flex-col justify-center items-center">
-            <div className="relative w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">👥</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Team Collaboration
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Manage your team members
-                </p>
-              </div>
-            </div>
+          <div className="h-full bg-[#FBFBFB] w-full max-w-lg rounded-lg flex justify-end items-end">
+            <Image
+              src="/images/workspace.png"
+              width={400}
+              height={511}
+              alt="image"
+            />
           </div>
         );
 

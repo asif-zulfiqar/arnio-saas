@@ -1,19 +1,28 @@
 "use client";
 
+import SignupLayout from "@/components/auth/SignupLayout";
+import Button from "@/components/global/small/Button";
+import Dropdown from "@/components/global/small/Dropdown";
+import Input from "@/components/global/small/Input";
+import useSignupStore from "@/store/auth/signupStore";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import SignupLayout from "@/components/auth/SignupLayout";
-import Image from "next/image";
-import Button from "@/components/global/small/Button";
-import Input from "@/components/global/small/Input";
-import { Upload, Building2, Globe, MapPin } from "lucide-react";
-import useSignupStore from "@/store/auth/signupStore";
-import { useRouter } from "next/navigation";
+
+const COUNTRY_OPTIONS = [
+  { option: "United States of America", value: "United States of America" },
+  { option: "Canada", value: "Canada" },
+  { option: "United Kingdom", value: "United Kingdom" },
+  { option: "Australia", value: "Australia" },
+  { option: "Other", value: "Other" },
+];
 
 const Workspace = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [billingCountryError, setBillingCountryError] = useState("");
   const {
     setCompanyLogo,
     setCompanyName,
@@ -25,6 +34,11 @@ const Workspace = () => {
     workspaceHandle,
     billingCountry,
   } = useSignupStore();
+
+  const handleCountrySelect = (value) => {
+    setBillingCountry(value);
+    setBillingCountryError("");
+  };
 
   // React Hook Form setup
   const {
@@ -38,8 +52,8 @@ const Workspace = () => {
     mode: "onChange",
     defaultValues: {
       companyName: companyName || "",
-      workspaceHandle: workspaceHandle || "dashboard.arnio.co/my-workspace",
-      billingCountry: billingCountry || "United States of America",
+      workspaceHandle: workspaceHandle,
+      billingCountry: billingCountry,
     },
   });
 
@@ -92,6 +106,11 @@ const Workspace = () => {
 
   // Handle form submission
   const handleFormSubmit = async (data) => {
+    if (!billingCountry) {
+      setBillingCountryError("Billing country is required");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -144,12 +163,6 @@ const Workspace = () => {
       bgColor: "bg-primary hover:bg-blue-700",
       color: "text-white",
     };
-  };
-
-  // Handle back button
-  const handleBack = () => {
-    prevStep();
-    router.push("/signup");
   };
 
   return (
@@ -224,33 +237,15 @@ const Workspace = () => {
           />
 
           {/* Billing Country */}
-          <div>
-            <label className="text-sm font-medium text-gray-900 block mb-2">
-              Billing country
-            </label>
-            <div className="relative">
-              <select
-                {...register("billingCountry", validationRules.billingCountry)}
-                className="w-full h-[42px] px-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white outline-none"
-              >
-                <option value="United States of America">
-                  United States of America
-                </option>
-                <option value="Canada">Canada</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Australia">Australia</option>
-                <option value="Germany">Germany</option>
-                <option value="France">France</option>
-                <option value="Other">Other</option>
-              </select>
-              <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
-            {errors.billingCountry && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.billingCountry.message}
-              </p>
-            )}
-          </div>
+          <Dropdown
+            label="Billing country"
+            options={COUNTRY_OPTIONS}
+            defaultText="Select your billing country"
+            onSelect={handleCountrySelect}
+            initialValue={billingCountry}
+            helperText={billingCountryError}
+            status={billingCountryError ? "error" : ""}
+          />
 
           {errors.general && (
             <p className="text-sm text-red-600 text-center">
@@ -264,16 +259,8 @@ const Workspace = () => {
             disabled={getButtonState().disabled}
             bgColor={getButtonState().bgColor}
             height="h-[41px]"
-            cn="!text-sm"
+            cn="!text-sm mt-14"
           />
-
-          <button
-            type="button"
-            onClick={handleBack}
-            className="w-full text-sm text-gray-600 hover:text-gray-900 mt-4"
-          >
-            Back
-          </button>
         </form>
       </div>
     </SignupLayout>
