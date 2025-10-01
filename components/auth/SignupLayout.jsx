@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const SignupLayout = ({ children, step = 1 }) => {
@@ -85,29 +86,38 @@ const SignupLayout = ({ children, step = 1 }) => {
   };
 
   return (
-    <section className="flex-1 flex">
-      {/* Left side - Form */}
-      <div className="flex-1 flex items-center justify-center px-4 relative">
-        <div className="w-full max-w-lg">{children}</div>
-        {step === 1 && (
-          <div className="absolute bottom-0 w-full max-w-lg">
-            <p className="text-[10px] text-gray-500">
-              By entering your email, you agree to Arnio contacting you about
-              our products and services. You can unsubscribe at any time by
-              clicking the link in our emails. Learn more about how we use your
-              data in our{" "}
-              <Link href="#" className="underline">
-                privacy policy
-              </Link>
-            </p>
-          </div>
-        )}
-      </div>
+    <section className="py-10 pb-12 min-h-screen w-screen bg-white flex flex-col">
+      <Image
+        src="/images/arnio-logo.png"
+        alt="Arnio Logo"
+        width={118}
+        height={48}
+        className="mx-auto mb-10"
+      />
+      <section className="flex-1 flex">
+        {/* Left side - Form */}
+        <div className="flex-1 flex items-center justify-center px-4 relative">
+          <div className="w-full max-w-lg">{children}</div>
+          {step === 1 && (
+            <div className="absolute bottom-0 w-full max-w-lg">
+              <p className="text-[10px] text-gray-500">
+                By entering your email, you agree to Arnio contacting you about
+                our products and services. You can unsubscribe at any time by
+                clicking the link in our emails. Learn more about how we use
+                your data in our{" "}
+                <Link href="#" className="underline">
+                  privacy policy
+                </Link>
+              </p>
+            </div>
+          )}
+        </div>
 
-      {/* Right side - Content/Images */}
-      <div className="hidden lg:flex lg:flex-1 items-center justify-center">
-        {getRightSideContent()}
-      </div>
+        {/* Right side - Content/Images */}
+        <div className="hidden lg:flex lg:flex-1 items-center justify-center">
+          {getRightSideContent()}
+        </div>
+      </section>
     </section>
   );
 };

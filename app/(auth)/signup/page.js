@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import SignupLayout from "@/components/auth/SignupLayout";
-import Image from "next/image";
-import Link from "next/link";
 import Button from "@/components/global/small/Button";
 import Input from "@/components/global/small/Input";
-import { Mail } from "lucide-react";
 import useSignupStore from "@/store/auth/signupStore";
+import { Mail } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 const Signup = () => {
   const router = useRouter();
@@ -72,58 +71,46 @@ const Signup = () => {
   const handleGoogleSignUp = async () => {};
 
   return (
-    <section className="py-10 pb-12 min-h-screen w-screen bg-white flex flex-col">
-      <Image
-        src="/images/arnio-logo.png"
-        alt="Arnio Logo"
-        width={118}
-        height={48}
-        className="mx-auto mb-10"
-      />
-      <SignupLayout step={1}>
-        <div className="w-full">
-          <button
-            onClick={handleGoogleSignUp}
-            disabled={isLoading}
-            className="flex items-center justify-center gap-2 text-sm font-medium text-gray-900 p-3 rounded-lg border border-gray-50 shadow-sm w-full hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Image
-              src="/svgs/google-icon.svg"
-              alt="icon"
-              width={20}
-              height={20}
-            />
-            Sign in with Google
-          </button>
+    <SignupLayout step={1}>
+      <div className="w-full">
+        <button
+          onClick={handleGoogleSignUp}
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 text-sm font-medium text-gray-900 p-3 rounded-lg border border-gray-50 shadow-sm w-full hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Image
+            src="/svgs/google-icon.svg"
+            alt="icon"
+            width={20}
+            height={20}
+          />
+          Sign in with Google
+        </button>
 
-          <div className="relative my-8">
-            <hr className="border-gray-200" />
-          </div>
-
-          <form
-            onSubmit={handleSubmit(handleEmailSubmit)}
-            className="space-y-5"
-          >
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              icon={<Mail className="size-4" />}
-              autoComplete="email"
-              error={errors.email?.message}
-              {...register("email", validationRules.email)}
-            />
-
-            <Button
-              text={isLoading ? "Checking..." : "Continue"}
-              type="submit"
-              // disabled={isLoading || !watchEmail || errors.email}
-              height="h-[41px]"
-              cn="!text-sm"
-            />
-          </form>
+        <div className="relative my-8">
+          <hr className="border-gray-200" />
         </div>
-      </SignupLayout>
-    </section>
+
+        <form onSubmit={handleSubmit(handleEmailSubmit)} className="space-y-5">
+          <Input
+            type="email"
+            placeholder="Enter your email"
+            icon={<Mail className="size-4" />}
+            autoComplete="email"
+            error={errors.email?.message}
+            {...register("email", validationRules.email)}
+          />
+
+          <Button
+            text={isLoading ? "Checking..." : "Continue"}
+            type="submit"
+            // disabled={isLoading || !watchEmail || errors.email}
+            height="h-[41px]"
+            cn="!text-sm"
+          />
+        </form>
+      </div>
+    </SignupLayout>
   );
 };
 

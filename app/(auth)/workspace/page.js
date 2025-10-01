@@ -14,16 +14,16 @@ const Workspace = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
-  const { 
-    setCompanyLogo, 
-    setCompanyName, 
-    setWorkspaceHandle, 
+  const {
+    setCompanyLogo,
+    setCompanyName,
+    setWorkspaceHandle,
     setBillingCountry,
     setCurrentStep,
     prevStep,
     companyName,
     workspaceHandle,
-    billingCountry
+    billingCountry,
   } = useSignupStore();
 
   // React Hook Form setup
@@ -101,7 +101,7 @@ const Workspace = () => {
       setCompanyName(data.companyName);
       setWorkspaceHandle(data.workspaceHandle);
       setBillingCountry(data.billingCountry);
-      
+
       // Navigate to team members step
       setCurrentStep(3);
       router.push("/team-members");
@@ -126,7 +126,12 @@ const Workspace = () => {
       };
     }
 
-    if (errors.companyName || errors.workspaceHandle || !watchCompanyName?.trim() || !watchWorkspaceHandle?.trim()) {
+    if (
+      errors.companyName ||
+      errors.workspaceHandle ||
+      !watchCompanyName?.trim() ||
+      !watchWorkspaceHandle?.trim()
+    ) {
       return {
         disabled: false,
         bgColor: "bg-blue-200",
@@ -150,16 +155,16 @@ const Workspace = () => {
   return (
     <SignupLayout step={2}>
       <div className="w-full">
-        <h1 className="text-xl md:text-3xl font-semibold text-gray-900 text-center">
+        <h1 className="text-xl font-semibold text-gray-900">
           Create your workspace
         </h1>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 mt-8">
+        <form
+          onSubmit={handleSubmit(handleFormSubmit)}
+          className="space-y-6 mt-8"
+        >
           {/* Company Logo */}
-          <div>
-            <label className="text-sm font-medium text-gray-900 block mb-2">
-              Company logo
-            </label>
+          <div className="flex gap-3 mb-8">
             <div className="relative">
               <input
                 type="file"
@@ -170,29 +175,35 @@ const Workspace = () => {
               />
               <label
                 htmlFor="logo-upload"
-                className="cursor-pointer w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
+                className="cursor-pointer size-[52px] border-2 border-dashed border-gray-200 bg-gray-100 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
               >
                 {logoPreview ? (
                   <Image
                     src={logoPreview}
                     alt="Company logo"
-                    width={64}
-                    height={64}
+                    width={52}
+                    height={52}
                     className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
                   <div className="text-center">
-                    <Building2 className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                    <span className="text-xs text-gray-500">A</span>
+                    <span className="text-3xl text-gray-300">A</span>
                   </div>
                 )}
               </label>
             </div>
-            <p className="mt-2 text-xs text-gray-500">
-              We support PNGs, JPEGs under 10MB. Recommended size is 400x400px
-            </p>
+            <div>
+              <label className="text-base font-medium text-gray-900 mb-1">
+                Company logo
+              </label>
+              <p className="text-xs text-gray-500 max-w-[220px]">
+                We support PNGs,JPEGs under 10MB Recommended size is 400x400px
+              </p>
+            </div>
             {errors.companyLogo && (
-              <p className="mt-1 text-sm text-red-600">{errors.companyLogo.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.companyLogo.message}
+              </p>
             )}
           </div>
 
@@ -222,7 +233,9 @@ const Workspace = () => {
                 {...register("billingCountry", validationRules.billingCountry)}
                 className="w-full h-[42px] px-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white outline-none"
               >
-                <option value="United States of America">United States of America</option>
+                <option value="United States of America">
+                  United States of America
+                </option>
                 <option value="Canada">Canada</option>
                 <option value="United Kingdom">United Kingdom</option>
                 <option value="Australia">Australia</option>
@@ -233,12 +246,16 @@ const Workspace = () => {
               <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             </div>
             {errors.billingCountry && (
-              <p className="mt-1 text-sm text-red-600">{errors.billingCountry.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.billingCountry.message}
+              </p>
             )}
           </div>
 
           {errors.general && (
-            <p className="text-sm text-red-600 text-center">{errors.general.message}</p>
+            <p className="text-sm text-red-600 text-center">
+              {errors.general.message}
+            </p>
           )}
 
           <Button
@@ -258,7 +275,7 @@ const Workspace = () => {
             Back
           </button>
         </form>
-        </div>
+      </div>
     </SignupLayout>
   );
 };
