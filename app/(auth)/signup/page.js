@@ -85,7 +85,7 @@ const Signup = () => {
           <button
             onClick={handleGoogleSignUp}
             disabled={isLoading}
-            className="mt-5 md:mt-8 flex items-center justify-center gap-2 text-sm font-medium text-gray-900 p-3 rounded-lg border border-gray-50 shadow-sm w-full hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 text-sm font-medium text-gray-900 p-3 rounded-lg border border-gray-50 shadow-sm w-full hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Image
               src="/svgs/google-icon.svg"
@@ -121,19 +121,6 @@ const Signup = () => {
               cn="!text-sm"
             />
           </form>
-
-          <div className="mt-6">
-            <p className="text-sm text-gray-500 text-center">
-              By entering your email, you agree to Arnio contacting you about
-              our products and services. You can unsubscribe at any time by
-              clicking the link in our emails. Learn more about how we use your
-              data in our{" "}
-              <Link href="#" className="text-primary hover:underline">
-                privacy policy
-              </Link>
-              .
-            </p>
-          </div>
         </div>
       </SignupLayout>
     </section>

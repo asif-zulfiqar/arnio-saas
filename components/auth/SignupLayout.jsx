@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 const SignupLayout = ({ children, step = 1 }) => {
@@ -6,21 +5,20 @@ const SignupLayout = ({ children, step = 1 }) => {
     switch (step) {
       case 1: // Signup page
         return (
-          <div className="flex flex-col justify-center items-center text-center px-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+          <div className="flex flex-col justify-center w-full max-w-lg">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               Welcome to Arnio
             </h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+            <p className="text-sm text-gray-500 mb-6">
               Arnio is the AI-powered iMessage sales platform for eCommerce.
               Every customer deserves to feel like your favorite—and with Arnio,
               brands can make that happen. Send or approve AI-drafted texts,
               drop new products, follow up with shoppers, and track what drives
-              sales: replies, conversions, and repeat purchases.
-            </p>
-            <p className="text-lg font-semibold text-gray-900 mb-8">
+              sales: replies, conversions, and repeat purchases. <br /> <br />
               The only iMessage sales platform built for eCommerce brands.
+              <br /> <br />
+              Let’s get started.
             </p>
-            <p className="text-lg text-gray-600">Let's get started.</p>
           </div>
         );
 
@@ -89,8 +87,21 @@ const SignupLayout = ({ children, step = 1 }) => {
   return (
     <section className="flex-1 flex">
       {/* Left side - Form */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md">{children}</div>
+      <div className="flex-1 flex items-center justify-center px-4 relative">
+        <div className="w-full max-w-lg">{children}</div>
+        {step === 1 && (
+          <div className="absolute bottom-0 w-full max-w-lg">
+            <p className="text-[10px] text-gray-500">
+              By entering your email, you agree to Arnio contacting you about
+              our products and services. You can unsubscribe at any time by
+              clicking the link in our emails. Learn more about how we use your
+              data in our{" "}
+              <Link href="#" className="underline">
+                privacy policy
+              </Link>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Right side - Content/Images */}
