@@ -116,8 +116,7 @@ const Signup = () => {
             <Button
               text={isLoading ? "Checking..." : "Continue"}
               type="submit"
-              disabled={isLoading || !watchEmail || errors.email}
-              // bgColor={getButtonState().bgColor}
+              // disabled={isLoading || !watchEmail || errors.email}
               height="h-[41px]"
               cn="!text-sm"
             />
