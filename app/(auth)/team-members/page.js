@@ -140,13 +140,13 @@ const TeamMembers = () => {
   return (
     <SignupLayout step={3}>
       <div className="w-full">
-        <h1 className="text-xl md:text-3xl font-semibold text-gray-900 text-center">
+        <h1 className="text-xl font-semibold text-gray-900">
           Add Team Members
         </h1>
 
-        <p className="text-sm text-gray-600 text-center mt-4">
+        <p className="text-sm text-gray-500 mt-1 max-w-[380px]">
           You can invite up to 5 team members. You can also add them later in
-          Settings.
+          Settings
         </p>
 
         <div className="mt-8 space-y-4">
@@ -269,19 +269,11 @@ const TeamMembers = () => {
             height="h-[41px]"
             cn="!text-sm"
           />
-
           <button
             onClick={handleSkip}
             className="w-full text-sm text-gray-600 hover:text-gray-900 text-center"
           >
             Skip for now
-          </button>
-
-          <button
-            onClick={handleBack}
-            className="w-full text-sm text-gray-600 hover:text-gray-900 text-center mt-2"
-          >
-            Back
           </button>
         </div>
       </div>
