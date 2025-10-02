@@ -60,12 +60,6 @@ const Preferences = () => {
     router.push("/");
   };
 
-  // Handle back button
-  const handleBack = () => {
-    prevStep();
-    router.push("/team-members");
-  };
-
   return (
     <SignupLayout step={4}>
       <div className="w-full">
@@ -114,13 +108,6 @@ const Preferences = () => {
             className="w-full text-sm text-gray-600 hover:text-gray-900 text-center"
           >
             Skip
-          </button>
-
-          <button
-            onClick={handleBack}
-            className="w-full text-sm text-gray-600 hover:text-gray-900 text-center mt-2"
-          >
-            Back
           </button>
         </div>
       </div>

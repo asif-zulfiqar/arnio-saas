@@ -5,10 +5,10 @@ import { useEffect } from "react";
 import useAnalyticsStore from "../../../../store/analytics/AnalyticsStore";
 import { ExportDropdown } from "../../../../components/analytics/ExportDropdown";
 import { MetricCard } from "../../../../components/analytics/MetricCard";
-import { EmptyState } from "../../../../components/analytics/EmptyState";
 
-import AnalyticsChart from "../../../../components/analytics/AnalyticsChart";
 import DateRangePickerWrapper from "@/components/analytics/DateRangePickerWrapper";
+import AnalyticsChart from "@/components/analytics/AnalyticsChart";
+import { EmptyState } from "@/components/analytics/EmptyState";
 
 const Analytics = () => {
   const {
