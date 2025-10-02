@@ -49,20 +49,14 @@ const SignupLayout = ({ children, step = 1 }) => {
 
       case 4: // Preferences page
         return (
-          <div className="flex flex-col justify-center items-center">
-            <div className="relative w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🎯</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Customer Success
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Happy customers with great products
-                </p>
-              </div>
-            </div>
+          <div className="h-full">
+            <Image
+              src="/images/heard-us.png"
+              width={503}
+              height={618}
+              alt="image"
+              className="rounded-lg"
+            />
           </div>
         );
 
