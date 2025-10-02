@@ -41,10 +41,10 @@ const Preferences = () => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
       // Here you would typically submit all the signup data to your API
       console.log("Signup completed with referral source:", selectedSource);
-      
+
       // Navigate to dashboard or success page
       router.push("/");
     } catch (error) {
@@ -69,12 +69,13 @@ const Preferences = () => {
   return (
     <SignupLayout step={4}>
       <div className="w-full">
-        <h1 className="text-xl md:text-3xl font-semibold text-gray-900 text-center">
-          How did you hear about us?
+        <h1 className="text-xl font-semibold text-gray-900">
+          How did you heard about us?
         </h1>
-        
-        <p className="text-sm text-gray-600 text-center mt-4">
-          Please select below where you found out about Arnio. This step is optional.
+
+        <p className="text-sm text-gray-500 mt-1 max-w-[380px]">
+          Please select below where you found out about Arnio. This step is
+          optional.
         </p>
 
         <div className="mt-8">
@@ -90,7 +91,9 @@ const Preferences = () => {
                 }`}
               >
                 <div className="text-2xl mb-2">{source.icon}</div>
-                <div className="text-xs font-medium text-gray-900">{source.name}</div>
+                <div className="text-xs font-medium text-gray-900">
+                  {source.name}
+                </div>
               </button>
             ))}
           </div>
