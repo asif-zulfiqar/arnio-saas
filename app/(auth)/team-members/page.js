@@ -8,6 +8,7 @@ import Input from "@/components/global/small/Input";
 import { Plus, Trash2, Copy, Mail, User, Shield } from "lucide-react";
 import useSignupStore from "@/store/auth/signupStore";
 import { useRouter } from "next/navigation";
+import Dropdown from "@/components/global/small/Dropdown";
 
 const TeamMembers = () => {
   const router = useRouter();
@@ -183,39 +184,40 @@ const TeamMembers = () => {
 
           {/* Add new member form */}
           {showAddForm && (
-            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="p-4 border border-gray-100 rounded-2xl">
               <form
                 onSubmit={handleSubmitMember(handleAddMember)}
                 className="space-y-3"
               >
-                <div className="flex items-center space-x-2">
-                  <Input
-                    placeholder="user@email.com"
-                    icon={<Mail className="size-4" />}
-                    error={memberErrors.email?.message}
-                    {...registerMember("email", memberValidationRules.email)}
-                    className="flex-1"
-                  />
-                  <button
-                    type="button"
-                    className="p-2 hover:bg-gray-200 rounded"
-                    title="Copy email"
-                  >
-                    <Copy className="w-4 h-4 text-gray-400" />
-                  </button>
-                </div>
-
                 <Input
-                  placeholder="Enter full name..."
-                  icon={<User className="size-4" />}
-                  error={memberErrors.fullName?.message}
-                  {...registerMember(
-                    "fullName",
-                    memberValidationRules.fullName
-                  )}
+                  placeholder="user@email.com"
+                  label="Email"
+                  error={memberErrors.email?.message}
+                  {...registerMember("email", memberValidationRules.email)}
+                  className="flex-1"
                 />
 
-                <div className="flex items-center space-x-2">
+                <div className="grid grid-cols-3 gap-4">
+                  <Input
+                    className="col-span-2"
+                    placeholder="Enter full name..."
+                    label="Full Name"
+                    error={memberErrors.fullName?.message}
+                    {...registerMember(
+                      "fullName",
+                      memberValidationRules.fullName
+                    )}
+                  />
+                  <Dropdown
+                    label="Role"
+                    options={[
+                      { option: "User", value: "user" },
+                      { option: "Admin", value: "admin" },
+                    ]}
+                  />
+                </div>
+
+                {/* <div className="flex items-center space-x-2">
                   <select
                     {...registerMember("role")}
                     className="flex-1 h-[42px] px-4 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
@@ -224,8 +226,7 @@ const TeamMembers = () => {
                     <option value="Admin">Admin</option>
                     <option value="Manager">Manager</option>
                   </select>
-                  <Shield className="w-4 h-4 text-gray-400" />
-                </div>
+                </div> */}
 
                 <div className="flex space-x-2">
                   <Button

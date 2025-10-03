@@ -51,7 +51,7 @@ const Input = forwardRef(
       } else {
         return (
           baseStyles +
-          "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-500 hover:border-gray-400 focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white"
+          "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-500 hover:border-gray-400 ring-0 ring-transparent focus:border-transparent focus:ring-0 focus:ring-transparent"
         );
       }
     };
