@@ -53,7 +53,7 @@ const SignupLayout = ({ children, step = 1 }) => {
             <Image
               src="/images/heard-us.png"
               width={503}
-              height={618}
+              height={630}
               alt="image"
               className="rounded-lg"
             />
@@ -66,7 +66,7 @@ const SignupLayout = ({ children, step = 1 }) => {
   };
 
   return (
-    <section className="py-10 pb-12 min-h-screen w-screen bg-white flex flex-col">
+    <section className="py-10 pb-12 min-h-screen w-screen bg-white flex flex-col scroll-0">
       <Image
         src="/images/arnio-logo.png"
         alt="Arnio Logo"
@@ -77,7 +77,9 @@ const SignupLayout = ({ children, step = 1 }) => {
       <section className="flex-1 flex">
         {/* Left side - Form */}
         <div className="flex-1 flex items-center justify-center px-4 relative">
-          <div className="w-full max-w-lg">{children}</div>
+          <div className={`w-full max-w-lg ${step === 4 ? "h-full" : ""}`}>
+            {children}
+          </div>
           {step === 1 && (
             <div className="absolute bottom-0 w-full max-w-lg">
               <p className="text-[10px] text-gray-500">

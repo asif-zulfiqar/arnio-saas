@@ -64,3 +64,9 @@ select:autofill {
   box-shadow: none !important;
   border-color: transparent !important;
 }
+
+.scroll-0::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  background: transparent !important;
+}
