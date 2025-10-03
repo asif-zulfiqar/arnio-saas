@@ -230,7 +230,7 @@ const TeamMembers = () => {
 
                 <div className="flex space-x-2">
                   <Button
-                    text="+ Add Member"
+                    text="Add Member"
                     type="submit"
                     disabled={getAddMemberButtonState().disabled}
                     bgColor={getAddMemberButtonState().bgColor}
@@ -253,7 +253,7 @@ const TeamMembers = () => {
           {!showAddForm && teamMembers.length < 5 && (
             <button
               onClick={() => setShowAddForm(true)}
-              className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors flex items-center justify-center space-x-2"
+              className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors flex items-center justify-center space-x-2"
             >
               <Plus className="w-4 h-4" />
               <span>Add Member</span>
