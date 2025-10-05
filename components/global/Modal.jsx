@@ -1,6 +1,6 @@
 "use client";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const Modal = ({ title, onClose, children, width }) => {
   return (
