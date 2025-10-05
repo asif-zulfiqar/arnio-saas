@@ -8,6 +8,7 @@ import Search from "@/components/conversations/Search";
 import SearchBar from "@/components/conversations/SearchBar";
 import Modal from "@/components/global/Modal";
 import Profile from "@/components/profile/Profile";
+import Welcome from "@/components/welcome/Welcome";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +20,7 @@ const Conversations = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isWelcomeScreen, setIsWelcomeScreen] = useState(true);
 
   const { searchTerm, setSearchTerm } = useWorkspaceStore();
 
@@ -103,6 +105,8 @@ const Conversations = () => {
           <AddContact onClose={handleCloseModal} />
         </Modal>
       )}
+
+      {isWelcomeScreen && <Welcome onClose={setIsWelcomeScreen} />}
     </div>
   );
 };

@@ -1,6 +1,9 @@
+import { useState } from "react";
 import StartTrail from "./StartTrail";
+import { motion } from "framer-motion";
+import ActivatePhoneLine from "./ActivatePhoneLine";
 
-const Welcome = () => {
+const Welcome = ({ onClose }) => {
   const [step, setStep] = useState(1);
   return (
     <motion.div
@@ -12,7 +15,7 @@ const Welcome = () => {
       transition={{ duration: 0.25 }}
     >
       <motion.div
-        className={`bg-white rounded-lg border border-gray-200 p-4 md:py-8 md:px-5 overflow-y-auto h-fit max-h-full w-full max-w-[577px]"
+        className={`bg-white rounded-lg border border-gray-200 p-4 md:py-8 md:px-5 overflow-y-auto h-fit max-h-full max-w-[500px]"
         }`}
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -21,6 +24,7 @@ const Welcome = () => {
         transition={{ duration: 0.25, ease: "easeOut" }}
       >
         {step === 1 && <StartTrail setStep={setStep} />}
+        {step === 2 && <ActivatePhoneLine onClose={onClose} />}
       </motion.div>
     </motion.div>
   );
