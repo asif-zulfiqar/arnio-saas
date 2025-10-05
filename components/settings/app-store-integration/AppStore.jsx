@@ -110,15 +110,15 @@ const AppStore = () => {
       <div className="">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl font-semibold text-gray-900">All apps</h2>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+                className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
                   activeTab === tab
-                    ? "bg-gray-100 text-blue-600 border-gray-300"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    ? "bg-gray-100 text-blue-600 border-gray-200"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                 }`}
               >
                 {tab}
@@ -171,10 +171,10 @@ const AppCard = ({ app }) => {
   const statusStyles = getStatusStyles();
 
   return (
-    <div className="border border-gray-100 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow bg-white">
+    <div className="border  border-gray-100 rounded-lg p-4 bg-white flex flex-col h-full transition-shadow hover:shadow-md [box-shadow:0px_1px_2px_-1px_#0000001A,0px_1px_3px_0px_#0000001A]">
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 flex-shrink-0">
+        <div className="flex items-center gap-[6px]">
+          <div className="flex items-center justify-center flex-shrink-0">
             <Image
               src={app.icon}
               alt={app.name}
@@ -183,7 +183,9 @@ const AppCard = ({ app }) => {
               className="object-contain"
             />
           </div>
-          <h3 className="text-sm font-semibold text-gray-900">{app.name}</h3>
+          <h3 className="font-semibold text-gray-900 text-[16px] leading-[16px] tracking-normal">
+            {app.name}
+          </h3>
         </div>
 
         {app.status && statusStyles && (
@@ -204,33 +206,63 @@ const AppCard = ({ app }) => {
                 className={statusStyles.iconColor}
               />
             )}
-            <span className={`text-xs font-medium ${statusStyles.textColor}`}>
+            <span
+              className={`font-medium ${statusStyles.textColor}`}
+              style={{
+                fontSize: "12px",
+                lineHeight: "150%",
+                textAlign: "center",
+              }}
+            >
               {app.status}
             </span>
           </div>
         )}
       </div>
 
-      <p className="text-xs text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+      <p className="text-gray-500 mb-4 line-clamp-3 flex-grow font-inter text-base leading-[150%] font-normal">
         {app.description}
       </p>
 
-      <div className="flex gap-2">
-        <button
-          onClick={handleDetailsClick}
-          className="flex-1 px-3 py-1.5 text-xs text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
-        >
-          Details
-        </button>
-        {(!app.status || app.status !== "Installed") && (
-          <button className="flex-1 px-3 py-1.5 text-xs text-white bg-blue-600 rounded-md hover:bg-blue-800 transition-colors">
-            Install
+      <div className="flex gap-2 mt-auto">
+        {app.status === "Coming soon" && (
+          <button
+            onClick={handleDetailsClick}
+            className="w-full px-3 py-1.5 text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-100 transition-colors"
+            style={{ fontWeight: 500, fontSize: "14px", lineHeight: "150%" }}
+          >
+            Details
           </button>
         )}
+
+        {!app.status && (
+          <>
+            <button
+              onClick={handleDetailsClick}
+              className="flex-1 px-3 py-1.5 text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-100 transition-colors"
+              style={{ fontWeight: 500, fontSize: "14px", lineHeight: "150%" }}
+            >
+              Details
+            </button>
+            <button className="flex-1 px-3 py-1.5 text-xs text-white bg-blue-600 rounded-md hover:bg-blue-800 transition-colors">
+              Install
+            </button>
+          </>
+        )}
+
         {app.status === "Installed" && (
-          <button className="p-1.5 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors">
-            <Trash2 size={16} />
-          </button>
+          <>
+            <button
+              onClick={handleDetailsClick}
+              className="flex-1 px-3 py-1.5 text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-100 transition-colors"
+              style={{ fontWeight: 500, fontSize: "14px", lineHeight: "150%" }}
+            >
+              Details
+            </button>
+            <button className="p-1.5 text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors">
+              <Trash2 size={16} />
+            </button>
+          </>
         )}
       </div>
     </div>

@@ -1,4 +1,5 @@
 import useAccountStore from "../../../store/settings/useAccountStore";
+import Image from "next/image";
 
 const PlanSection = () => {
   const {
@@ -15,33 +16,33 @@ const PlanSection = () => {
   const creditsPercentage = (creditsUsed / creditsTotal) * 100;
 
   return (
-    <div className="bg-white rounded-lg  p-6 shadow-sm">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">Plan</h3>
+    <div className="bg-white rounded-lg shadow-xs border border-[#E5E7EB] p-6 h-full flex flex-col">
+      <h3 className="text-xl font-semibold text-[#101828] mb-6">Plan</h3>
 
       <div className="mb-4 bg-gray-50 p-4  border border-gray-300 rounded-xl">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-[#101828]">
               {planName}
             </span>
-            <span className="text-[16px] font-medium text-gray-900">+</span>
+            <span className="text-[16px] font-medium text-[#101828]">+</span>
           </div>
-          <span className="text-sm text-gray-500">
+          <span className="text-[12px] text-gray-500">
             Next payment {planStartDate}
           </span>
         </div>
 
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-[#4A5565] mb-4">
           Short info about pricing plan
         </p>
 
         {/* Contacts Usage */}
-        <div className="mb-4">
+        <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-xs font-inter font-medium text-[#4A5565]">
               {contactsUsed} out of {contactsTotal} contacts remaining
             </span>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-xs font-medium text-[#4A5565]">
               {contactsPercentage}%
             </span>
           </div>
@@ -54,10 +55,12 @@ const PlanSection = () => {
         </div>
 
         {/* Credits Usage */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Amio Credits</span>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-xs font-medium text-[#4A5565]">
+              Amio Credits
+            </span>
+            <span className="text-xs font-medium text-gray-900">
               {creditsUsed}/{creditsTotal}
             </span>
           </div>
@@ -72,9 +75,16 @@ const PlanSection = () => {
         <div className="text-right">
           <button
             onClick={upgradePlan}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50  transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
           >
-            Upgrade Plan →
+            Upgrade Plan
+            <Image
+              src="/svgs/settings/arrowicon.svg"
+              alt="Arrow"
+              width={12}
+              height={9}
+              className="mb-[0.5]" // or mt-1 for more spacing
+            />
           </button>
         </div>
       </div>

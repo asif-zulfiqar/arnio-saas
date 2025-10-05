@@ -9,11 +9,11 @@ const TotalUsageSection = ({
 }) => {
   return (
     <div className="xl:col-span-3">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-auto flex flex-col">
-        <div className="flex items-center justify-between mb-0">
+      <div className="bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-6 h-auto flex flex-col">
+        <div className="flex items-center justify-between mb-[24px]">
           <h2 className="text-xl font-semibold text-gray-900">Total Usage</h2>
           <div className="relative">
-            <button className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               {/* Add Calendar Icon */}
               <Image
                 src={CalendarIcon}
@@ -23,14 +23,16 @@ const TotalUsageSection = ({
                 className="flex-shrink-0"
                 style={{ verticalAlign: "middle", display: "inline-block" }}
               />
-              <span>{selectedDateRange}</span>
+              <span className="text-gray-900 text-sm font-medium">
+                {selectedDateRange}
+              </span>
               <ChevronDown className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center my-2">
-          <div className="relative w-[300px] h-[300px]">
+        <div className="flex-1 flex items-center justify-center my-0">
+          <div className="relative w-80 h-80">
             <svg
               className="w-full h-full transform -rotate-90"
               viewBox="0 0 160 160"
@@ -57,42 +59,35 @@ const TotalUsageSection = ({
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-3xl font-bold text-gray-900 whitespace-nowrap">
+              <span className="text-[28.24px] font-bold text-gray-900 whitespace-nowrap">
                 {totalUsage.current}/{totalUsage.total}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between -mt-2">
+        <div className="flex items-center justify-between mt-6 ">
           <div className="flex items-center gap-2">
-            <span className="text-3xl font-semibold text-gray-900">
+            <span className="text-[24px]  font-bold text-gray-900">
               {totalUsage.percentage}%
             </span>
-            <span className="flex items-center bg-emerald-100 text-emerald-800 text-sm font-medium px-2 py-1 rounded-md">
+            <span className="flex items-center bg-[#DEF7EC] text-[#03543F] text-sm font-medium px-2.5 py-0.5 rounded-md">
               <ArrowUp className="w-3 h-3 mr-1" />
               {totalUsage.change}%
             </span>
           </div>
 
           <button
-            className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors "
             onClick={onIncreaseLimit}
           >
             Increase Limit
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
+            <Image
+              src="/svgs/settings/arrowicon.svg"
+              alt="Arrow"
+              width={12}
+              height={9}
+            />
           </button>
         </div>
       </div>

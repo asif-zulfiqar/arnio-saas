@@ -108,7 +108,7 @@ const AddTeamMemberModal = ({ onClose }) => {
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Name Field */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-900 mb-1">
           Name
         </label>
         <input
@@ -128,7 +128,7 @@ const AddTeamMemberModal = ({ onClose }) => {
 
       {/* Email Field */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-900 mb-1">
           Email
         </label>
         <input
@@ -148,7 +148,7 @@ const AddTeamMemberModal = ({ onClose }) => {
 
       {/* Role Field - Custom Dropdown with Icons */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-900 mb-1">
           User Role
         </label>
         <div className="relative">
@@ -156,9 +156,11 @@ const AddTeamMemberModal = ({ onClose }) => {
           <button
             type="button"
             onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className={`w-full pl-3 pr-10 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none bg-gray-50 text-left flex items-center gap-3 ${
+            className={`w-full  pr-10 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none bg-gray-50 text-left flex items-center ${
               errors.role ? "border-red-500" : "border-gray-300"
-            } ${!formData.role ? "text-gray-400" : "text-gray-900"}`}
+            } ${
+              !formData.role ? "text-gray-400 " : "text-gray-900 pl-3  gap-3"
+            }`}
           >
             {/* Role Icon (only show if role is selected) */}
             {formData.role ? (
@@ -167,7 +169,7 @@ const AddTeamMemberModal = ({ onClose }) => {
                 alt={`${formData.role} role`}
                 width={16}
                 height={16}
-                className="flex-shrink-0"
+                className="flex-shrink-0 opacity-60"
               />
             ) : (
               <div className="w-4 h-4 flex-shrink-0"></div> // Spacer when no role selected
@@ -252,13 +254,13 @@ const AddTeamMemberModal = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
           Save
         </button>

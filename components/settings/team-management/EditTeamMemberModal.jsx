@@ -122,7 +122,7 @@ const EditTeamMemberModal = ({ onClose }) => {
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Name Field */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-[14px] font-medium font-inter text-gray-900 mb-1">
           Name
         </label>
         <input
@@ -142,7 +142,7 @@ const EditTeamMemberModal = ({ onClose }) => {
 
       {/* Email Field */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-[14px] font-inter font-medium text-gray-900 mb-1">
           Email
         </label>
         <input
@@ -162,7 +162,7 @@ const EditTeamMemberModal = ({ onClose }) => {
 
       {/* Role Field - Custom Dropdown with Icons */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-[14px] font-inter font-medium text-gray-900 mb-1">
           User Role
         </label>
         <div className="relative">
@@ -178,7 +178,7 @@ const EditTeamMemberModal = ({ onClose }) => {
               alt={`${formData.role} role`}
               width={16}
               height={16}
-              className="flex-shrink-0"
+              className="flex-shrink-0 opacity-60"
             />
             {/* Role Name */}
             <span className="text-gray-700">{formData.role}</span>
@@ -186,7 +186,7 @@ const EditTeamMemberModal = ({ onClose }) => {
             {/* Dropdown Arrow */}
             <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
               <svg
-                className="w-5 h-5 text-gray-400"
+                className="w-6 h-5 text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -255,7 +255,7 @@ const EditTeamMemberModal = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 px-4 py-2 mr-20 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+          className="flex-1 px-3 py-2 mr-20 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
         >
           Cancel
         </button>
@@ -263,13 +263,13 @@ const EditTeamMemberModal = ({ onClose }) => {
           <button
             type="button"
             onClick={handleDelete}
-            className="px-4 py-2 bg-white border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors font-medium"
+            className="px-3 py-2 bg-white border-[1px] border-red-700 text-red-700 rounded-lg hover:bg-red-50 transition-colors font-medium"
           >
             Delete
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors font-medium"
+            className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
           >
             Save
           </button>

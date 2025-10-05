@@ -9,34 +9,34 @@ const AccountPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 ">
       <div className=" mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column */}
-          <div className="space-y-6">
+          <div className="space-y-8 col-span-2  ">
             {/* Account Details */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div>
               <AccountDetailsSection />
             </div>
 
             {/* Plan Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div>
               <PlanSection />
             </div>
 
             {/* Workspace Details */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div>
               <WorkspaceDetailsSection />
             </div>
 
             {/* Password Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div>
               <PasswordSection />
             </div>
           </div>
 
           {/* Right Column */}
-          <div className="space-y-14">
+          <div className="space-y-14 col-span-1">
             {/* Phone Lines */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div>
               <PhoneLinesSection />
             </div>
           </div>

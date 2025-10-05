@@ -60,7 +60,7 @@ const UsageSection = () => {
   return (
     <div className="h-full bg-gray-50 ">
       <div className=" mx-auto">
-        <div className="grid grid-cols-1 xl:grid-cols-7 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-7 gap-4">
           <PhoneLinesSection
             phoneLines={phoneLines}
             onAddNewLine={handleAddNewLine}

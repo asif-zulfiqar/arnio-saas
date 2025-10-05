@@ -12,26 +12,26 @@ const PhoneLinesSection = () => {
   } = useAccountStore();
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="bg-white rounded-lg shadow-xs border border-[#E5E7EB] p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">Phone Lines</h3>
+        <h3 className="text-xl font-semibold text-[#101828]">Phone Lines</h3>
       </div>
 
-      <div className="space-y-3 mb-8 ">
+      <div className="space-y-[20px] mb-[43px] ">
         {phoneLines.map((phone) => {
           const isActivating = phone.status === "Activating...";
 
           return (
             <div
               key={phone.id}
-              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100"
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 shadow-[0px_1px_0.5px_0.05px_#1D293D05]"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center shadow-sm">
+                <div className="w-[36px] h-[36px] bg-gray-100 rounded-lg flex items-center justify-center ">
                   <Image
                     src="/svgs/settings/phone.svg"
                     alt="phone"
-                    width={20}
+                    width={15}
                     height={20}
                     className={`object-contain text-gray-600 ${
                       isActivating ? "opacity-20" : "opacity-100"
@@ -39,19 +39,19 @@ const PhoneLinesSection = () => {
                   />
                 </div>
                 <div>
-                  <p className="text-base font-medium text-gray-900 mb-1">
+                  <p className="text-sm font-inter font-medium text-gray-900 mb-1">
                     {phone.number}
                   </p>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs text-gray-500">
                       {isActivating ? (
-                        <span className="text-gray-700">{phone.status}</span>
+                        <span className="text-gray-500">{phone.status}</span>
                       ) : (
                         <>Activated: {phone.activatedDate}</>
                       )}
                     </span>
                     {phone.limit && (
-                      <span className="text-sm text-gray-500">
+                      <span className="text-xs text-gray-500">
                         Limit: {phone.limit}
                       </span>
                     )}
@@ -60,7 +60,7 @@ const PhoneLinesSection = () => {
               </div>
               <button
                 onClick={() => !isActivating && toggleDeletePhoneModal(phone)}
-                className={`p-2 rounded-md transition-all duration-200 ${
+                className={`p-0 rounded-md transition-all duration-200 ${
                   isActivating
                     ? "opacity-20 cursor-not-allowed"
                     : "text-gray-400 hover:text-red-500 hover:bg-red-50"
@@ -68,7 +68,7 @@ const PhoneLinesSection = () => {
                 disabled={isActivating}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-[18px] h-[20px]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -89,22 +89,15 @@ const PhoneLinesSection = () => {
       <div className="flex justify-end">
         <button
           onClick={addPhoneLine}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50  transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
         >
           Add New Line
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 8l4 4m0 0l-4 4m4-4H3"
-            />
-          </svg>
+          <Image
+            src="/svgs/settings/arrowicon.svg"
+            alt="Arrow"
+            width={12}
+            height={9}
+          />
         </button>
       </div>
 

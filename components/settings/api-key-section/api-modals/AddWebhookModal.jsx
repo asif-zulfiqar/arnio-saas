@@ -10,48 +10,35 @@ const AddWebhookModal = ({ onClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Webhook Name
-        </label>
-        <input
-          type="text"
-          value={webhookForm.name}
-          onChange={(e) => updateWebhookForm("name", e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter webhook name"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-900 mb-2">
           Target URL
         </label>
         <input
           type="url"
           value={webhookForm.targetUrl}
           onChange={(e) => updateWebhookForm("targetUrl", e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-lg bg-gray-50 text-[14px] font-inter px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="https://example.com/webhook"
         />
       </div>
 
       {/* Divider */}
-      <hr className="border-t border-gray-200 my-4" />
+      <hr className="border-t border-gray-200 my-5" />
 
       {/* Buttons positioned to bottom right */}
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex justify-end gap-4 ">
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+          className="px-3 py-2 border border-gray-200 text-gray-900 rounded-lg hover:bg-gray-50 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Save
         </button>

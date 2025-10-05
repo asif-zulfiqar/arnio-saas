@@ -55,20 +55,20 @@ const TeamMemberRow = ({ member }) => {
   return (
     <tr className="hover:bg-gray-50">
       {/* User Column */}
-      <td className="px-8 py-4 whitespace-nowrap">
+      <td className="px-[16px] py-[10px] whitespace-nowrap">
         <div className="flex items-center gap-3">
           {member.avatar ? (
             <img
-              className="h-10 w-10 rounded-full object-cover"
+              className="h-8 w-8 rounded-full object-cover"
               src={member.avatar}
               alt={member.name}
             />
           ) : (
-            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
+            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-[12px] font-medium text-gray-900">
               {member.initials || getInitials(member.name)}
             </div>
           )}
-          <span className="text-sm font-medium text-gray-900">
+          <span className=" font-inter font-semibold text-sm leading-[14px] tracking-normal text-gray-900 opacity-100">
             {member.name}
           </span>
         </div>
@@ -83,19 +83,23 @@ const TeamMemberRow = ({ member }) => {
       <td className="px-6 py-4 whitespace-nowrap relative">
         <button
           onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-1 h-[25px] px-3 py-0.5 text-sm text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
         >
-          {/* Use imported SVG with Image component */}
+          {/* Logo - 11px × 12px with 0.5px left offset */}
           <Image
             src={getRoleLogo(member.role)}
             alt={`${member.role} role`}
-            width={16}
-            height={16}
-            className="flex-shrink-0"
+            width={11}
+            height={12}
+            className="flex-shrink-0 ml-[0.5px]"
           />
-          {member.role}
+          {/* Text - height 21px, width auto */}
+          <span className="h-[21px] flex items-center justify-center text-sm font-inter font-medium  text-center pt-[2px]">
+            {member.role}
+          </span>
+          {/* Chevron - 10px × 10px */}
           <svg
-            className="w-4 h-4"
+            className="w-[12px] h-[12px] flex-shrink-10  text-gray-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -103,7 +107,7 @@ const TeamMemberRow = ({ member }) => {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={3}
               d="M19 9l-7 7-7-7"
             />
           </svg>
@@ -111,22 +115,26 @@ const TeamMemberRow = ({ member }) => {
 
         {/* Role Dropdown - Clean Design without Radio Buttons */}
         {showRoleDropdown && (
-          <div className="absolute z-50 mt-2 w-40 bg-white rounded-md shadow-md border border-gray-200">
+          <div className="absolute  px-[8px] py-[8px] z-50 mt-2 w-30 bg-white rounded-md shadow-md border border-gray-200">
             {roles.map((role) => (
               <button
                 key={role}
                 onClick={() => handleRoleChange(role)}
                 className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition-colors ${
-                  selectedRole === role ? "bg-gray-50" : "hover:bg-gray-50"
+                  selectedRole === role
+                    ? "bg-gray-100 rounded"
+                    : "hover:bg-gray-100  rounded"
                 }`}
               >
                 {/* Use imported SVG with Image component */}
                 <Image
                   src={getRoleLogo(role)}
                   alt={`${role} role`}
-                  width={16}
-                  height={16}
-                  className="flex-shrink-0"
+                  width={12}
+                  height={13}
+                  className={`flex-shrink-0 ${
+                    selectedRole === role ? "" : "opacity-40"
+                  }`}
                 />
                 <span className="text-gray-700">{role}</span>
               </button>
@@ -136,47 +144,41 @@ const TeamMemberRow = ({ member }) => {
       </td>
 
       {/* Actions Column */}
-      <td className="px-8 py-4 whitespace-nowrap text-right">
+      <td className="px-[16px] py-[10px] whitespace-nowrap text-right">
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={handleEdit}
-            className="px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1"
+            className="flex items-center gap-2 h-[34px] w-[67px]  px-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            {/* Fixed SVG with camelCase attributes */}
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-              />
-            </svg>
-            Edit
+            {/* Edit icon from public folder */}
+            <Image
+              src="/svgs/settings/editicon.svg"
+              alt="Edit"
+              width={11}
+              height={11}
+              className="flex-shrink-0"
+            />
+            <span className="text-[12px] font-medium text-gray-900 ">Edit</span>
           </button>
           <button
             onClick={handleDelete}
-            className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors flex items-center gap-1"
+            className="flex items-center gap-2 h-[34px] w-[82px] py-2 px-3 bg-[#C81E1E] rounded-lg text-white hover:opacity-90 transition-opacity"
           >
-            {/* Fixed SVG with camelCase attributes */}
+            {/* Delete icon - 8px × 9px */}
             <svg
-              className="w-3.5 h-3.5"
+              className="flex-shrink-0 w-3 h-4"
               fill="none"
               stroke="currentColor"
+              strokeWidth="2"
               viewBox="0 0 24 24"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
               />
             </svg>
-            Delete
+            <span className="text-xs font-medium  ">Delete</span>
           </button>
         </div>
       </td>

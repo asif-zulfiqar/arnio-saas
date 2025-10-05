@@ -6,7 +6,7 @@ const useAccountStore = create((set, get) => ({
   fullName: "Bonnie Green",
   email: "name@flowbite.com",
   userRole: "Admin",
-  phoneNumber: "e.g. +(12)3456 789",
+  phoneNumber: "+1 (443) 768-9947",
 
   // Phone Lines
   phoneLines: [
