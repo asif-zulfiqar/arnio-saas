@@ -1,10 +1,12 @@
 "use client";
 import Header from "@/components/layout/Header";
 import LeftSidebar from "@/components/layout/LeftSidebar";
+import Welcome from "@/components/welcome/Welcome";
 import { useState } from "react";
 
 const UserLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isWelcomeScreen, setIsWelcomeScreen] = useState(true);
 
   const handleToggle = () => setIsSidebarOpen((s) => !s);
 
@@ -15,6 +17,7 @@ const UserLayout = ({ children }) => {
         <LeftSidebar isOpen={isSidebarOpen} />
         <section className="flex-1 p-5">{children}</section>
       </section>
+      {isWelcomeScreen && <Welcome onClose={setIsWelcomeScreen} />}
     </main>
   );
 };

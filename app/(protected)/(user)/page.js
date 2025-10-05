@@ -2,16 +2,14 @@
 import AddContact from "@/components/conversations/AddContact";
 import AllMessages from "@/components/conversations/AllMessages";
 import ConversationBox from "@/components/conversations/ConversationBox";
-import ConversationsFilter from "@/components/conversations/ConversationsFilter";
 import ConversationsList from "@/components/conversations/ConversationsList";
 import Search from "@/components/conversations/Search";
 import SearchBar from "@/components/conversations/SearchBar";
 import Modal from "@/components/global/Modal";
 import Profile from "@/components/profile/Profile";
-import Welcome from "@/components/welcome/Welcome";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -20,7 +18,6 @@ const Conversations = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isWelcomeScreen, setIsWelcomeScreen] = useState(true);
 
   const { searchTerm, setSearchTerm } = useWorkspaceStore();
 
@@ -105,8 +102,6 @@ const Conversations = () => {
           <AddContact onClose={handleCloseModal} />
         </Modal>
       )}
-
-      {isWelcomeScreen && <Welcome onClose={setIsWelcomeScreen} />}
     </div>
   );
 };
