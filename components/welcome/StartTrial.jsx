@@ -25,7 +25,7 @@ const StartTrial = ({ setStep }) => {
       </div>
       <div className="flex justify-center">
         <Button
-          text="Start Trial"
+          text="Start trial"
           width="w-[124px]"
           onClick={() => setStep(2)}
         />
