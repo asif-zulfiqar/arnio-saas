@@ -16,7 +16,7 @@ const ActivatePhoneLine = ({ onClose }) => {
           Activating your phone line…
         </h4>
         <p className="text-gray-500 text-base text-center max-w-[477px]">
-          This can take up to 1 hour. We’ll text or email you when it’s ready.
+          This can take a few minutes. We’ll text or email you when it’s ready.
           In the meantime, keep exploring Arnio.
         </p>
         <p className="text-base font-medium text-gray-900">
