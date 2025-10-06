@@ -1,7 +1,7 @@
 import { useState } from "react";
-import StartTrail from "./StartTrail";
 import { motion } from "framer-motion";
 import ActivatePhoneLine from "./ActivatePhoneLine";
+import StartTrial from "./StartTrial";
 
 const Welcome = ({ onClose }) => {
   const [step, setStep] = useState(1);
@@ -23,7 +23,7 @@ const Welcome = ({ onClose }) => {
         exit={{ opacity: 0, scale: 0.95, y: -10 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
       >
-        {step === 1 && <StartTrail setStep={setStep} />}
+        {step === 1 && <StartTrial setStep={setStep} />}
         {step === 2 && <ActivatePhoneLine onClose={onClose} />}
       </motion.div>
     </motion.div>

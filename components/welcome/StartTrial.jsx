@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Button from "../global/small/Button";
 
-const StartTrail = ({ setStep }) => {
+const StartTrial = ({ setStep }) => {
   return (
     <div className="space-y-7">
       <Image
@@ -25,7 +25,7 @@ const StartTrail = ({ setStep }) => {
       </div>
       <div className="flex justify-center">
         <Button
-          text="Start Trail"
+          text="Start Trial"
           width="w-[124px]"
           onClick={() => setStep(2)}
         />
@@ -34,4 +34,4 @@ const StartTrail = ({ setStep }) => {
   );
 };
 
-export default StartTrail;
+export default StartTrial;
