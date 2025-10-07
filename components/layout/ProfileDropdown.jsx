@@ -4,10 +4,12 @@ import { LogOut } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
+import useAuthStore from "@/store/auth/authStore";
 
 const ProfileDropdown = ({ userImages = [] }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { logout } = useAuthStore();
 
   // Use outside click hook to close dropdown
   useOutsideClick(dropdownRef, () => setIsDropdownOpen(false));
@@ -19,9 +21,13 @@ const ProfileDropdown = ({ userImages = [] }) => {
     setIsDropdownOpen(false);
   };
 
-  const handleSignOut = () => {
-    console.log("Sign out");
-    setIsDropdownOpen(false);
+  const handleSignOut = async() => {
+    try {
+      await logout();
+      setIsDropdownOpen(false);
+    } catch (error) {
+      console.error("Sign out failed:", error);
+    }
   };
 
   return (

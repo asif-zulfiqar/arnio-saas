@@ -68,7 +68,11 @@ const Signup = () => {
   };
 
   // Handle Google sign up
-  const handleGoogleSignUp = async () => {};
+  const handleGoogleSignUp = () => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const googleAuthUrl = `${baseUrl}/google`;
+    window.location.href = googleAuthUrl;
+  };
 
   return (
     <SignupLayout step={1}>

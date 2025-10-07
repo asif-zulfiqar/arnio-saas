@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import LoginLayout from "@/components/auth/LoginLayout";
 import Image from "next/image";
 import Link from "next/link";
 import Button from "@/components/global/small/Button";
 import Input from "@/components/global/small/Input";
 import { Mail } from "lucide-react";
+import useAuthStore from "@/store/auth/authStore";
 
 const Login = () => {
+  const router = useRouter();
+  const { login, googleLogin, isLoading } = useAuthStore();
   const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
   // React Hook Form setup
@@ -47,53 +50,41 @@ const Login = () => {
 
   // Handle email step submission
   const handleEmailSubmit = async (data) => {
-    setIsLoading(true);
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      if (data.email === "user@gmail.com") {
-        setError("email", {
-          type: "manual",
-          message: "No account found with this email",
-        });
-        return;
-      }
-
+      // For now, just move to password step
+      // In a real app, you might want to validate if email exists
       setStep(2);
     } catch (error) {
       console.error("Email validation failed:", error);
-    } finally {
-      setIsLoading(false);
+      setError("email", {
+        type: "manual",
+        message: "Something went wrong. Please try again.",
+      });
     }
   };
 
   // Handle final form submission (password step)
   const handlePasswordSubmit = async (data) => {
-    setIsLoading(true);
-
     try {
-      // Simulate login API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Handle successful login here
-      console.log("Login successful:", {
+      const result = await login({
         email: data.email,
         password: data.password,
-        rememberMe,
       });
 
-      // Redirect or update UI state here
+      if (result.success) {
+        // Redirect to dashboard
+        router.push('/');
+      }
     } catch (error) {
       console.error("Login failed:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   // Handle Google sign in
   const handleGoogleSignIn = () => {
-    console.log("Google sign in clicked");
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const googleAuthUrl = `${baseUrl}/google`;
+    window.location.href = googleAuthUrl;
   };
 
   // Handle back button
