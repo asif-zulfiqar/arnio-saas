@@ -20,27 +20,31 @@ const pages = [
     name: "Conversations",
     icon: <ConversationIcon />,
     url: "/",
+    onboardingTarget: null,
   },
   {
     name: "Analytics",
     icon: <AnalyticsIcon />,
     url: "/analytics",
+    onboardingTarget: "analytics-icon",
   },
   {
     name: "Campaigns",
     icon: <IntegrationsIcon />,
     url: "/campaigns",
+    onboardingTarget: "campaigns-icon",
   },
   {
     name: "Settings",
     icon: <SettingsIcon />,
     url: "/settings",
+    onboardingTarget: "settings-icon",
   },
 ];
 
 const otherPages = [
-  { name: "Docs", icon: <DocsIcon />, url: "https://docs.arnio.co/" },
-  { name: "Help and first steps", icon: <HelpIcon />, url: "#" },
+  { name: "Docs", icon: <DocsIcon />, url: "https://docs.arnio.co/", onboardingTarget: null },
+  { name: "Help and first steps", icon: <HelpIcon />, url: "#", onboardingTarget: "help-icon" },
 ];
 
 const variants = {
@@ -83,6 +87,7 @@ const LeftSidebar = ({ isOpen }) => {
             active={pathname === page.url}
             expanded={isOpen}
             unreadCount={page.name === "Conversations" ? totalUnreadCount : 0}
+            onboardingTarget={page.onboardingTarget}
           />
         ))}
       </div>
@@ -95,6 +100,7 @@ const LeftSidebar = ({ isOpen }) => {
             url={page.url}
             active={false}
             expanded={isOpen}
+            onboardingTarget={page.onboardingTarget}
           />
         ))}
       </div>
@@ -104,11 +110,12 @@ const LeftSidebar = ({ isOpen }) => {
 
 export default LeftSidebar;
 
-const LinkItem = ({ name, icon, url, active, expanded, unreadCount }) => {
+const LinkItem = ({ name, icon, url, active, expanded, unreadCount, onboardingTarget }) => {
   return (
     <div className="relative group w-full">
       <Link
         href={url}
+        data-onboarding-target={onboardingTarget}
         className={`flex items-center gap-3 w-full p-2 rounded-lg hover:bg-gray-100 transition-all duration-150
         ${active ? "bg-gray-100" : "bg-transparent"} ${
           expanded ? "justify-start px-3" : "justify-center"
