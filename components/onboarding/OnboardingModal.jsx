@@ -137,7 +137,7 @@ const OnboardingModal = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="absolute rounded-2xl shadow-xl border border-gray-[#E5E7EB] w-80 max-w-sm px-3"
+          className="absolute rounded-2xl shadow-xl border border-[#E5E7EB] w-[340px] max-w-sm px-3"
           style={{
             top: modalPosition.top,
             left: modalPosition.left,
@@ -146,22 +146,22 @@ const OnboardingModal = () => {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <span className="text-sm text-gray-500 font-medium">
+          <div className="flex items-center justify-between bg-white pt-5 px-5">
+            <span className="text-sm text-gray-400 font-medium">
               {currentStep} of {totalSteps}
             </span>
             <button
               onClick={handleClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <X size={20} />
+              <X size={16} />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-4">
+          <div className="bg-white py-5 px-5">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-sm font-semibold text-gray-900">
                 {currentStepData.title}
               </h3>
               {currentStepData.isPro && (
@@ -170,16 +170,16 @@ const OnboardingModal = () => {
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-gray-500 leading-relaxed">
               {currentStepData.description}
             </p>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between p-4 border-t border-gray-100">
+          <div className="flex items-center justify-between bg-white pb-5 px-5">
             <button
               onClick={handleSkip}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+              className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
             >
               Skip for now
             </button>
@@ -188,7 +188,7 @@ const OnboardingModal = () => {
               {currentStep > 1 && (
                 <button
                   onClick={handlePrevious}
-                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors !cursor-pointer"
+                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors !cursor-pointer"
                 >
                   <ChevronLeft size={16} />
                   Back
@@ -197,7 +197,7 @@ const OnboardingModal = () => {
 
               <button
                 onClick={handleNext}
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-blue-700 transition-colors !cursor-pointer"
+                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 transition-colors !cursor-pointer"
               >
                 {currentStep === totalSteps ? "Finish" : "Next"}
                 {currentStep < totalSteps && <ChevronRight size={16} />}
