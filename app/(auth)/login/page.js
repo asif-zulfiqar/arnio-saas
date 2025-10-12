@@ -82,7 +82,7 @@ const Login = () => {
 
   // Handle Google sign in
   const handleGoogleSignIn = () => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://staging.arnio.co/api/v1";
     const googleAuthUrl = `${baseUrl}/google`;
     window.location.href = googleAuthUrl;
   };
