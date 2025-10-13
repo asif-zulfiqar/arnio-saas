@@ -7,6 +7,7 @@ import Button from "@/components/global/small/Button";
 import Input from "@/components/global/small/Input";
 import { Plus, Trash2, Copy, Mail, User, Shield } from "lucide-react";
 import useSignupStore from "@/store/auth/signupStore";
+import useAuthStore from "@/store/auth/authStore";
 import { useRouter } from "next/navigation";
 import Dropdown from "@/components/global/small/Dropdown";
 
@@ -21,6 +22,7 @@ const TeamMembers = () => {
     setCurrentStep,
     prevStep,
   } = useSignupStore();
+  const { inviteTeamMembers } = useAuthStore();
 
   // React Hook Form setup for adding new member
   const {
@@ -92,13 +94,36 @@ const TeamMembers = () => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // If there are team members, invite them
+      if (teamMembers.length > 0) {
+        // TODO: Get workspace ID from context or store
+        const workspaceId = "temp-workspace-id"; // This should come from workspace creation
+        
+        const inviteData = {
+          workspaceId,
+          teamMembers: teamMembers.map(member => ({
+            email: member.email,
+            fullName: member.fullName,
+            role: member.role.toUpperCase(), // Convert to uppercase as per API
+          })),
+        };
+
+        const result = await inviteTeamMembers(inviteData);
+        
+        if (!result.success) {
+          console.error("Failed to invite team members:", result.error);
+          // Continue anyway, don't block the flow
+        }
+      }
 
       // Navigate to preferences step
       setCurrentStep(4);
       router.push("/preferences");
     } catch (error) {
       console.error("Navigation failed:", error);
+      // Continue anyway, don't block the flow
+      setCurrentStep(4);
+      router.push("/preferences");
     } finally {
       setIsLoading(false);
     }
@@ -119,8 +144,6 @@ const TeamMembers = () => {
   // Get button state for add member
   const getAddMemberButtonState = () => {
     if (
-      memberErrors.email ||
-      memberErrors.fullName ||
       !watchEmail?.trim() ||
       !watchFullName?.trim()
     ) {

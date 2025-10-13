@@ -4,16 +4,18 @@ import SignupLayout from "@/components/auth/SignupLayout";
 import Button from "@/components/global/small/Button";
 import Input from "@/components/global/small/Input";
 import useSignupStore from "@/store/auth/signupStore";
-import { Mail } from "lucide-react";
+import useAuthStore from "@/store/auth/authStore";
+import { Mail, Lock } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 const Signup = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { setEmail, setGoogleAuthUsed, setCurrentStep } = useSignupStore();
+  const { register: registerUser } = useAuthStore();
 
   // React Hook Form setup
   const {
@@ -22,14 +24,26 @@ const Signup = () => {
     formState: { errors },
     watch,
     setError,
+    clearErrors,
   } = useForm({
     mode: "onChange",
     defaultValues: {
       email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   const watchEmail = watch("email");
+  const watchPassword = watch("password");
+  const watchConfirmPassword = watch("confirmPassword");
+
+  // Clear general errors when user starts typing
+  useEffect(() => {
+    if (errors.general) {
+      clearErrors("general");
+    }
+  }, [watchEmail, watchPassword, watchConfirmPassword, errors.general, clearErrors]);
 
   // Validation rules
   const validationRules = {
@@ -40,25 +54,56 @@ const Signup = () => {
         message: "Please enter a valid email address",
       },
     },
+    password: {
+      required: "Password is required",
+      minLength: {
+        value: 8,
+        message: "Password must be at least 8 characters",
+      },
+    },
+    confirmPassword: {
+      required: "Please confirm your password",
+      validate: (value) => {
+        if (value !== watchPassword) {
+          return "Passwords do not match";
+        }
+        return true;
+      },
+    },
   };
 
-  // Handle email submission
-  const handleEmailSubmit = async (data) => {
+  // Handle form submission
+  const handleFormSubmit = async (data) => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Call register API
+      const result = await registerUser({
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        firstName: "", // Will be filled in profile creation
+        lastName: "", // Will be filled in profile creation
+        phone: "", // Will be filled in profile creation
+        companyName: "", // Will be filled in workspace creation
+      });
 
-      // Store email in Zustand store
-      setEmail(data.email);
-      setGoogleAuthUsed(false);
+      if (result.success) {
+        // Store email in Zustand store
+        setEmail(data.email);
+        setGoogleAuthUsed(false);
 
-      // Navigate to workspace step
-      setCurrentStep(2);
-      router.push("/workspace");
+        // Navigate to email confirmation page
+        router.push("/email-confirmation");
+      } else {
+        setError("general", {
+          type: "manual",
+          message: result.error || "Registration failed. Please try again.",
+        });
+      }
     } catch (error) {
-      console.error("Email validation failed:", error);
-      setError("email", {
+      console.error("Registration failed:", error);
+      setError("general", {
         type: "manual",
         message: "Something went wrong. Please try again.",
       });
@@ -95,7 +140,7 @@ const Signup = () => {
           <hr className="border-gray-200" />
         </div>
 
-        <form onSubmit={handleSubmit(handleEmailSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-5">
           <Input
             type="email"
             placeholder="Enter your email"
@@ -105,10 +150,34 @@ const Signup = () => {
             {...register("email", validationRules.email)}
           />
 
+          <Input
+            type="password"
+            placeholder="Create Password"
+            icon={<Lock className="size-4" />}
+            autoComplete="new-password"
+            error={errors.password?.message}
+            {...register("password", validationRules.password)}
+          />
+
+          <Input
+            type="password"
+            placeholder="Confirm Password"
+            icon={<Lock className="size-4" />}
+            autoComplete="new-password"
+            error={errors.confirmPassword?.message}
+            {...register("confirmPassword", validationRules.confirmPassword)}
+          />
+
+          {errors.general && (
+            <p className="text-sm text-red-600 text-center">
+              {errors.general.message}
+            </p>
+          )}
+
           <Button
-            text={isLoading ? "Checking..." : "Continue"}
+            text={isLoading ? "Creating Account..." : "Continue"}
             type="submit"
-            // disabled={isLoading || !watchEmail || errors.email}
+            disabled={isLoading || !watchEmail || !watchPassword || !watchConfirmPassword}
             height="h-[41px]"
             cn="!text-sm"
           />

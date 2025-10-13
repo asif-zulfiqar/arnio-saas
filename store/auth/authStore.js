@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { authService, googleAuthService } from '@/lib/api/auth';
+import { authService, googleAuthService, workspaceService, teamMemberService } from '@/lib/api/auth';
 import toast from 'react-hot-toast';
 
 const useAuthStore = create((set, get) => ({
@@ -9,16 +9,24 @@ const useAuthStore = create((set, get) => ({
   isLoading: false,
   error: null,
 
-  // Initialize auth state - simplified for now
+  // Initialize auth state
   initializeAuth: async () => {
     try {
-      // For now, we'll assume user is authenticated if they can reach this point
-      // This is a temporary solution until backend implements proper auth endpoints
-      const user = await authService.getProfile();
-      set({ user, isAuthenticated: true });
+      set({ isLoading: true });
+      
+      // Check if user is authenticated using the auth status endpoint
+      const isAuth = await authService.isAuthenticated();
+      
+      if (isAuth) {
+        // Get user profile if authenticated
+        const user = await authService.getProfile();
+        set({ user, isAuthenticated: true, isLoading: false });
+      } else {
+        set({ user: null, isAuthenticated: false, isLoading: false });
+      }
     } catch (error) {
       console.error('Failed to initialize auth:', error);
-      set({ user: null, isAuthenticated: false });
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
@@ -29,8 +37,8 @@ const useAuthStore = create((set, get) => ({
     try {
       const response = await authService.login(credentials);
       
-      // After successful login, get user profile
-      const user = await authService.getProfile();
+      // The login response should contain user data
+      const user = response.user;
       
       set({
         user,
@@ -156,7 +164,9 @@ const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      const updatedUser = await authService.getProfile(); // Assuming there's an update endpoint
+      const response = await authService.updateProfile(profileData);
+      const updatedUser = await authService.getProfile();
+      
       set({
         user: updatedUser,
         isLoading: false,
@@ -172,6 +182,129 @@ const useAuthStore = create((set, get) => ({
         error: errorMessage,
       });
 
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Setup user profile
+  setupProfile: async (profileData) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await authService.setupProfile(profileData);
+      const updatedUser = await authService.getProfile();
+      
+      set({
+        user: updatedUser,
+        isLoading: false,
+        error: null,
+      });
+
+      toast.success('Profile setup successfully!');
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      const errorMessage = error.message || 'Profile setup failed. Please try again.';
+      set({
+        isLoading: false,
+        error: errorMessage,
+      });
+
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Forgot password
+  forgotPassword: async (email) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await authService.forgotPassword(email);
+      set({ isLoading: false, error: null });
+      
+      toast.success('Password reset OTP sent to your email!');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to send reset OTP. Please try again.';
+      set({ isLoading: false, error: errorMessage });
+      
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Reset password
+  resetPassword: async (resetData) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await authService.resetPassword(resetData);
+      set({ isLoading: false, error: null });
+      
+      toast.success('Password reset successfully!');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.message || 'Password reset failed. Please try again.';
+      set({ isLoading: false, error: errorMessage });
+      
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Resend verification email
+  resendVerification: async (email) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await authService.resendVerification(email);
+      set({ isLoading: false, error: null });
+      
+      toast.success('Verification email sent!');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to send verification email. Please try again.';
+      set({ isLoading: false, error: errorMessage });
+      
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Create workspace
+  createWorkspace: async (workspaceData) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await workspaceService.createWorkspace(workspaceData);
+      set({ isLoading: false, error: null });
+      
+      toast.success('Workspace created successfully!');
+      return { success: true, workspace: response };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to create workspace. Please try again.';
+      set({ isLoading: false, error: errorMessage });
+      
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Invite team members
+  inviteTeamMembers: async (inviteData) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await teamMemberService.inviteTeamMembers(inviteData);
+      set({ isLoading: false, error: null });
+      
+      toast.success('Team members invited successfully!');
+      return { success: true, data: response };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to invite team members. Please try again.';
+      set({ isLoading: false, error: errorMessage });
+      
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }

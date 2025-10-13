@@ -5,9 +5,10 @@ import Button from "@/components/global/small/Button";
 import Dropdown from "@/components/global/small/Dropdown";
 import Input from "@/components/global/small/Input";
 import useSignupStore from "@/store/auth/signupStore";
+import useAuthStore from "@/store/auth/authStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 const COUNTRY_OPTIONS = [
@@ -22,6 +23,7 @@ const Workspace = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
   const [billingCountryError, setBillingCountryError] = useState("");
   const {
     setCompanyLogo,
@@ -34,6 +36,7 @@ const Workspace = () => {
     workspaceHandle,
     billingCountry,
   } = useSignupStore();
+  const { createWorkspace } = useAuthStore();
 
   const handleCountrySelect = (value) => {
     setBillingCountry(value);
@@ -48,6 +51,7 @@ const Workspace = () => {
     watch,
     setValue,
     setError,
+    clearErrors,
   } = useForm({
     mode: "onChange",
     defaultValues: {
@@ -59,6 +63,13 @@ const Workspace = () => {
 
   const watchCompanyName = watch("companyName");
   const watchWorkspaceHandle = watch("workspaceHandle");
+
+  // Clear general errors when user starts typing
+  useEffect(() => {
+    if (errors.general) {
+      clearErrors("general");
+    }
+  }, [watchCompanyName, watchWorkspaceHandle, errors.general, clearErrors]);
 
   // Validation rules
   const validationRules = {
@@ -95,6 +106,7 @@ const Workspace = () => {
         return;
       }
 
+      setLogoFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setLogoPreview(e.target.result);
@@ -114,16 +126,32 @@ const Workspace = () => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Prepare workspace data for API
+      const workspaceData = {
+        companyName: data.companyName,
+        workspaceHandle: data.workspaceHandle,
+        billingCountry: data.billingCountry,
+        companyLogo: logoFile, // File object for upload
+      };
 
-      // Store data in Zustand store
-      setCompanyName(data.companyName);
-      setWorkspaceHandle(data.workspaceHandle);
-      setBillingCountry(data.billingCountry);
+      // Call create workspace API
+      const result = await createWorkspace(workspaceData);
 
-      // Navigate to team members step
-      setCurrentStep(3);
-      router.push("/team-members");
+      if (result.success) {
+        // Store data in Zustand store
+        setCompanyName(data.companyName);
+        setWorkspaceHandle(data.workspaceHandle);
+        setBillingCountry(data.billingCountry);
+
+        // Navigate to team members step
+        setCurrentStep(3);
+        router.push("/team-members");
+      } else {
+        setError("general", {
+          type: "manual",
+          message: result.error || "Workspace creation failed. Please try again.",
+        });
+      }
     } catch (error) {
       console.error("Form submission failed:", error);
       setError("general", {
@@ -146,8 +174,6 @@ const Workspace = () => {
     }
 
     if (
-      errors.companyName ||
-      errors.workspaceHandle ||
       !watchCompanyName?.trim() ||
       !watchWorkspaceHandle?.trim()
     ) {

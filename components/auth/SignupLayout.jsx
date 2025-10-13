@@ -4,7 +4,7 @@ import Link from "next/link";
 const SignupLayout = ({ children, step = 1 }) => {
   const getRightSideContent = () => {
     switch (step) {
-      case 1: // Signup page
+      case 1: // Signup page, Email confirmation, Profile creation
         return (
           <div className="flex flex-col justify-center w-full max-w-lg">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -18,7 +18,7 @@ const SignupLayout = ({ children, step = 1 }) => {
               sales: replies, conversions, and repeat purchases. <br /> <br />
               The only iMessage sales platform built for eCommerce brands.
               <br /> <br />
-              Let’s get started.
+              Let's get started.
             </p>
           </div>
         );

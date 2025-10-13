@@ -17,11 +17,14 @@ const AuthGuard = ({ children }) => {
     '/signup',
     '/forgot-password',
     '/otp',
+    '/email-confirmation',
+    '/create-profile',
     '/preferences',
     '/team-members',
     '/workspace',
     '/complete-registration',
     '/auth/google/callback',
+    '/google/callback',
   ];
 
   // Define auth routes that should redirect to dashboard if user is already authenticated
@@ -39,8 +42,14 @@ const AuthGuard = ({ children }) => {
       }
     };
 
-    initializeAuthState();
-  }, [initializeAuth]);
+    // Only initialize auth if we're not on a public route
+    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+    if (!isPublicRoute) {
+      initializeAuthState();
+    } else {
+      setIsLoading(false);
+    }
+  }, [initializeAuth, pathname]);
 
   useEffect(() => {
     if (isLoading) return;
