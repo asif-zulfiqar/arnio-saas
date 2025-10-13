@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useAuthStore from '@/store/auth/authStore';
-import { Loader } from '@/components/global/small/Loader';
+import Loader from '@/components/global/small/Loader';
 
 const GoogleCallback = () => {
   const router = useRouter();

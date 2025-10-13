@@ -77,11 +77,11 @@ const SignupLayout = ({ children, step = 1 }) => {
       <section className="flex-1 flex">
         {/* Left side - Form */}
         <div className="flex-1 flex items-center justify-center px-4 relative">
-          <div className={`w-full max-w-lg ${step === 4 ? "h-full" : ""}`}>
+          <div className={`w-full max-w-lg z-10 ${step === 4 ? "h-full" : ""}`}>
             {children}
           </div>
           {step === 1 && (
-            <div className="absolute bottom-0 w-full max-w-lg">
+            <div className="absolute bottom-0 w-full max-w-lg z-0">
               <p className="text-[10px] text-gray-500">
                 By entering your email, you agree to Arnio contacting you about
                 our products and services. You can unsubscribe at any time by
