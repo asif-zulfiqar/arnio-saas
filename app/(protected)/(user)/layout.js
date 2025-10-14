@@ -19,7 +19,7 @@ const UserLayout = ({ children }) => {
           <LeftSidebar isOpen={isSidebarOpen} />
           <section className="flex-1 p-5">{children}</section>
         </section>
-        {/* {isWelcomeScreen && <Welcome onClose={setIsWelcomeScreen} />} */}
+        {isWelcomeScreen && <Welcome onClose={setIsWelcomeScreen} />}
       </main>
     </OnboardingProvider>
   );

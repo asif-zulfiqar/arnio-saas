@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import Link from "next/link";
 
 const Signup = () => {
   const router = useRouter();
@@ -43,7 +44,13 @@ const Signup = () => {
     if (errors.general) {
       clearErrors("general");
     }
-  }, [watchEmail, watchPassword, watchConfirmPassword, errors.general, clearErrors]);
+  }, [
+    watchEmail,
+    watchPassword,
+    watchConfirmPassword,
+    errors.general,
+    clearErrors,
+  ]);
 
   // Validation rules
   const validationRules = {
@@ -114,7 +121,8 @@ const Signup = () => {
 
   // Handle Google sign up
   const handleGoogleSignUp = () => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://staging.arnio.co/api/v1";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://staging.arnio.co/api/v1";
     const googleAuthUrl = `${baseUrl}/google`;
     window.location.href = googleAuthUrl;
   };
@@ -177,10 +185,21 @@ const Signup = () => {
           <Button
             text={isLoading ? "Creating Account..." : "Continue"}
             type="submit"
-            disabled={isLoading || !watchEmail || !watchPassword || !watchConfirmPassword}
+            disabled={
+              isLoading ||
+              !watchEmail ||
+              !watchPassword ||
+              !watchConfirmPassword
+            }
             height="h-[41px]"
             cn="!text-sm"
           />
+          <h6 className="text-sm font-medium text-gray-900 text-center">
+            Already have an account?{" "}
+            <Link href="/login" className="text-primary">
+              Login
+            </Link>
+          </h6>
         </form>
       </div>
     </SignupLayout>

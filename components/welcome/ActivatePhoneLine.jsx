@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Button from "../global/small/Button";
+import Link from "next/link";
 
 const ActivatePhoneLine = ({ onClose }) => {
   return (
@@ -23,10 +24,18 @@ const ActivatePhoneLine = ({ onClose }) => {
           Things you can do right now:
         </p>
         <ul className="space-y-2 text-base font-medium text-primary list-disc list-inside pl-2">
-          <li className="">Set up an automation sequence</li>
-          <li>Open Settings</li>
-          <li>Browse the Analytics dashboard</li>
-          <li>Explore Arnio articles</li>
+          <Link href="">
+            <li className="">Set up an automation sequence</li>
+          </Link>
+          <Link href="/settings" onClick={() => onClose(false)}>
+            <li>Open Settings</li>
+          </Link>
+          <Link href="/analytics" onClick={() => onClose(false)}>
+            <li>Browse the Analytics dashboard</li>
+          </Link>
+          <Link href="https://docs.arnio.co/" target="_blank" rel="noreferrer">
+            <li>Explore Arnio articles</li>
+          </Link>
         </ul>
       </div>
       <div className="flex justify-center">
