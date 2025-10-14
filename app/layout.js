@@ -12,10 +12,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        {/* <Providers> */}
-        <Toaster position="top-right" />
-        <main>{children}</main>
-        {/* </Providers> */}
+        <Providers>
+          <Toaster position="top-right" />
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   );
