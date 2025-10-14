@@ -24,8 +24,8 @@ const ActivatePhoneLine = ({ onClose }) => {
           Things you can do right now:
         </p>
         <ul className="space-y-2 text-base font-medium text-primary list-disc list-inside pl-2">
-          <Link href="">
-            <li className="">Set up an automation sequence</li>
+          <Link href="/campaigns" onClick={() => onClose(false)}>
+            <li>Set up an automation sequence</li>
           </Link>
           <Link href="/settings" onClick={() => onClose(false)}>
             <li>Open Settings</li>
