@@ -9,9 +9,7 @@ export default function Providers({ children }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AuthGuard>
-          {children}
-        </AuthGuard>
+        <AuthGuard>{children}</AuthGuard>
       </AuthProvider>
     </QueryClientProvider>
   );

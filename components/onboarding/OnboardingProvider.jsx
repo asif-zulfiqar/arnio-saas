@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect } from 'react';
-import OnboardingModal from './OnboardingModal';
-import useOnboardingStore from '@/store/onboarding/onboardingStore';
+import React, { useEffect } from "react";
+import OnboardingModal from "./OnboardingModal";
+import useOnboardingStore from "@/store/onboarding/onboardingStore";
 
 const OnboardingProvider = ({ children }) => {
   const { shouldShowOnboarding, startOnboarding } = useOnboardingStore();
