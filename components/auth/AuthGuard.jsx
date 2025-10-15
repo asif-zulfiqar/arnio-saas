@@ -18,10 +18,6 @@ const AuthGuard = ({ children }) => {
     '/forgot-password',
     '/otp',
     '/email-confirmation',
-    '/create-profile',
-    '/preferences',
-    '/team-members',
-    '/workspace',
     '/auth/google/callback',
     '/google/callback',
   ];
