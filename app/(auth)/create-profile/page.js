@@ -45,7 +45,12 @@ const CreateProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const profile = await getProfile();
+        const response = await getProfile();
+        console.log("Profile response:", response); // Debug log
+        
+        // Handle different response structures
+        const profile = response?.data || response?.user || response;
+        
         if (profile) {
           // Populate form with existing data
           setValue("firstName", profile.firstName || "");
@@ -53,8 +58,8 @@ const CreateProfile = () => {
           setValue("phone", profile.phone || "");
           
           // Set avatar if exists
-          if (profile.avatar) {
-            setAvatarPreview(profile.avatar);
+          if (profile.avatar || profile.avatarUrl) {
+            setAvatarPreview(profile.avatar || profile.avatarUrl);
           }
         }
       } catch (error) {
@@ -140,6 +145,8 @@ const CreateProfile = () => {
         phone: data.phone,
         avatar: avatarFile, // File object for upload
       };
+
+      console.log("Profile data being sent:", profileData); // Debug log
 
       // Call update profile API
       const result = await updateProfile(profileData);

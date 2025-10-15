@@ -132,9 +132,11 @@ const Workspace = () => {
         userId: user?.id,
         companyName: data.companyName,
         workspaceHandle: data.workspaceHandle,
-        billingCountry: data.billingCountry,
+        billingCountry: billingCountry, // Use from signup store, not form data
         companyLogo: logoFile, // File object for upload
       };
+
+      console.log("Workspace data being sent:", workspaceData); // Debug log
 
       // Call create workspace API
       const result = await createWorkspace(workspaceData);
