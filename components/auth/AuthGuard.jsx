@@ -22,7 +22,6 @@ const AuthGuard = ({ children }) => {
     '/preferences',
     '/team-members',
     '/workspace',
-    '/complete-registration',
     '/auth/google/callback',
     '/google/callback',
   ];
