@@ -80,11 +80,11 @@ const EmailConfirmation = () => {
 
   return (
     <SignupLayout step={1}>
-      <div className="w-full">
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">
+      <div className="w-full space-y-5">
+        <h1 className="text-3xl text-center font-semibold text-gray-900">
           Check your inbox
         </h1>
-        <p className="text-sm text-gray-500 mb-8">
+        <p className="text-sm text-gray-500 text-center">
           We've sent a verification code to your email. Enter the code below to verify your account.
         </p>
 
