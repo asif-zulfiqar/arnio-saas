@@ -17,11 +17,11 @@ const EmailConfirmation = () => {
   const { resendVerification } = useAuthStore();
 
   // Redirect if no email in store
-  // useEffect(() => {
-  //   if (!email) {
-  //     router.push("/signup");
-  //   }
-  // }, [email, router]);
+  useEffect(() => {
+    if (!email) {
+      router.push("/signup");
+    }
+  }, [email, router]);
 
   // Resend cooldown timer
   useEffect(() => {
