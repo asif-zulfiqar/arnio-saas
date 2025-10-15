@@ -23,11 +23,11 @@ const EmailConfirmation = () => {
   const { resendVerification } = useAuthStore();
 
   // Redirect if no email in store
-  useEffect(() => {
-    if (!email) {
-      router.push("/signup");
-    }
-  }, [email, router]);
+  // useEffect(() => {
+  //   if (!email) {
+  //     router.push("/signup");
+  //   }
+  // }, [email, router]);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -98,10 +98,6 @@ const EmailConfirmation = () => {
           </div>
 
           {/* OTP Input */}
-          <div className="space-y-4">
-            <label className="text-sm font-medium text-gray-900">
-              Verification Code
-            </label>
             <div className="flex justify-center">
               <OtpInput
                 value={otp}
@@ -116,7 +112,6 @@ const EmailConfirmation = () => {
                 )}
               />
             </div>
-          </div>
 
           {/* Verify Button */}
           <Button
