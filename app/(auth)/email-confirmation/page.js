@@ -2,24 +2,18 @@
 
 import SignupLayout from "@/components/auth/SignupLayout";
 import Button from "@/components/global/small/Button";
-import Input from "@/components/global/small/Input";
-import useSignupStore from "@/store/auth/signupStore";
 import useAuthStore from "@/store/auth/authStore";
+import useSignupStore from "@/store/auth/signupStore";
 import { Mail } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import OtpInput from "react-otp-input";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const EmailConfirmation = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [otp, setOtp] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const { email, setCurrentStep } = useSignupStore();
+  const { email } = useSignupStore();
   const { resendVerification } = useAuthStore();
 
   // Redirect if no email in store
@@ -36,25 +30,6 @@ const EmailConfirmation = () => {
       return () => clearTimeout(timer);
     }
   }, [resendCooldown]);
-
-  // Handle OTP verification
-  const handleVerifyOtp = async () => {
-    if (otp.length !== 6) return;
-
-    setIsLoading(true);
-    try {
-      // TODO: Integrate with email verification API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Navigate to profile creation page
-      setCurrentStep(2);
-      router.push("/create-profile");
-    } catch (error) {
-      console.error("OTP verification failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Handle resend email
   const handleResendEmail = async () => {
@@ -84,7 +59,7 @@ const EmailConfirmation = () => {
         <h1 className="text-3xl text-center font-semibold text-gray-900">
           Check your inbox
         </h1>
-        <p className="text-sm text-gray-500 text-center">
+        <p className="text-sm text-gray-500 mx-auto text-center max-w-xs">
           We've sent a verification code to your email. Enter the code below to verify your account.
         </p>
 
@@ -97,37 +72,16 @@ const EmailConfirmation = () => {
             </div>
           </div>
 
-          {/* OTP Input */}
-            <div className="flex justify-center">
-              <OtpInput
-                value={otp}
-                onChange={setOtp}
-                numInputs={6}
-                inputType="tel"
-                renderInput={(props) => (
-                  <input
-                    {...props}
-                    className="!size-12 mr-3 !text-lg !font-semibold !text-gray-900 text-center border !border-gray-200 !rounded-lg !focus:outline-none !focus:border-primary"
-                  />
-                )}
-              />
-            </div>
-
-          {/* Verify Button */}
-          <Button
-            text={isLoading ? "Verifying..." : "Verify"}
-            onClick={handleVerifyOtp}
-            disabled={isLoading || otp.length !== 6}
-            height="h-[41px]"
-            cn="!text-sm"
-          />
-
           {/* Resend and Change Email */}
           <div className="space-y-3">
-            <button
+            <Button
+              text={resendLoading ? "Sending..." : resendCooldown > 0 ? `Resend email (${resendCooldown}s)` : "Resend email"}
               onClick={handleResendEmail}
               disabled={resendLoading || resendCooldown > 0}
-              className="w-full text-sm text-gray-600 hover:text-gray-900 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+              height="h-[41px]"
+              cn="!text-sm border border-gray-200"
+              color={resendLoading || resendCooldown > 0 ? "text-gray-400" : "text-gray-900"}
+              bgColor={resendLoading || resendCooldown > 0 ? "bg-gray-200" : "bg-transparent"}
             >
               {resendLoading 
                 ? "Sending..." 
@@ -135,7 +89,7 @@ const EmailConfirmation = () => {
                   ? `Resend email (${resendCooldown}s)` 
                   : "Resend email"
               }
-            </button>
+            </Button>
             
             <button
               onClick={handleChangeEmail}
