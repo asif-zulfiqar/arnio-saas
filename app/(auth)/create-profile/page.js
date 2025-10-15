@@ -17,7 +17,7 @@ const CreateProfile = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const { setCurrentStep } = useSignupStore();
-  const { setupProfile } = useAuthStore();
+  const { updateProfile, getProfile } = useAuthStore();
 
   // React Hook Form setup
   const {
@@ -27,6 +27,7 @@ const CreateProfile = () => {
     watch,
     setError,
     clearErrors,
+    setValue,
   } = useForm({
     mode: "onChange",
     defaultValues: {
@@ -39,6 +40,30 @@ const CreateProfile = () => {
   const watchFirstName = watch("firstName");
   const watchLastName = watch("lastName");
   const watchPhone = watch("phone");
+
+  // Fetch existing profile data on component mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await getProfile();
+        if (profile) {
+          // Populate form with existing data
+          setValue("firstName", profile.firstName || "");
+          setValue("lastName", profile.lastName || "");
+          setValue("phone", profile.phone || "");
+          
+          // Set avatar if exists
+          if (profile.avatar) {
+            setAvatarPreview(profile.avatar);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [getProfile, setValue]);
 
   // Clear general errors when user starts typing
   useEffect(() => {
@@ -116,21 +141,21 @@ const CreateProfile = () => {
         avatar: avatarFile, // File object for upload
       };
 
-      // Call setup profile API
-      const result = await setupProfile(profileData);
+      // Call update profile API
+      const result = await updateProfile(profileData);
 
       if (result.success) {
         // Navigate to workspace creation
-        setCurrentStep(2);
+        setCurrentStep(3);
         router.push("/workspace");
       } else {
         setError("general", {
           type: "manual",
-          message: result.error || "Profile creation failed. Please try again.",
+          message: result.error || "Profile update failed. Please try again.",
         });
       }
     } catch (error) {
-      console.error("Profile creation failed:", error);
+      console.error("Profile update failed:", error);
       setError("general", {
         type: "manual",
         message: "Something went wrong. Please try again.",
@@ -170,7 +195,7 @@ const CreateProfile = () => {
   };
 
   return (
-    <SignupLayout step={1}>
+    <SignupLayout step={2}>
       <div className="w-full">
         <h1 className="text-xl font-semibold text-gray-900 mb-8">
           Create your profile
@@ -207,8 +232,8 @@ const CreateProfile = () => {
               </label>
             </div>
             <div>
-              <label className="text-base font-medium text-gray-900 mb-1">
-                Profile picture
+              <label className="text-sm font-medium text-gray-900 mb-1">
+              Upload profile picture
               </label>
               <p className="text-xs text-gray-500">
                 SVG, PNG, JPG or GIF (MAX. 800x400px)

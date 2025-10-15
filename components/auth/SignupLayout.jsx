@@ -4,7 +4,7 @@ import Link from "next/link";
 const SignupLayout = ({ children, step = 1 }) => {
   const getRightSideContent = () => {
     switch (step) {
-      case 1: // Signup page, Email confirmation, Profile creation
+      case 1: // Signup page, Email confirmation
         return (
           <div className="flex flex-col justify-center w-full max-w-lg">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -23,7 +23,20 @@ const SignupLayout = ({ children, step = 1 }) => {
           </div>
         );
 
-      case 2: // Workspace page
+      case 2: // Profile creation page
+        return (
+          <div className="h-full">
+            <Image
+              src="/images/create-profile.png"
+              width={503}
+              height={630}
+              alt="image"
+              className="rounded-lg"
+            />
+          </div>
+        );
+
+      case 3: // Workspace page
         return (
           <div className="h-full bg-[#FBFBFB] w-full max-w-lg rounded-lg flex justify-end items-end">
             <Image
@@ -35,7 +48,7 @@ const SignupLayout = ({ children, step = 1 }) => {
           </div>
         );
 
-      case 3: // Team members page
+      case 4: // Team members page
         return (
           <div className="h-full bg-[#FBFBFB] w-full max-w-lg rounded-lg flex justify-end items-end">
             <Image
@@ -47,7 +60,7 @@ const SignupLayout = ({ children, step = 1 }) => {
           </div>
         );
 
-      case 4: // Preferences page
+      case 5: // Preferences page
         return (
           <div className="h-full">
             <Image

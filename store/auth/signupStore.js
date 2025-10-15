@@ -14,6 +14,7 @@ const useSignupStore = create((set, get) => ({
   companyName: "",
   workspaceHandle: "",
   billingCountry: "",
+  workspaceId: "",
 
   // Step 3: Team Members
   teamMembers: [],
@@ -68,6 +69,10 @@ const useSignupStore = create((set, get) => ({
 
   setBillingCountry: (country) => {
     set({ billingCountry: country });
+  },
+
+  setWorkspaceId: (id) => {
+    set({ workspaceId: id });
   },
 
   // Step 3 actions

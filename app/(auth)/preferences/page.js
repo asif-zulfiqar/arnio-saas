@@ -69,7 +69,7 @@ const Preferences = () => {
   };
 
   return (
-    <SignupLayout step={4}>
+    <SignupLayout step={5}>
       <div className="w-full flex flex-col justify-between gap-8 h-full p-8">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">

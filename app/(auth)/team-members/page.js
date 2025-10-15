@@ -21,6 +21,7 @@ const TeamMembers = () => {
     removeTeamMember,
     setCurrentStep,
     prevStep,
+    workspaceId,
   } = useSignupStore();
   const { inviteTeamMembers } = useAuthStore();
 
@@ -96,15 +97,17 @@ const TeamMembers = () => {
     try {
       // If there are team members, invite them
       if (teamMembers.length > 0) {
-        // TODO: Get workspace ID from context or store
-        const workspaceId = "temp-workspace-id"; // This should come from workspace creation
+        if (!workspaceId) {
+          console.error("No workspace ID available");
+          return;
+        }
         
         const inviteData = {
           workspaceId,
           teamMembers: teamMembers.map(member => ({
             email: member.email,
             fullName: member.fullName,
-            role: member.role.toUpperCase(), // Convert to uppercase as per API
+            role: member.role.toUpperCase(),
           })),
         };
 
@@ -117,12 +120,12 @@ const TeamMembers = () => {
       }
 
       // Navigate to preferences step
-      setCurrentStep(4);
+      setCurrentStep(5);
       router.push("/preferences");
     } catch (error) {
       console.error("Navigation failed:", error);
       // Continue anyway, don't block the flow
-      setCurrentStep(4);
+      setCurrentStep(5);
       router.push("/preferences");
     } finally {
       setIsLoading(false);
@@ -131,7 +134,7 @@ const TeamMembers = () => {
 
   // Handle skip
   const handleSkip = () => {
-    setCurrentStep(4);
+    setCurrentStep(5);
     router.push("/preferences");
   };
 
@@ -162,7 +165,7 @@ const TeamMembers = () => {
   };
 
   return (
-    <SignupLayout step={3}>
+    <SignupLayout step={4}>
       <div className="w-full">
         <h1 className="text-xl font-semibold text-gray-900">
           Add Team Members

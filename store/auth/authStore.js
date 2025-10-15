@@ -159,6 +159,16 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  // Get user profile
+  getProfile: async () => {
+    try {
+      const response = await authService.getProfile();
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Update user profile
   updateProfile: async (profileData) => {
     set({ isLoading: true, error: null });

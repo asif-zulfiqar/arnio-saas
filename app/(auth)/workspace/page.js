@@ -30,13 +30,14 @@ const Workspace = () => {
     setCompanyName,
     setWorkspaceHandle,
     setBillingCountry,
+    setWorkspaceId,
     setCurrentStep,
     prevStep,
     companyName,
     workspaceHandle,
     billingCountry,
   } = useSignupStore();
-  const { createWorkspace } = useAuthStore();
+  const { createWorkspace, user } = useAuthStore();
 
   const handleCountrySelect = (value) => {
     setBillingCountry(value);
@@ -128,6 +129,7 @@ const Workspace = () => {
     try {
       // Prepare workspace data for API
       const workspaceData = {
+        userId: user?.id,
         companyName: data.companyName,
         workspaceHandle: data.workspaceHandle,
         billingCountry: data.billingCountry,
@@ -142,9 +144,10 @@ const Workspace = () => {
         setCompanyName(data.companyName);
         setWorkspaceHandle(data.workspaceHandle);
         setBillingCountry(data.billingCountry);
+        setWorkspaceId(result.workspace?.id || result.workspaceId);
 
         // Navigate to team members step
-        setCurrentStep(3);
+        setCurrentStep(4);
         router.push("/team-members");
       } else {
         setError("general", {
@@ -192,7 +195,7 @@ const Workspace = () => {
   };
 
   return (
-    <SignupLayout step={2}>
+    <SignupLayout step={3}>
       <div className="w-full">
         <h1 className="text-xl font-semibold text-gray-900">
           Create your workspace
