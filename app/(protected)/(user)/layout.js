@@ -22,17 +22,24 @@ const UserLayout = ({ children }) => {
     console.log("Layout - User isOnboarded:", user?.isOnboarded);
     console.log("Layout - shouldShowOnboarding():", shouldShowOnboarding());
     
-    if (user && user.isOnboarded) {
+    // Don't show welcome screen if user data is not fully loaded
+    if (!user || !user.id) {
+      console.log("Layout - User data not fully loaded, not showing welcome screen");
+      setIsWelcomeScreen(false);
+      return;
+    }
+    
+    if (user.isOnboarded) {
       // User is onboarded - don't show onboarding popups or welcome screen
       console.log("Layout - User is onboarded, not showing onboarding popups or welcome screen");
       setIsWelcomeScreen(false);
-    } else if (user && !user.isOnboarded) {
+    } else if (!user.isOnboarded) {
       // User completed signup but not onboarded yet - show welcome screen
       console.log("Layout - User completed signup, showing welcome screen");
       setIsWelcomeScreen(true);
     } else {
-      // Fallback: don't show welcome screen if no user data
-      console.log("Layout - No user data, not showing welcome screen");
+      // Fallback: don't show welcome screen
+      console.log("Layout - Fallback, not showing welcome screen");
       setIsWelcomeScreen(false);
     }
   }, [user]);

@@ -18,11 +18,18 @@ const useAuthStore = create((set, get) => ({
       const isAuth = await authService.isAuthenticated();
       
       if (isAuth) {
-        // Get user profile if authenticated
-        const response = await authService.getProfile();
-        // Handle different response structures
-        const user = response?.user || response?.data || response;
-        set({ user, isAuthenticated: true, isLoading: false });
+        // Set authenticated state immediately to prevent flash
+        set({ isAuthenticated: true, isLoading: false });
+        
+        // Get user profile in background (non-blocking)
+        authService.getProfile()
+          .then(response => {
+            const user = response?.user || response?.data || response;
+            set({ user });
+          })
+          .catch(error => {
+            console.error('Failed to get user profile:', error);
+          });
       } else {
         set({ user: null, isAuthenticated: false, isLoading: false });
       }

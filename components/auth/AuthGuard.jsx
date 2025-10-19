@@ -128,14 +128,11 @@ const AuthGuard = ({ children }) => {
     }
   }, [isAuthenticated, isLoading, pathname, router, user]);
 
-  // Show loading spinner while checking authentication
+  // Show minimal loading to prevent flash
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader />
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50">
+        {/* Minimal loading - just a blank screen to prevent flash */}
       </div>
     );
   }
