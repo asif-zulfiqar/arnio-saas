@@ -25,7 +25,7 @@ const GoogleCallback = () => {
         const result = await handleGoogleCallback(code, state);
 
         if (result.success) {
-          // Redirect to dashboard
+          // Redirect to dashboard - AuthGuard will handle onboarding flow
           router.push('/');
         } else {
           setError(result.error || 'Google authentication failed');

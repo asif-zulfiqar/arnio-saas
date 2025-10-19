@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import useAuthStore from '@/store/auth/authStore';
 
 const useOnboardingStore = create(
   persist(
@@ -10,6 +11,7 @@ const useOnboardingStore = create(
       totalSteps: 5,
       isCompleted: false,
       hasBeenShown: false,
+      hasSeenWelcomeScreen: false,
 
       // Onboarding steps configuration
       steps: [
@@ -96,12 +98,19 @@ const useOnboardingStore = create(
         });
       },
 
+      markWelcomeScreenAsSeen: () => {
+        set({
+          hasSeenWelcomeScreen: true,
+        });
+      },
+
       resetOnboarding: () => {
         set({
           isOnboardingActive: false,
           currentStep: 1,
           isCompleted: false,
           hasBeenShown: false,
+          hasSeenWelcomeScreen: false,
         });
       },
 
@@ -111,8 +120,21 @@ const useOnboardingStore = create(
       },
 
       shouldShowOnboarding: () => {
-        const { hasBeenShown, isCompleted } = get();
-        return !hasBeenShown && !isCompleted;
+        const { isOnboardingActive } = get();
+        const { user } = useAuthStore.getState();
+        
+        // If onboarding is actively started, show it regardless of onboarded status
+        if (isOnboardingActive) {
+          return true;
+        }
+        
+        // If user is not onboarded, show onboarding popups
+        if (user && !user.isOnboarded) {
+          return true; // User needs onboarding popups
+        }
+        
+        // Fallback: don't show onboarding if no user data
+        return false;
       },
     }),
     {
@@ -120,6 +142,7 @@ const useOnboardingStore = create(
       partialize: (state) => ({
         hasBeenShown: state.hasBeenShown,
         isCompleted: state.isCompleted,
+        hasSeenWelcomeScreen: state.hasSeenWelcomeScreen,
       }),
     }
   )

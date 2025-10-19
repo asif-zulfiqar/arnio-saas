@@ -72,7 +72,7 @@ const Login = () => {
       });
 
       if (result.success) {
-        // Redirect to dashboard
+        // Redirect to dashboard - AuthGuard will handle onboarding flow
         router.push('/');
       }
     } catch (error) {

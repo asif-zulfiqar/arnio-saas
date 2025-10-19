@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import SignupLayout from "@/components/auth/SignupLayout";
 import Button from "@/components/global/small/Button";
@@ -15,6 +15,7 @@ const TeamMembers = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [inviteError, setInviteError] = useState("");
   const {
     teamMembers,
     addTeamMember,
@@ -22,8 +23,9 @@ const TeamMembers = () => {
     setCurrentStep,
     prevStep,
     workspaceId,
+    setWorkspaceId,
   } = useSignupStore();
-  const { inviteTeamMembers } = useAuthStore();
+  const { inviteTeamMembers, getUserWorkspaces, user } = useAuthStore();
 
   // React Hook Form setup for adding new member
   const {
@@ -37,12 +39,39 @@ const TeamMembers = () => {
     defaultValues: {
       email: "",
       fullName: "",
-      role: "User",
+      role: "AGENT",
     },
   });
 
   const watchEmail = watchMember("email");
   const watchFullName = watchMember("fullName");
+
+  // Fetch workspace ID if not available (for users redirected from AuthGuard)
+  useEffect(() => {
+    const fetchWorkspaceId = async () => {
+      if (!workspaceId && user?.id) {
+        try {
+          const response = await getUserWorkspaces(user.id);
+          console.log("Workspaces response:", response);
+          
+          // Handle different response structures
+          const workspaces = response?.data?.workspaces || response?.workspaces || response;
+          
+          if (workspaces && workspaces.length > 0) {
+            const workspace = workspaces[0];
+            setWorkspaceId(workspace.id);
+            console.log("Fetched workspace ID for team members:", workspace.id);
+          } else {
+            console.error("No workspaces found in response:", response);
+          }
+        } catch (error) {
+          console.error("Failed to fetch workspace ID:", error);
+        }
+      }
+    };
+
+    fetchWorkspaceId();
+  }, [workspaceId, user?.id, getUserWorkspaces, setWorkspaceId]);
 
   // Validation rules for team member
   const memberValidationRules = {
@@ -93,40 +122,84 @@ const TeamMembers = () => {
   // Handle form submission (continue to next step)
   const handleContinue = async () => {
     setIsLoading(true);
+    setInviteError(""); // Clear any previous errors
 
     try {
       // If there are team members, invite them
       if (teamMembers.length > 0) {
+        let inviteSuccess = false;
+        
         if (!workspaceId) {
           console.error("No workspace ID available");
-          return;
-        }
-        
-        const inviteData = {
-          workspaceId,
-          teamMembers: teamMembers.map(member => ({
-            email: member.email,
-            fullName: member.fullName,
-            role: member.role.toUpperCase(),
-          })),
-        };
+          // Try to fetch workspace ID one more time
+          try {
+            const response = await getUserWorkspaces(user.id);
+            console.log("Retry workspaces response:", response);
+            
+            // Handle different response structures
+            const workspaces = response?.data?.workspaces || response?.workspaces || response;
+            
+            if (workspaces && workspaces.length > 0) {
+              const workspace = workspaces[0];
+              setWorkspaceId(workspace.id);
+              // Retry the invitation with the fetched workspace ID
+              const inviteData = {
+                workspaceId: workspace.id,
+                teamMembers: teamMembers.map(member => ({
+                  email: member.email,
+                  fullName: member.fullName,
+                  role: member.role.toUpperCase(),
+                })),
+              };
+              const result = await inviteTeamMembers(inviteData);
+              inviteSuccess = result.success;
+              if (!result.success) {
+                setInviteError(result.error || "Failed to invite team members. Please try again.");
+                console.error("Failed to invite team members:", result.error);
+              }
+            } else {
+              setInviteError("No workspace found. Please try again.");
+              console.error("No workspaces found for user in retry:", response);
+              return;
+            }
+          } catch (error) {
+            setInviteError("Failed to fetch workspace. Please try again.");
+            console.error("Failed to fetch workspace:", error);
+            return;
+          }
+        } else {
+          const inviteData = {
+            workspaceId,
+            teamMembers: teamMembers.map(member => ({
+              email: member.email,
+              fullName: member.fullName,
+              role: member.role.toUpperCase(),
+            })),
+          };
 
-        const result = await inviteTeamMembers(inviteData);
-        
-        if (!result.success) {
-          console.error("Failed to invite team members:", result.error);
-          // Continue anyway, don't block the flow
+          const result = await inviteTeamMembers(inviteData);
+          inviteSuccess = result.success;
+          
+          if (!result.success) {
+            setInviteError(result.error || "Failed to invite team members. Please try again.");
+            console.error("Failed to invite team members:", result.error);
+            return; // Don't proceed to next step if invitation fails
+          }
+        }
+
+        // Only proceed if invitation was successful
+        if (!inviteSuccess) {
+          return; // Stay on current step if invitation failed
         }
       }
 
-      // Navigate to preferences step
+      // Navigate to preferences step only if no team members or invitation succeeded
       setCurrentStep(5);
       router.push("/preferences");
     } catch (error) {
+      setInviteError("Something went wrong. Please try again.");
       console.error("Navigation failed:", error);
-      // Continue anyway, don't block the flow
-      setCurrentStep(5);
-      router.push("/preferences");
+      // Don't proceed to next step on error
     } finally {
       setIsLoading(false);
     }
@@ -237,8 +310,8 @@ const TeamMembers = () => {
                   <Dropdown
                     label="Role"
                     options={[
-                      { option: "User", value: "user" },
-                      { option: "Admin", value: "admin" },
+                      { option: "Agent", value: "AGENT" },
+                      { option: "Admin", value: "ADMIN" },
                     ]}
                   />
                 </div>
@@ -248,7 +321,7 @@ const TeamMembers = () => {
                     {...registerMember("role")}
                     className="flex-1 h-[42px] px-4 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                   >
-                    <option value="User">User</option>
+                    <option value="AGENT">AGENT</option>
                     <option value="Admin">Admin</option>
                     <option value="Manager">Manager</option>
                   </select>
@@ -287,9 +360,16 @@ const TeamMembers = () => {
           )}
         </div>
 
-        <div className="mt-8 space-y-4">
-          <Button
-            text={isLoading ? "Continuing..." : "Continue"}
+          <div className="mt-8 space-y-4">
+            {/* Error message display */}
+            {inviteError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-600">{inviteError}</p>
+              </div>
+            )}
+            
+            <Button
+              text={isLoading ? "Continuing..." : "Continue"}
             onClick={handleContinue}
             disabled={isLoading}
             bgColor="bg-primary hover:bg-blue-700"

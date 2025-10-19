@@ -75,6 +75,16 @@ const useSignupStore = create((set, get) => ({
     set({ workspaceId: id });
   },
 
+  // Set existing workspace data
+  setExistingWorkspaceData: (workspace) => {
+    set({
+      companyName: workspace.companyName || "",
+      workspaceHandle: workspace.handle || "",
+      billingCountry: workspace.billingCountry || "United States of America",
+      workspaceId: workspace.id || "",
+    });
+  },
+
   // Step 3 actions
   addTeamMember: (member) => {
     set((state) => ({

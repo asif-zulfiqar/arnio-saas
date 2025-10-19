@@ -19,7 +19,9 @@ const useAuthStore = create((set, get) => ({
       
       if (isAuth) {
         // Get user profile if authenticated
-        const user = await authService.getProfile();
+        const response = await authService.getProfile();
+        // Handle different response structures
+        const user = response?.user || response?.data || response;
         set({ user, isAuthenticated: true, isLoading: false });
       } else {
         set({ user: null, isAuthenticated: false, isLoading: false });
@@ -37,8 +39,8 @@ const useAuthStore = create((set, get) => ({
     try {
       const response = await authService.login(credentials);
       
-      // The login response should contain user data
-      const user = response.user;
+      // Handle different response structures
+      const user = response?.user || response?.data || response;
       
       set({
         user,
@@ -163,7 +165,8 @@ const useAuthStore = create((set, get) => ({
   getProfile: async () => {
     try {
       const response = await authService.getProfile();
-      return response;
+      // Handle different response structures
+      return response?.user || response?.data || response;
     } catch (error) {
       throw error;
     }
@@ -176,15 +179,17 @@ const useAuthStore = create((set, get) => ({
     try {
       const response = await authService.updateProfile(profileData);
       const updatedUser = await authService.getProfile();
+      // Handle different response structures
+      const user = updatedUser?.user || updatedUser?.data || updatedUser;
       
       set({
-        user: updatedUser,
+        user,
         isLoading: false,
         error: null,
       });
 
       toast.success('Profile updated successfully!');
-      return { success: true, user: updatedUser };
+      return { success: true, user };
     } catch (error) {
       const errorMessage = error.message || 'Profile update failed. Please try again.';
       set({
@@ -282,6 +287,16 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  // Get user workspaces
+  getUserWorkspaces: async (userId) => {
+    try {
+      const response = await workspaceService.getUserWorkspacesById(userId);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Create workspace
   createWorkspace: async (workspaceData) => {
     set({ isLoading: true, error: null });
@@ -294,6 +309,25 @@ const useAuthStore = create((set, get) => ({
       return { success: true, workspace: response };
     } catch (error) {
       const errorMessage = error.message || 'Failed to create workspace. Please try again.';
+      set({ isLoading: false, error: errorMessage });
+      
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Update workspace
+  updateWorkspace: async (workspaceId, workspaceData) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await workspaceService.updateWorkspace(workspaceId, workspaceData);
+      set({ isLoading: false, error: null });
+      
+      toast.success('Workspace updated successfully!');
+      return { success: true, workspace: response };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to update workspace. Please try again.';
       set({ isLoading: false, error: errorMessage });
       
       toast.error(errorMessage);
@@ -339,6 +373,64 @@ const useAuthStore = create((set, get) => ({
     } catch (error) {
       set({ isAuthenticated: false });
       return false;
+    }
+  },
+
+  // Update onboarding status
+  updateOnboardingStatus: async (isOnboarded) => {
+    set({ isLoading: true, error: null });
+    
+    // Always update local user state first, regardless of API success/failure
+    const currentUser = get().user;
+    if (currentUser) {
+      set({ 
+        user: { ...currentUser, isOnboarded },
+        isLoading: false,
+        error: null 
+      });
+    }
+    
+    try {
+      const response = await authService.updateOnboardingStatus(isOnboarded);
+      
+      // Don't show success toast for onboarding status - it's not critical
+      return { success: true, response };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to update onboarding status. Please try again.';
+      set({
+        isLoading: false,
+        error: errorMessage,
+      });
+
+      // Don't show error toast for onboarding status - don't block user flow
+      console.error('Onboarding status update failed:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Save referral source
+  saveReferralSource: async (referralSource) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await authService.saveReferralSource(referralSource);
+      
+      set({
+        isLoading: false,
+        error: null,
+      });
+
+      toast.success('Referral source saved successfully!');
+      return { success: true, response };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to save referral source. Please try again.';
+      set({
+        isLoading: false,
+        error: errorMessage,
+      });
+
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   },
 }));

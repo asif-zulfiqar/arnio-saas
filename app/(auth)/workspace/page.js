@@ -25,19 +25,22 @@ const Workspace = () => {
   const [logoPreview, setLogoPreview] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [billingCountryError, setBillingCountryError] = useState("");
+  const [existingWorkspace, setExistingWorkspace] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const {
     setCompanyLogo,
     setCompanyName,
     setWorkspaceHandle,
     setBillingCountry,
     setWorkspaceId,
+    setExistingWorkspaceData,
     setCurrentStep,
     prevStep,
     companyName,
     workspaceHandle,
     billingCountry,
   } = useSignupStore();
-  const { createWorkspace, user } = useAuthStore();
+  const { createWorkspace, updateWorkspace, getUserWorkspaces, user } = useAuthStore();
 
   const handleCountrySelect = (value) => {
     setBillingCountry(value);
@@ -64,6 +67,47 @@ const Workspace = () => {
 
   const watchCompanyName = watch("companyName");
   const watchWorkspaceHandle = watch("workspaceHandle");
+
+  // Check for existing workspaces on component mount
+  useEffect(() => {
+    const checkExistingWorkspace = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await getUserWorkspaces(user.id);
+        console.log("User workspaces response:", response);
+        
+        // Handle different response structures
+        const workspaces = response?.data?.workspaces || response?.workspaces || response;
+        
+        if (workspaces && workspaces.length > 0) {
+          const workspace = workspaces[0]; // Get first workspace
+          setExistingWorkspace(workspace);
+          setIsEditMode(true);
+          
+          // Update signup store with existing workspace data
+          setExistingWorkspaceData(workspace);
+          
+          // Pre-fill form with existing data
+          setValue("companyName", workspace.companyName || "");
+          setValue("workspaceHandle", workspace.handle || "");
+          setBillingCountry(workspace.billingCountry || "United States of America");
+          
+          // Set logo preview if exists
+          if (workspace.logoUrl) {
+            setLogoPreview(workspace.logoUrl);
+          }
+          
+          console.log("Found existing workspace:", workspace);
+        }
+      } catch (error) {
+        console.error("Failed to fetch existing workspaces:", error);
+        // Continue with create mode if fetch fails
+      }
+    };
+
+    checkExistingWorkspace();
+  }, [user?.id, getUserWorkspaces, setValue, setBillingCountry]);
 
   // Clear general errors when user starts typing
   useEffect(() => {
@@ -127,9 +171,19 @@ const Workspace = () => {
     setIsLoading(true);
 
     try {
+      // Debug: Check user object structure
+      console.log("User object:", user);
+      console.log("User ID:", user?.id);
+
+      // Ensure we have a user ID
+      if (!user?.id) {
+        console.error("User ID is missing from user object");
+        throw new Error("User ID is required to create workspace");
+      }
+
       // Prepare workspace data for API
       const workspaceData = {
-        userId: user?.id,
+        userId: user.id,
         companyName: data.companyName,
         workspaceHandle: data.workspaceHandle,
         billingCountry: billingCountry, // Use from signup store, not form data
@@ -138,15 +192,25 @@ const Workspace = () => {
 
       console.log("Workspace data being sent:", workspaceData); // Debug log
 
-      // Call create workspace API
-      const result = await createWorkspace(workspaceData);
+      let result;
+      
+      if (isEditMode && existingWorkspace) {
+        // Update existing workspace
+        result = await updateWorkspace(existingWorkspace.id, workspaceData);
+      } else {
+        // Create new workspace
+        result = await createWorkspace(workspaceData);
+      }
 
       if (result.success) {
         // Store data in Zustand store
         setCompanyName(data.companyName);
         setWorkspaceHandle(data.workspaceHandle);
-        setBillingCountry(data.billingCountry);
-        setWorkspaceId(result.workspace?.id || result.workspaceId);
+        setBillingCountry(billingCountry);
+        
+        // Store workspace ID for team members step
+        const workspaceId = result.workspace?.id || result.workspaceId || existingWorkspace?.id;
+        setWorkspaceId(workspaceId);
 
         // Navigate to team members step
         setCurrentStep(4);
@@ -154,7 +218,7 @@ const Workspace = () => {
       } else {
         setError("general", {
           type: "manual",
-          message: result.error || "Workspace creation failed. Please try again.",
+          message: result.error || `Failed to ${isEditMode ? 'update' : 'create'} workspace. Please try again.`,
         });
       }
     } catch (error) {
@@ -200,7 +264,7 @@ const Workspace = () => {
     <SignupLayout step={3}>
       <div className="w-full">
         <h1 className="text-xl font-semibold text-gray-900">
-          Create your workspace
+          {isEditMode ? "Update your workspace" : "Create your workspace"}
         </h1>
 
         <form
@@ -285,7 +349,7 @@ const Workspace = () => {
           )}
 
           <Button
-            text={isLoading ? "Creating..." : "Continue"}
+            text={isLoading ? (isEditMode ? "Updating..." : "Creating...") : "Continue"}
             type="submit"
             disabled={getButtonState().disabled}
             bgColor={getButtonState().bgColor}

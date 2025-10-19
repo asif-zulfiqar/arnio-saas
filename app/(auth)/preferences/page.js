@@ -4,6 +4,7 @@ import { useState } from "react";
 import SignupLayout from "@/components/auth/SignupLayout";
 import Button from "@/components/global/small/Button";
 import useSignupStore from "@/store/auth/signupStore";
+import useAuthStore from "@/store/auth/authStore";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -12,6 +13,7 @@ const Preferences = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSource, setSelectedSource] = useState("");
   const { setReferralSource, setCurrentStep, prevStep } = useSignupStore();
+  const { saveReferralSource, updateOnboardingStatus } = useAuthStore();
 
   // Referral sources with icons
   const referralSources = [
@@ -48,23 +50,36 @@ const Preferences = () => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Save referral source if selected
+      if (selectedSource) {
+        const result = await saveReferralSource(selectedSource);
+        if (!result.success) {
+          console.error("Failed to save referral source:", result.error);
+          // Continue anyway, don't block the flow
+        }
+      }
 
-      // Here you would typically submit all the signup data to your API
-      console.log("Signup completed with referral source:", selectedSource);
+      // Don't mark as onboarded yet - let welcome screen handle this
+      // User will be marked as onboarded when they click "Keep exploring" in welcome screen
 
-      // Navigate to dashboard or success page
+      // Navigate to dashboard
       router.push("/");
     } catch (error) {
       console.error("Signup completion failed:", error);
+      // Continue anyway, don't block the flow
+      router.push("/");
     } finally {
       setIsLoading(false);
     }
   };
 
   // Handle skip
-  const handleSkip = () => {
+  const handleSkip = async () => {
     setReferralSource("");
+    
+    // Don't mark as onboarded yet - let welcome screen handle this
+    // User will be marked as onboarded when they click "Keep exploring" in welcome screen
+    
     router.push("/");
   };
 

@@ -1,8 +1,34 @@
 import Image from "next/image";
 import Button from "../global/small/Button";
 import Link from "next/link";
+import useAuthStore from "@/store/auth/authStore";
+import useOnboardingStore from "@/store/onboarding/onboardingStore";
 
 const ActivatePhoneLine = ({ onClose }) => {
+  const { updateOnboardingStatus } = useAuthStore();
+  const { startOnboarding } = useOnboardingStore();
+
+  const handleKeepExploring = async () => {
+    try {
+      // Update onboarding status to true
+      await updateOnboardingStatus(true);
+      
+      // Close welcome screen
+      onClose(false);
+      
+      // Wait 2-4 seconds then show onboarding steps
+      setTimeout(() => {
+        console.log("Starting onboarding steps after welcome screen");
+        startOnboarding();
+      }, 3000); // 3 seconds delay
+      
+    } catch (error) {
+      console.error("Failed to update onboarding status:", error);
+      // Close welcome screen anyway
+      onClose(false);
+    }
+  };
+
   return (
     <div className="space-y-7">
       <Image
@@ -42,7 +68,7 @@ const ActivatePhoneLine = ({ onClose }) => {
         <Button
           text="Keep exploring"
           width="w-[124px]"
-          onClick={() => onClose(false)}
+          onClick={handleKeepExploring}
         />
       </div>
     </div>
