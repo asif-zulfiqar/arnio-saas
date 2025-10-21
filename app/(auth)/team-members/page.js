@@ -195,7 +195,9 @@ const TeamMembers = () => {
 
       // Navigate to preferences step only if no team members or invitation succeeded
       setCurrentStep(5);
-      router.push("/preferences");
+      setTimeout(() => {
+        router.push("/preferences");
+      }, 100);
     } catch (error) {
       setInviteError("Something went wrong. Please try again.");
       console.error("Navigation failed:", error);
@@ -208,13 +210,17 @@ const TeamMembers = () => {
   // Handle skip
   const handleSkip = () => {
     setCurrentStep(5);
-    router.push("/preferences");
+    setTimeout(() => {
+      router.push("/preferences");
+    }, 100);
   };
 
   // Handle back button
   const handleBack = () => {
     prevStep();
-    router.push("/workspace");
+    setTimeout(() => {
+      router.push("/workspace");
+    }, 100);
   };
 
   // Get button state for add member
@@ -225,8 +231,8 @@ const TeamMembers = () => {
     ) {
       return {
         disabled: false,
-        bgColor: "bg-blue-200",
-        color: "text-blue-400",
+        bgColor: "bg-primary/80",
+        color: "text-white",
       };
     }
 
@@ -310,8 +316,9 @@ const TeamMembers = () => {
                   <Dropdown
                     label="Role"
                     options={[
-                      { option: "Agent", value: "AGENT" },
+                      { option: "User", value: "USER" },
                       { option: "Admin", value: "ADMIN" },
+                      { option: "Manager", value: "MANAGER" },
                     ]}
                   />
                 </div>

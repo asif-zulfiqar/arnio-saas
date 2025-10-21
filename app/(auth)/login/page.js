@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import LoginLayout from "@/components/auth/LoginLayout";
@@ -27,6 +27,7 @@ const Login = () => {
     setValue,
     getValues,
     setError,
+    clearErrors,
   } = useForm({
     mode: "onChange",
     defaultValues: {
@@ -37,6 +38,13 @@ const Login = () => {
 
   const watchEmail = watch("email");
   const watchPassword = watch("password");
+
+  // Clear general errors when user starts typing
+  useEffect(() => {
+    if (errors.general) {
+      clearErrors("general");
+    }
+  }, [watchEmail, watchPassword, errors.general, clearErrors]);
 
   // Simple validation rules
   const validationRules = {
@@ -72,11 +80,44 @@ const Login = () => {
       });
 
       if (result.success) {
-        // Redirect to dashboard - AuthGuard will handle onboarding flow
-        router.push('/');
+        // Check user onboarding status and redirect directly to appropriate step
+        const user = result.user;
+        
+        // Small delay to prevent page flash, then navigate
+        setTimeout(() => {
+          if (user && user.isOnboarded) {
+            // User is onboarded - go to dashboard
+            router.push('/');
+          } else {
+            // User needs to complete onboarding - redirect directly to appropriate step
+            const hasProfile = user.firstName && user.lastName && user.phone;
+            const hasWorkspace = user.workspaces && user.workspaces.length > 0;
+            
+            if (hasWorkspace && hasProfile) {
+              router.push('/team-members');
+            } else if (hasWorkspace) {
+              router.push('/create-profile');
+            } else {
+              router.push('/create-profile');
+            }
+          }
+        }, 100);
+      } else {
+        // Handle login failure - clear any existing errors first
+        clearErrors("general");
+        setError("general", {
+          type: "manual",
+          message: result.error || "Login failed. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Login failed:", error);
+      // Clear any existing errors first
+      clearErrors("general");
+      setError("general", {
+        type: "manual",
+        message: "Login failed. Please try again.",
+      });
     }
   };
 
@@ -97,16 +138,14 @@ const Login = () => {
     if (isLoading) {
       return {
         disabled: true,
-        bgColor: "bg-gray-200",
-        color: "text-gray-400",
+        bgColor: "bg-primary/80",
       };
     }
 
     if (errors.email || !watchEmail?.trim()) {
       return {
         disabled: false,
-        bgColor: "bg-blue-200",
-        color: "text-blue-400",
+        bgColor: "bg-primary/80",
       };
     }
 
@@ -122,14 +161,14 @@ const Login = () => {
     if (isLoading) {
       return {
         disabled: true,
+        bgColor: "bg-primary/80",
       };
     }
 
     if (errors.password || !watchPassword?.trim()) {
       return {
         disabled: false,
-        bgColor: "bg-blue-200",
-        color: "text-blue-400",
+        bgColor: "bg-primary/80",
       };
     }
 

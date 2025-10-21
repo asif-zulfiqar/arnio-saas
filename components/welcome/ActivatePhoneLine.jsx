@@ -10,13 +10,13 @@ const ActivatePhoneLine = ({ onClose }) => {
 
   const handleKeepExploring = async () => {
     try {
-      // Update onboarding status to true
+      // Call onboarding API to set isOnboarded: true
       await updateOnboardingStatus(true);
       
       // Close welcome screen
       onClose(false);
       
-      // Wait 2-4 seconds then show onboarding steps
+      // Wait 3 seconds then show onboarding steps
       setTimeout(() => {
         console.log("Starting onboarding steps after welcome screen");
         startOnboarding();

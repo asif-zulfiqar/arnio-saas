@@ -121,8 +121,8 @@ const ForgotPassword = () => {
     if (!watchEmail?.trim()) {
       return {
         disabled: false,
-        bgColor: "bg-blue-200",
-        color: "text-blue-400",
+        bgColor: "bg-primary/80",
+        color: "text-white",
       };
     }
 

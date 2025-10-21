@@ -41,6 +41,13 @@ const CreateProfile = () => {
   const watchLastName = watch("lastName");
   const watchPhone = watch("phone");
 
+  // Clear general errors when user starts typing
+  useEffect(() => {
+    if (errors.general) {
+      clearErrors("general");
+    }
+  }, [watchFirstName, watchLastName, watchPhone, errors.general, clearErrors]);
+
   // Fetch existing profile data on component mount
   useEffect(() => {
     const fetchProfile = async () => {
@@ -154,8 +161,12 @@ const CreateProfile = () => {
       if (result.success) {
         // Navigate to workspace creation
         setCurrentStep(3);
-        router.push("/workspace");
+        setTimeout(() => {
+          router.push("/workspace");
+        }, 100);
       } else {
+        // Clear any existing errors first
+        clearErrors("general");
         setError("general", {
           type: "manual",
           message: result.error || "Profile update failed. Please try again.",
@@ -163,6 +174,8 @@ const CreateProfile = () => {
       }
     } catch (error) {
       console.error("Profile update failed:", error);
+      // Clear any existing errors first
+      clearErrors("general");
       setError("general", {
         type: "manual",
         message: "Something went wrong. Please try again.",
@@ -177,8 +190,8 @@ const CreateProfile = () => {
     if (isLoading) {
       return {
         disabled: true,
-        bgColor: "bg-gray-200",
-        color: "text-gray-400",
+        bgColor: "bg-primary/80",
+        color: "text-white",
       };
     }
 
@@ -189,8 +202,8 @@ const CreateProfile = () => {
     ) {
       return {
         disabled: false,
-        bgColor: "bg-blue-200",
-        color: "text-blue-400",
+        bgColor: "bg-primary/80",
+        color: "text-white",
       };
     }
 

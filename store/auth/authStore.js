@@ -8,9 +8,17 @@ const useAuthStore = create((set, get) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  isInitialized: false, // Track if auth has been initialized
 
-  // Initialize auth state
+  // Initialize auth state - optimized for performance
   initializeAuth: async () => {
+    const state = get();
+    
+    // Prevent multiple initializations
+    if (state.isInitialized || state.isLoading) {
+      return;
+    }
+
     try {
       set({ isLoading: true });
       
@@ -19,7 +27,7 @@ const useAuthStore = create((set, get) => ({
       
       if (isAuth) {
         // Set authenticated state immediately to prevent flash
-        set({ isAuthenticated: true, isLoading: false });
+        set({ isAuthenticated: true, isLoading: false, isInitialized: true });
         
         // Get user profile in background (non-blocking)
         authService.getProfile()
@@ -29,35 +37,56 @@ const useAuthStore = create((set, get) => ({
           })
           .catch(error => {
             console.error('Failed to get user profile:', error);
+            // Don't reset auth state on profile fetch failure
           });
       } else {
-        set({ user: null, isAuthenticated: false, isLoading: false });
+        set({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true });
       }
     } catch (error) {
       console.error('Failed to initialize auth:', error);
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      set({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true });
     }
   },
 
-  // Login action
+  // Login action - optimized for performance
   login: async (credentials) => {
+    const state = get();
+    
+    // Prevent multiple login attempts
+    if (state.isLoading) {
+      return { success: false, error: 'Login already in progress' };
+    }
+    
     set({ isLoading: true, error: null });
     
     try {
       const response = await authService.login(credentials);
       
-      // Handle different response structures
-      const user = response?.user || response?.data || response;
-      
+      // Set authenticated state immediately
       set({
-        user,
         isAuthenticated: true,
-        isLoading: false,
         error: null,
+        isInitialized: true,
       });
 
-      toast.success('Login successful!');
-      return { success: true, user };
+      // Fetch complete user profile after login
+      try {
+        const profileResponse = await authService.getProfile();
+        const completeUser = profileResponse?.user || profileResponse?.data || profileResponse;
+        
+        set({ user: completeUser, isLoading: false });
+        
+        toast.success('Login successful!');
+        return { success: true, user: completeUser };
+      } catch (profileError) {
+        console.error('Failed to fetch user profile:', profileError);
+        // Use basic user data from login response as fallback
+        const basicUser = response?.user || response?.data || response;
+        set({ user: basicUser, isLoading: false });
+        
+        toast.success('Login successful!');
+        return { success: true, user: basicUser };
+      }
     } catch (error) {
       const errorMessage = error.message || 'Login failed. Please try again.';
       set({
@@ -65,6 +94,7 @@ const useAuthStore = create((set, get) => ({
         isAuthenticated: false,
         isLoading: false,
         error: errorMessage,
+        isInitialized: true, // Mark as initialized even on error
       });
 
       toast.error(errorMessage);

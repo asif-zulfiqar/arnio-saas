@@ -44,13 +44,7 @@ const Signup = () => {
     if (errors.general) {
       clearErrors("general");
     }
-  }, [
-    watchEmail,
-    watchPassword,
-    watchConfirmPassword,
-    errors.general,
-    clearErrors,
-  ]);
+  }, [watchEmail, watchPassword, watchConfirmPassword, errors.general, clearErrors]);
 
   // Validation rules
   const validationRules = {
@@ -100,9 +94,13 @@ const Signup = () => {
         setEmail(data.email);
         setGoogleAuthUsed(false);
 
-        // Navigate to email confirmation page
-        router.push("/email-confirmation");
+        // Small delay to prevent page flash, then navigate
+        setTimeout(() => {
+          router.push("/email-confirmation");
+        }, 100);
       } else {
+        // Clear any existing errors first
+        clearErrors("general");
         setError("general", {
           type: "manual",
           message: result.error || "Registration failed. Please try again.",
@@ -110,6 +108,8 @@ const Signup = () => {
       }
     } catch (error) {
       console.error("Registration failed:", error);
+      // Clear any existing errors first
+      clearErrors("general");
       setError("general", {
         type: "manual",
         message: "Something went wrong. Please try again.",

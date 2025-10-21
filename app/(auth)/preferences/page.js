@@ -62,12 +62,16 @@ const Preferences = () => {
       // Don't mark as onboarded yet - let welcome screen handle this
       // User will be marked as onboarded when they click "Keep exploring" in welcome screen
 
-      // Navigate to dashboard
-      router.push("/");
+      // Navigate to dashboard (which will show welcome screen)
+      setTimeout(() => {
+        router.push("/");
+      }, 100);
     } catch (error) {
       console.error("Signup completion failed:", error);
       // Continue anyway, don't block the flow
-      router.push("/");
+      setTimeout(() => {
+        router.push("/");
+      }, 100);
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +84,9 @@ const Preferences = () => {
     // Don't mark as onboarded yet - let welcome screen handle this
     // User will be marked as onboarded when they click "Keep exploring" in welcome screen
     
-    router.push("/");
+    setTimeout(() => {
+      router.push("/");
+    }, 100);
   };
 
   return (

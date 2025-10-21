@@ -100,7 +100,7 @@ const SignupLayout = ({ children, step = 1 }) => {
                 our products and services. You can unsubscribe at any time by
                 clicking the link in our emails. Learn more about how we use
                 your data in our{" "}
-                <Link href="#" className="underline">
+                <Link href="https://arnio.co/legals/privacy-policy" target="_blank" className="underline">
                   privacy policy
                 </Link>
               </p>

@@ -1,66 +1,54 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import useAuthStore from '@/store/auth/authStore';
-import useOnboardingStore from '@/store/onboarding/onboardingStore';
-import Loader from '../global/small/Loader';
 
 const AuthGuard = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, initializeAuth, checkAuth, user, isLoading: authLoading } = useAuthStore();
-  const { isCompleted, hasBeenShown } = useOnboardingStore();
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, user, isLoading, isInitialized } = useAuthStore();
+  const redirectExecuted = useRef(false); // Prevent multiple redirects
+  const lastPathname = useRef(pathname); // Track pathname changes
 
-  // Define public routes that don't require authentication
+  // Define route categories
   const publicRoutes = [
     '/login',
-    '/signup',
+    '/signup', 
     '/forgot-password',
     '/otp',
     '/email-confirmation',
     '/auth/google/callback',
     '/google/callback',
   ];
-
-  // Define auth routes that should redirect to dashboard if user is already authenticated
+  
   const authRoutes = ['/login', '/signup'];
-
-  // Define onboarding flow routes
   const onboardingRoutes = ['/create-profile', '/workspace', '/team-members', '/preferences'];
 
+  // Reset redirect flag when pathname changes
   useEffect(() => {
-    const initializeAuthState = async () => {
-      try {
-        // Initialize auth state by checking with backend
-        await initializeAuth();
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-      }
-    };
-
-    // Only initialize auth if we're not on a public route
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-    if (!isPublicRoute) {
-      initializeAuthState();
-    } else {
-      setIsLoading(false);
+    if (lastPathname.current !== pathname) {
+      redirectExecuted.current = false;
+      lastPathname.current = pathname;
     }
-  }, [initializeAuth, pathname]);
+  }, [pathname]);
 
-  // Update loading state based on auth loading
   useEffect(() => {
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-    if (isPublicRoute) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(authLoading);
+    // Don't redirect if still loading, not initialized, or on public routes
+    if (isLoading || !isInitialized || publicRoutes.some(route => pathname.startsWith(route))) {
+      return;
     }
-  }, [authLoading, pathname]);
 
-  useEffect(() => {
-    if (isLoading) return;
+    // Prevent multiple redirects for the same route
+    if (redirectExecuted.current) {
+      return;
+    }
+
+    console.log("AuthGuard - Current path:", pathname);
+    console.log("AuthGuard - isAuthenticated:", isAuthenticated);
+    console.log("AuthGuard - user:", user);
+    console.log("AuthGuard - isLoading:", isLoading);
+    console.log("AuthGuard - isInitialized:", isInitialized);
 
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
@@ -68,68 +56,97 @@ const AuthGuard = ({ children }) => {
 
     // If user is not authenticated and trying to access protected route
     if (!isAuthenticated && !isPublicRoute) {
+      console.log("AuthGuard - User not authenticated, redirecting to login");
+      redirectExecuted.current = true;
       router.push('/login');
       return;
     }
 
-    // If user is authenticated and trying to access auth routes, redirect to dashboard
+    // If user is authenticated and trying to access auth routes, redirect to appropriate destination
     if (isAuthenticated && isAuthRoute) {
-      router.push('/');
-      return;
-    }
-
-    // Handle onboarding flow
-    if (isAuthenticated && user) {
-      const isOnboarded = user.isOnboarded;
-      console.log("AuthGuard - User object:", user);
-      console.log("AuthGuard - User workspaces:", user.workspaces);
-      console.log("AuthGuard - Onboarding completed:", isCompleted);
-      console.log("AuthGuard - Onboarding hasBeenShown:", hasBeenShown);
+      console.log("AuthGuard - User authenticated, redirecting from auth route");
+      redirectExecuted.current = true;
       
-      // If user is not onboarded and trying to access main dashboard
-      if (!isOnboarded && pathname === '/') {
-        console.log("AuthGuard - User is not onboarded, checking signup completion status");
-        
-        // Check if user has completed the entire signup flow
+      // Simple logic: Check isOnboarded from API
+      if (user && user.isOnboarded) {
+        // User is onboarded - go to dashboard
+        setTimeout(() => {
+          router.push('/');
+        }, 50);
+      } else {
+        // User is not onboarded - redirect to appropriate onboarding step
         const hasProfile = user.firstName && user.lastName && user.phone;
         const hasWorkspace = user.workspaces && user.workspaces.length > 0;
         
-        if (hasProfile && hasWorkspace) {
-          // User has completed profile and workspace - they should be on preferences or dashboard
-          // Don't redirect them back to team-members, let them access dashboard
-          console.log("AuthGuard - User has completed signup flow, allowing dashboard access");
-          return; // Don't redirect, allow access to dashboard
-        }
-        
-        // User hasn't completed signup flow, redirect to appropriate step
-        console.log("AuthGuard - User hasn't completed signup flow, redirecting to onboarding flow");
-        
-        if (hasWorkspace) {
-          // User has workspace, check if they have profile data
-          if (hasProfile) {
-            // User has profile and workspace, redirect to team-members step
+        setTimeout(() => {
+          if (hasWorkspace && hasProfile) {
             router.push('/team-members');
+          } else if (hasWorkspace) {
+            router.push('/create-profile');
           } else {
-            // User has workspace but no profile, redirect to profile creation
             router.push('/create-profile');
           }
-        } else {
-          // No workspace, start from profile creation
-          router.push('/create-profile');
+        }, 50);
+      }
+      return;
+    }
+
+    // Handle onboarding flow for authenticated users
+    if (isAuthenticated && user) {
+      const isOnboarded = user.isOnboarded;
+      
+      console.log("AuthGuard - User isOnboarded:", isOnboarded);
+      console.log("AuthGuard - isOnboardingRoute:", isOnboardingRoute);
+      
+      // If user is not onboarded and trying to access main dashboard
+      if (!isOnboarded && pathname === '/') {
+        console.log("AuthGuard - User is not onboarded, checking if they completed signup flow");
+        redirectExecuted.current = true;
+        
+        // Check if user completed the full signup flow (has profile, workspace, and completed preferences)
+        const hasProfile = user.firstName && user.lastName && user.phone;
+        const hasWorkspace = user.workspaces && user.workspaces.length > 0;
+        
+        // If user completed the full signup flow, let them stay on dashboard to see welcome screen
+        if (hasProfile && hasWorkspace) {
+          console.log("AuthGuard - User completed signup flow, allowing access to dashboard for welcome screen");
+          return; // Don't redirect, let them stay on dashboard
         }
+        
+        // Otherwise, redirect to appropriate onboarding step
+        console.log("AuthGuard - User not completed signup flow, redirecting to onboarding");
+        setTimeout(() => {
+          if (hasWorkspace && hasProfile) {
+            router.push('/team-members');
+          } else if (hasWorkspace) {
+            router.push('/create-profile');
+          } else {
+            router.push('/create-profile');
+          }
+        }, 50);
         return;
       }
       
-      // If user is onboarded and trying to access onboarding routes
+      // If user is onboarded, they should NOT be on onboarding routes
       if (isOnboarded && isOnboardingRoute) {
-        router.push('/');
+        console.log("AuthGuard - User is onboarded, redirecting from onboarding route to dashboard");
+        redirectExecuted.current = true;
+        setTimeout(() => {
+          router.push('/');
+        }, 50);
         return;
       }
+      
     }
-  }, [isAuthenticated, isLoading, pathname, router, user]);
+  }, [isAuthenticated, isLoading, isInitialized, pathname, router, user]);
 
-  // Show minimal loading to prevent flash
-  if (isLoading) {
+  // Don't show loading screen for auth routes and onboarding routes - let them render immediately
+  if (publicRoutes.some(route => pathname.startsWith(route)) || onboardingRoutes.some(route => pathname.startsWith(route))) {
+    return children;
+  }
+
+  // Show minimal loading to prevent flash - only for protected routes
+  if (isLoading || !isInitialized) {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Minimal loading - just a blank screen to prevent flash */}

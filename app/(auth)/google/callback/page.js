@@ -25,8 +25,28 @@ const GoogleCallback = () => {
         const result = await handleGoogleCallback(code, state);
 
         if (result.success) {
-          // Redirect to dashboard - AuthGuard will handle onboarding flow
-          router.push('/');
+          // Check user onboarding status and redirect directly to appropriate step
+          const user = result.user;
+          
+          // Small delay to prevent page flash, then navigate
+          setTimeout(() => {
+            if (user && user.isOnboarded) {
+              // User is onboarded - go to dashboard
+              router.push('/');
+            } else {
+              // User needs to complete onboarding - redirect directly to appropriate step
+              const hasProfile = user.firstName && user.lastName && user.phone;
+              const hasWorkspace = user.workspaces && user.workspaces.length > 0;
+              
+              if (hasWorkspace && hasProfile) {
+                router.push('/team-members');
+              } else if (hasWorkspace) {
+                router.push('/create-profile');
+              } else {
+                router.push('/create-profile');
+              }
+            }
+          }, 100);
         } else {
           setError(result.error || 'Google authentication failed');
         }

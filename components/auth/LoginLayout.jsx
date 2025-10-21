@@ -16,7 +16,7 @@ const LoginLayout = ({ children }) => {
         <p className="mt-4 text-sm text-gray-500 text-center max-w-[384px]">
           By proceeding you acknowledge that you have read, understood and agree
           to our{" "}
-          <Link href="#" className="border-b border-gray-500">
+          <Link href="https://arnio.co/legals/terms-of-service" target="_blank" className="border-b border-gray-500">
             Terms and Conditions
           </Link>
         </p>

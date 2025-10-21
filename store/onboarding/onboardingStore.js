@@ -72,6 +72,7 @@ const useOnboardingStore = create(
         if (currentStep < totalSteps) {
           set({ currentStep: currentStep + 1 });
         } else {
+          // Onboarding completed
           set({ isCompleted: true, isOnboardingActive: false });
         }
       },
@@ -128,9 +129,9 @@ const useOnboardingStore = create(
           return true;
         }
         
-        // If user is not onboarded, show onboarding popups
-        if (user && !user.isOnboarded) {
-          return true; // User needs onboarding popups
+        // Don't show onboarding popups if user is onboarded
+        if (user && user.isOnboarded) {
+          return false;
         }
         
         // Fallback: don't show onboarding if no user data

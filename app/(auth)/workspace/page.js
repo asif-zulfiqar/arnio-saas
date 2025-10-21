@@ -68,6 +68,13 @@ const Workspace = () => {
   const watchCompanyName = watch("companyName");
   const watchWorkspaceHandle = watch("workspaceHandle");
 
+  // Clear general errors when user starts typing
+  useEffect(() => {
+    if (errors.general) {
+      clearErrors("general");
+    }
+  }, [watchCompanyName, watchWorkspaceHandle, errors.general, clearErrors]);
+
   // Check for existing workspaces on component mount
   useEffect(() => {
     const checkExistingWorkspace = async () => {
@@ -90,7 +97,12 @@ const Workspace = () => {
           
           // Pre-fill form with existing data
           setValue("companyName", workspace.companyName || "");
-          setValue("workspaceHandle", workspace.handle || "");
+          // Add prefix to existing handle
+          const existingHandle = workspace.handle || "";
+          const fullHandle = existingHandle.startsWith("dashboard.arnio.co/") 
+            ? existingHandle 
+            : `dashboard.arnio.co/${existingHandle}`;
+          setValue("workspaceHandle", fullHandle);
           setBillingCountry(workspace.billingCountry || "United States of America");
           
           // Set logo preview if exists
@@ -168,6 +180,9 @@ const Workspace = () => {
       return;
     }
 
+    // Prevent multiple submissions
+    if (isLoading) return;
+
     setIsLoading(true);
 
     try {
@@ -181,11 +196,15 @@ const Workspace = () => {
         throw new Error("User ID is required to create workspace");
       }
 
+      // Extract handle part from the full workspace handle
+      const fullHandle = data.workspaceHandle;
+      const handlePart = fullHandle.replace("dashboard.arnio.co/", "");
+
       // Prepare workspace data for API
       const workspaceData = {
         userId: user.id,
         companyName: data.companyName,
-        workspaceHandle: data.workspaceHandle,
+        workspaceHandle: handlePart, // Send only the handle part, not the full URL
         billingCountry: billingCountry, // Use from signup store, not form data
         companyLogo: logoFile, // File object for upload
       };
@@ -205,17 +224,21 @@ const Workspace = () => {
       if (result.success) {
         // Store data in Zustand store
         setCompanyName(data.companyName);
-        setWorkspaceHandle(data.workspaceHandle);
+        setWorkspaceHandle(fullHandle); // Store the full handle with prefix
         setBillingCountry(billingCountry);
         
         // Store workspace ID for team members step
         const workspaceId = result.workspace?.id || result.workspaceId || existingWorkspace?.id;
         setWorkspaceId(workspaceId);
 
-        // Navigate to team members step
-        setCurrentStep(4);
-        router.push("/team-members");
+        // Small delay to prevent blank screen flash
+        setTimeout(() => {
+          setCurrentStep(4);
+          router.push("/team-members");
+        }, 100);
       } else {
+        // Clear any existing errors first
+        clearErrors("general");
         setError("general", {
           type: "manual",
           message: result.error || `Failed to ${isEditMode ? 'update' : 'create'} workspace. Please try again.`,
@@ -223,6 +246,8 @@ const Workspace = () => {
       }
     } catch (error) {
       console.error("Form submission failed:", error);
+      // Clear any existing errors first
+      clearErrors("general");
       setError("general", {
         type: "manual",
         message: "Something went wrong. Please try again.",
@@ -237,8 +262,8 @@ const Workspace = () => {
     if (isLoading) {
       return {
         disabled: true,
-        bgColor: "bg-gray-200",
-        color: "text-gray-400",
+        bgColor: "bg-primary/80",
+        color: "text-white",
       };
     }
 
@@ -248,8 +273,8 @@ const Workspace = () => {
     ) {
       return {
         disabled: false,
-        bgColor: "bg-blue-200",
-        color: "text-blue-400",
+        bgColor: "bg-primary/80",
+        color: "text-white",
       };
     }
 
