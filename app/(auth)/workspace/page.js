@@ -8,7 +8,7 @@ import useSignupStore from "@/store/auth/signupStore";
 import useAuthStore from "@/store/auth/authStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 
 const COUNTRY_OPTIONS = [
@@ -67,12 +67,18 @@ const Workspace = () => {
 
   const watchCompanyName = watch("companyName");
   const watchWorkspaceHandle = watch("workspaceHandle");
+  
+  // Track previous values to detect actual user input changes
+  const prevCompanyNameRef = useRef(watchCompanyName);
+  const prevWorkspaceHandleRef = useRef(watchWorkspaceHandle);
 
-  // Clear general errors when user starts typing
+  // Clear general errors only when user actually changes input values
   useEffect(() => {
-    if (errors.general) {
+    if (errors.general && (watchCompanyName !== prevCompanyNameRef.current || watchWorkspaceHandle !== prevWorkspaceHandleRef.current)) {
       clearErrors("general");
     }
+    prevCompanyNameRef.current = watchCompanyName;
+    prevWorkspaceHandleRef.current = watchWorkspaceHandle;
   }, [watchCompanyName, watchWorkspaceHandle, errors.general, clearErrors]);
 
   // Check for existing workspaces on component mount
@@ -120,13 +126,6 @@ const Workspace = () => {
 
     checkExistingWorkspace();
   }, [user?.id, getUserWorkspaces, setValue, setBillingCountry]);
-
-  // Clear general errors when user starts typing
-  useEffect(() => {
-    if (errors.general) {
-      clearErrors("general");
-    }
-  }, [watchCompanyName, watchWorkspaceHandle, errors.general, clearErrors]);
 
   // Validation rules
   const validationRules = {
@@ -241,7 +240,7 @@ const Workspace = () => {
         clearErrors("general");
         setError("general", {
           type: "manual",
-          message: result.error || `Failed to ${isEditMode ? 'update' : 'create'} workspace. Please try again.`,
+          message: result.error || result.message || `Failed to ${isEditMode ? 'update' : 'create'} workspace. Please try again.`,
         });
       }
     } catch (error) {
@@ -250,7 +249,7 @@ const Workspace = () => {
       clearErrors("general");
       setError("general", {
         type: "manual",
-        message: "Something went wrong. Please try again.",
+        message: error.message || error.response?.data?.message || "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -272,7 +271,7 @@ const Workspace = () => {
       !watchWorkspaceHandle?.trim()
     ) {
       return {
-        disabled: false,
+        disabled: true,
         bgColor: "bg-primary/80",
         color: "text-white",
       };

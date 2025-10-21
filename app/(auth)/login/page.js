@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import LoginLayout from "@/components/auth/LoginLayout";
@@ -38,12 +38,18 @@ const Login = () => {
 
   const watchEmail = watch("email");
   const watchPassword = watch("password");
+  
+  // Track previous values to detect actual user input changes
+  const prevEmailRef = useRef(watchEmail);
+  const prevPasswordRef = useRef(watchPassword);
 
-  // Clear general errors when user starts typing
+  // Clear general errors only when user actually changes input values
   useEffect(() => {
-    if (errors.general) {
+    if (errors.general && (watchEmail !== prevEmailRef.current || watchPassword !== prevPasswordRef.current)) {
       clearErrors("general");
     }
+    prevEmailRef.current = watchEmail;
+    prevPasswordRef.current = watchPassword;
   }, [watchEmail, watchPassword, errors.general, clearErrors]);
 
   // Simple validation rules
@@ -107,7 +113,7 @@ const Login = () => {
         clearErrors("general");
         setError("general", {
           type: "manual",
-          message: result.error || "Login failed. Please try again.",
+          message: result.error || result.message || "Login failed. Please try again.",
         });
       }
     } catch (error) {
@@ -116,7 +122,7 @@ const Login = () => {
       clearErrors("general");
       setError("general", {
         type: "manual",
-        message: "Login failed. Please try again.",
+        message: error.message || error.response?.data?.message || "Login failed. Please try again.",
       });
     }
   };
@@ -226,6 +232,12 @@ const Login = () => {
                 height="h-[41px]"
                 cn="!text-sm"
               />
+
+              {errors.general && (
+                <p className="text-sm text-red-600 text-center mt-4">
+                  {errors.general.message}
+                </p>
+              )}
             </form>
           </>
         )}
@@ -282,6 +294,12 @@ const Login = () => {
                 height="h-[41px]"
                 cn="!text-sm"
               />
+
+              {errors.general && (
+                <p className="text-sm text-red-600 text-center mt-4">
+                  {errors.general.message}
+                </p>
+              )}
 
               <button
                 type="button"

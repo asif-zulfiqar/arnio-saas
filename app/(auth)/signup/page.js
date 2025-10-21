@@ -8,7 +8,7 @@ import useAuthStore from "@/store/auth/authStore";
 import { Mail, Lock } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 
@@ -38,12 +38,20 @@ const Signup = () => {
   const watchEmail = watch("email");
   const watchPassword = watch("password");
   const watchConfirmPassword = watch("confirmPassword");
+  
+  // Track previous values to detect actual user input changes
+  const prevEmailRef = useRef(watchEmail);
+  const prevPasswordRef = useRef(watchPassword);
+  const prevConfirmPasswordRef = useRef(watchConfirmPassword);
 
-  // Clear general errors when user starts typing
+  // Clear general errors only when user actually changes input values
   useEffect(() => {
-    if (errors.general) {
+    if (errors.general && (watchEmail !== prevEmailRef.current || watchPassword !== prevPasswordRef.current || watchConfirmPassword !== prevConfirmPasswordRef.current)) {
       clearErrors("general");
     }
+    prevEmailRef.current = watchEmail;
+    prevPasswordRef.current = watchPassword;
+    prevConfirmPasswordRef.current = watchConfirmPassword;
   }, [watchEmail, watchPassword, watchConfirmPassword, errors.general, clearErrors]);
 
   // Validation rules
@@ -103,7 +111,7 @@ const Signup = () => {
         clearErrors("general");
         setError("general", {
           type: "manual",
-          message: result.error || "Registration failed. Please try again.",
+          message: result.error || result.message || "Registration failed. Please try again.",
         });
       }
     } catch (error) {
@@ -112,7 +120,7 @@ const Signup = () => {
       clearErrors("general");
       setError("general", {
         type: "manual",
-        message: "Something went wrong. Please try again.",
+        message: error.message || error.response?.data?.message || "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);

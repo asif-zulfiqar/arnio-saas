@@ -12,8 +12,9 @@ const Preferences = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSource, setSelectedSource] = useState("");
+  const [error, setError] = useState("");
   const { setReferralSource, setCurrentStep, prevStep } = useSignupStore();
-  const { saveReferralSource, updateOnboardingStatus } = useAuthStore();
+  const { saveReferralSource, updateOnboardingStatus, getProfile } = useAuthStore();
 
   // Referral sources with icons
   const referralSources = [
@@ -48,14 +49,15 @@ const Preferences = () => {
   // Handle form submission
   const handleContinue = async () => {
     setIsLoading(true);
+    setError(""); // Clear any previous errors
 
     try {
       // Save referral source if selected
       if (selectedSource) {
         const result = await saveReferralSource(selectedSource);
         if (!result.success) {
-          console.error("Failed to save referral source:", result.error);
-          // Continue anyway, don't block the flow
+          setError(result.error || result.message || "Failed to save referral source. Please try again.");
+          return;
         }
       }
 
@@ -67,11 +69,7 @@ const Preferences = () => {
         router.push("/");
       }, 100);
     } catch (error) {
-      console.error("Signup completion failed:", error);
-      // Continue anyway, don't block the flow
-      setTimeout(() => {
-        router.push("/");
-      }, 100);
+      setError(error.message || error.response?.data?.message || "An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -123,6 +121,12 @@ const Preferences = () => {
         </div>
 
         <div className="space-y-4">
+          {error && (
+            <p className="text-sm text-red-600 text-center">
+              {error}
+            </p>
+          )}
+
           <Button
             text={isLoading ? "Completing..." : "Continue"}
             onClick={handleContinue}

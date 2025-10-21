@@ -181,7 +181,7 @@ const TeamMembers = () => {
           inviteSuccess = result.success;
           
           if (!result.success) {
-            setInviteError(result.error || "Failed to invite team members. Please try again.");
+            setInviteError(result.error || result.message || "Failed to invite team members. Please try again.");
             console.error("Failed to invite team members:", result.error);
             return; // Don't proceed to next step if invitation fails
           }

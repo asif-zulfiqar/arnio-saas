@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { authService, googleAuthService, workspaceService, teamMemberService } from '@/lib/api/auth';
-import toast from 'react-hot-toast';
 
 const useAuthStore = create((set, get) => ({
   // Auth state
@@ -76,7 +75,6 @@ const useAuthStore = create((set, get) => ({
         
         set({ user: completeUser, isLoading: false });
         
-        toast.success('Login successful!');
         return { success: true, user: completeUser };
       } catch (profileError) {
         console.error('Failed to fetch user profile:', profileError);
@@ -84,7 +82,6 @@ const useAuthStore = create((set, get) => ({
         const basicUser = response?.user || response?.data || response;
         set({ user: basicUser, isLoading: false });
         
-        toast.success('Login successful!');
         return { success: true, user: basicUser };
       }
     } catch (error) {
@@ -97,7 +94,6 @@ const useAuthStore = create((set, get) => ({
         isInitialized: true, // Mark as initialized even on error
       });
 
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -114,7 +110,6 @@ const useAuthStore = create((set, get) => ({
         error: null,
       });
 
-      toast.success('Registration successful! Please login to continue.');
       return { success: true, data: response };
     } catch (error) {
       const errorMessage = error.message || 'Registration failed. Please try again.';
@@ -123,7 +118,6 @@ const useAuthStore = create((set, get) => ({
         error: errorMessage,
       });
 
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -141,7 +135,6 @@ const useAuthStore = create((set, get) => ({
         error: errorMessage,
       });
 
-      toast.error(errorMessage);
     }
   },
 
@@ -162,7 +155,6 @@ const useAuthStore = create((set, get) => ({
         error: null,
       });
 
-      toast.success('Google login successful!');
       return { success: true, user };
     } catch (error) {
       const errorMessage = error.message || 'Google login failed. Please try again.';
@@ -173,7 +165,6 @@ const useAuthStore = create((set, get) => ({
         error: errorMessage,
       });
 
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -194,7 +185,6 @@ const useAuthStore = create((set, get) => ({
         error: null,
       });
 
-      toast.success('Logged out successfully!');
     }
   },
 
@@ -225,7 +215,6 @@ const useAuthStore = create((set, get) => ({
         error: null,
       });
 
-      toast.success('Profile updated successfully!');
       return { success: true, user };
     } catch (error) {
       const errorMessage = error.message || 'Profile update failed. Please try again.';
@@ -234,7 +223,6 @@ const useAuthStore = create((set, get) => ({
         error: errorMessage,
       });
 
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -253,7 +241,6 @@ const useAuthStore = create((set, get) => ({
         error: null,
       });
 
-      toast.success('Profile setup successfully!');
       return { success: true, user: updatedUser };
     } catch (error) {
       const errorMessage = error.message || 'Profile setup failed. Please try again.';
@@ -262,7 +249,6 @@ const useAuthStore = create((set, get) => ({
         error: errorMessage,
       });
 
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -275,13 +261,11 @@ const useAuthStore = create((set, get) => ({
       const response = await authService.forgotPassword(email);
       set({ isLoading: false, error: null });
       
-      toast.success('Password reset OTP sent to your email!');
       return { success: true };
     } catch (error) {
       const errorMessage = error.message || 'Failed to send reset OTP. Please try again.';
       set({ isLoading: false, error: errorMessage });
       
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -294,13 +278,11 @@ const useAuthStore = create((set, get) => ({
       const response = await authService.resetPassword(resetData);
       set({ isLoading: false, error: null });
       
-      toast.success('Password reset successfully!');
       return { success: true };
     } catch (error) {
       const errorMessage = error.message || 'Password reset failed. Please try again.';
       set({ isLoading: false, error: errorMessage });
       
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -313,13 +295,11 @@ const useAuthStore = create((set, get) => ({
       const response = await authService.resendVerification(email);
       set({ isLoading: false, error: null });
       
-      toast.success('Verification email sent!');
       return { success: true };
     } catch (error) {
       const errorMessage = error.message || 'Failed to send verification email. Please try again.';
       set({ isLoading: false, error: errorMessage });
       
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -342,13 +322,11 @@ const useAuthStore = create((set, get) => ({
       const response = await workspaceService.createWorkspace(workspaceData);
       set({ isLoading: false, error: null });
       
-      toast.success('Workspace created successfully!');
       return { success: true, workspace: response };
     } catch (error) {
       const errorMessage = error.message || 'Failed to create workspace. Please try again.';
       set({ isLoading: false, error: errorMessage });
       
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -361,13 +339,11 @@ const useAuthStore = create((set, get) => ({
       const response = await workspaceService.updateWorkspace(workspaceId, workspaceData);
       set({ isLoading: false, error: null });
       
-      toast.success('Workspace updated successfully!');
       return { success: true, workspace: response };
     } catch (error) {
       const errorMessage = error.message || 'Failed to update workspace. Please try again.';
       set({ isLoading: false, error: errorMessage });
       
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -380,13 +356,11 @@ const useAuthStore = create((set, get) => ({
       const response = await teamMemberService.inviteTeamMembers(inviteData);
       set({ isLoading: false, error: null });
       
-      toast.success('Team members invited successfully!');
       return { success: true, data: response };
     } catch (error) {
       const errorMessage = error.message || 'Failed to invite team members. Please try again.';
       set({ isLoading: false, error: errorMessage });
       
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -457,7 +431,6 @@ const useAuthStore = create((set, get) => ({
         error: null,
       });
 
-      toast.success('Referral source saved successfully!');
       return { success: true, response };
     } catch (error) {
       const errorMessage = error.message || 'Failed to save referral source. Please try again.';
@@ -466,7 +439,6 @@ const useAuthStore = create((set, get) => ({
         error: errorMessage,
       });
 
-      toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   },

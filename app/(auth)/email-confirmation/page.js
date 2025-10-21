@@ -13,6 +13,7 @@ const EmailConfirmation = () => {
   const router = useRouter();
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [error, setError] = useState("");
   const { email } = useSignupStore();
   const { resendVerification } = useAuthStore();
 
@@ -36,13 +37,17 @@ const EmailConfirmation = () => {
     if (resendCooldown > 0) return;
 
     setResendLoading(true);
+    setError(""); // Clear any previous errors
     try {
       const result = await resendVerification(email);
       if (result.success) {
         setResendCooldown(60); // 60 seconds cooldown
+      } else {
+        setError(result.error || result.message || "Failed to resend email. Please try again.");
       }
     } catch (error) {
       console.error("Resend email failed:", error);
+      setError(error.message || error.response?.data?.message || "Failed to resend email. Please try again.");
     } finally {
       setResendLoading(false);
     }
@@ -74,6 +79,12 @@ const EmailConfirmation = () => {
 
           {/* Resend and Change Email */}
           <div className="space-y-3">
+            {error && (
+              <p className="text-sm text-red-600 text-center">
+                {error}
+              </p>
+            )}
+
             <Button
               text={resendLoading ? "Sending..." : resendCooldown > 0 ? `Resend email (${resendCooldown}s)` : "Resend email"}
               onClick={handleResendEmail}

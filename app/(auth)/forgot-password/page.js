@@ -5,7 +5,7 @@ import Input from "@/components/global/small/Input";
 import useAuthStore from "@/store/auth/authStore";
 import { Mail } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import OtpInput from "react-otp-input";
 
@@ -32,12 +32,16 @@ const ForgotPassword = () => {
   });
 
   const watchEmail = watch("email");
+  
+  // Track previous values to detect actual user input changes
+  const prevEmailRef = useRef(watchEmail);
 
-  // Clear general errors when user starts typing
+  // Clear general errors only when user actually changes input values
   useEffect(() => {
-    if (errors.general) {
+    if (errors.general && watchEmail !== prevEmailRef.current) {
       clearErrors("general");
     }
+    prevEmailRef.current = watchEmail;
   }, [watchEmail, errors.general, clearErrors]);
 
   // Simple validation rules
@@ -60,14 +64,14 @@ const ForgotPassword = () => {
       } else {
         setError("email", {
           type: "manual",
-          message: result.error || "Failed to send reset OTP",
+          message: result.error || result.message || "Failed to send reset OTP",
         });
       }
     } catch (error) {
       console.error("Email validation failed:", error);
       setError("email", {
         type: "manual",
-        message: "Something went wrong. Please try again.",
+        message: error.message || error.response?.data?.message || "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -95,14 +99,14 @@ const ForgotPassword = () => {
       } else {
         setError("general", {
           type: "manual",
-          message: result.error || "Password reset failed",
+          message: result.error || result.message || "Password reset failed",
         });
       }
     } catch (error) {
       console.error("Password reset failed:", error);
       setError("general", {
         type: "manual",
-        message: "Something went wrong. Please try again.",
+        message: error.message || error.response?.data?.message || "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -120,7 +124,7 @@ const ForgotPassword = () => {
 
     if (!watchEmail?.trim()) {
       return {
-        disabled: false,
+        disabled: true,
         bgColor: "bg-primary/80",
         color: "text-white",
       };

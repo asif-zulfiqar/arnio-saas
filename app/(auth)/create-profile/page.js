@@ -8,7 +8,7 @@ import useAuthStore from "@/store/auth/authStore";
 import { User, Phone } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 
 const CreateProfile = () => {
@@ -40,12 +40,20 @@ const CreateProfile = () => {
   const watchFirstName = watch("firstName");
   const watchLastName = watch("lastName");
   const watchPhone = watch("phone");
+  
+  // Track previous values to detect actual user input changes
+  const prevFirstNameRef = useRef(watchFirstName);
+  const prevLastNameRef = useRef(watchLastName);
+  const prevPhoneRef = useRef(watchPhone);
 
-  // Clear general errors when user starts typing
+  // Clear general errors only when user actually changes input values
   useEffect(() => {
-    if (errors.general) {
+    if (errors.general && (watchFirstName !== prevFirstNameRef.current || watchLastName !== prevLastNameRef.current || watchPhone !== prevPhoneRef.current)) {
       clearErrors("general");
     }
+    prevFirstNameRef.current = watchFirstName;
+    prevLastNameRef.current = watchLastName;
+    prevPhoneRef.current = watchPhone;
   }, [watchFirstName, watchLastName, watchPhone, errors.general, clearErrors]);
 
   // Fetch existing profile data on component mount
@@ -76,13 +84,6 @@ const CreateProfile = () => {
 
     fetchProfile();
   }, [getProfile, setValue]);
-
-  // Clear general errors when user starts typing
-  useEffect(() => {
-    if (errors.general) {
-      clearErrors("general");
-    }
-  }, [watchFirstName, watchLastName, watchPhone, errors.general, clearErrors]);
 
   // Validation rules
   const validationRules = {
@@ -169,7 +170,7 @@ const CreateProfile = () => {
         clearErrors("general");
         setError("general", {
           type: "manual",
-          message: result.error || "Profile update failed. Please try again.",
+          message: result.error || result.message || "Profile update failed. Please try again.",
         });
       }
     } catch (error) {
@@ -178,7 +179,7 @@ const CreateProfile = () => {
       clearErrors("general");
       setError("general", {
         type: "manual",
-        message: "Something went wrong. Please try again.",
+        message: error.message || error.response?.data?.message || "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -201,7 +202,7 @@ const CreateProfile = () => {
       !watchPhone?.trim()
     ) {
       return {
-        disabled: false,
+        disabled: true,
         bgColor: "bg-primary/80",
         color: "text-white",
       };

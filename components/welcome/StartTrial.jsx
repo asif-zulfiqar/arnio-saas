@@ -13,14 +13,16 @@ const StartTrial = ({ setStep }) => {
       />
       <div className="space-y-5">
         <h4 className="text-xl font-bold text-gray-900 text-center">
-          Welcome to Arnio Pro
+        Welcome to Arnio Beta
         </h4>
-        <p className="text-gray-500 text-base text-center max-w-[477px]">
-          You’re on a free 7-day trial of Pro. Explore every feature and see
-          what fits your team.
+        <p className="text-gray-500 text-base text-center max-w-[477px] mx-auto">
+        You’ve been invited to join our 30-day Beta Program designed for brands exploring how iMessage can drive retention, personalization, and customer experience.
         </p>
         <div className="text-gray-500 text-base text-center max-w-[536px]">
-          When the trial ends, continue with Pro or switch to Starter.
+        Get full access to all Pro features while we’re in beta. We’ll use your feedback to help shape the next generation of iMessage marketing.
+        </div>
+        <div className="text-gray-500 text-base text-center max-w-[536px]">
+        We’ll use your feedback to help shape the next generation of iMessage marketing.
         </div>
       </div>
       <div className="flex justify-center">

@@ -25,6 +25,7 @@ const ProfileDropdown = ({ userImages = [] }) => {
     try {
       await logout();
       setIsDropdownOpen(false);
+      window.location.href = '/login';
     } catch (error) {
       console.error("Sign out failed:", error);
     }

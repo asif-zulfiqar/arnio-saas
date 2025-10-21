@@ -103,26 +103,29 @@ const AuthGuard = ({ children }) => {
         console.log("AuthGuard - User is not onboarded, checking if they completed signup flow");
         redirectExecuted.current = true;
         
-        // Check if user completed the full signup flow (has profile, workspace, and completed preferences)
+        // Check if user completed the profile step
         const hasProfile = user.firstName && user.lastName && user.phone;
-        const hasWorkspace = user.workspaces && user.workspaces.length > 0;
         
-        // If user completed the full signup flow, let them stay on dashboard to see welcome screen
-        if (hasProfile && hasWorkspace) {
-          console.log("AuthGuard - User completed signup flow, allowing access to dashboard for welcome screen");
+        console.log("AuthGuard - User data:", {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          workspaces: user.workspaces,
+          hasProfile,
+          fullUser: user
+        });
+        
+        // If user has completed profile, let them through to welcome screen
+        // This prevents the redirect loop after completing preferences
+        if (hasProfile) {
+          console.log("AuthGuard - User has profile, allowing access to dashboard for welcome screen");
           return; // Don't redirect, let them stay on dashboard
         }
         
         // Otherwise, redirect to appropriate onboarding step
         console.log("AuthGuard - User not completed signup flow, redirecting to onboarding");
         setTimeout(() => {
-          if (hasWorkspace && hasProfile) {
-            router.push('/team-members');
-          } else if (hasWorkspace) {
-            router.push('/create-profile');
-          } else {
-            router.push('/create-profile');
-          }
+          router.push('/create-profile');
         }, 50);
         return;
       }
