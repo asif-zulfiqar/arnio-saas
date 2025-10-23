@@ -150,7 +150,7 @@ export const ExportDropdown = ({ showDropdown, onToggle }) => {
     <div className="relative">
       <button
         onClick={onToggle}
-        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+        className="flex items-center space-x-2 px-5 py-2.5 text-sm text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
       >
         <Image
           src={ExportIcon}

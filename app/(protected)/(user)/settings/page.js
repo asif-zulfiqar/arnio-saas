@@ -40,13 +40,13 @@ const Settings = () => {
     <div className="bg-gray-50 h-[calc(100vh-103px)] overflow-hidden">
       <div className="h-full flex flex-col">
         {/* Header - directly on gray background */}
-        <div className=" pb-4">
+        <div className="pb-8 pt-1">
           <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
         </div>
 
         {/* Tabs - directly on gray background with bottom border */}
         <div className="">
-          <nav className="flex space-x-6 border-b border-gray-200 ">
+          <nav className="flex space-x-6 border-b w-[633px] border-gray-200 ">
             {tabs.map((tab) => (
               <button
                 key={tab.id}

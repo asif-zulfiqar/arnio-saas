@@ -1,4 +1,3 @@
-// app/(protected)/(user)/analytics/page.js
 "use client";
 
 import { useEffect } from "react";
@@ -6,7 +5,6 @@ import useAnalyticsStore from "../../../../store/analytics/AnalyticsStore";
 import { ExportDropdown } from "../../../../components/analytics/ExportDropdown";
 import { MetricCard } from "../../../../components/analytics/MetricCard";
 import { EmptyState } from "../../../../components/analytics/EmptyState";
-
 import AnalyticsChart from "../../../../components/analytics/AnalyticsChart";
 import DateRangePickerWrapper from "@/components/analytics/DateRangePickerWrapper";
 
@@ -19,15 +17,13 @@ const Analytics = () => {
     showExportDropdown,
     hoveredPoint,
     hasData,
+    loading,
+    error,
     toggleCalendar,
     toggleExportDropdown,
     setHoveredPoint,
     loadData,
   } = useAnalyticsStore();
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   useEffect(() => {
     const handleClickOutside = () => {
@@ -41,11 +37,106 @@ const Analytics = () => {
     }
   }, [showCalendar, showExportDropdown, toggleCalendar, toggleExportDropdown]);
 
-  if (!hasData) {
+  // Show loading state
+  if (loading) {
     return (
       <div className="bg-gray-50 h-[calc(100vh-103px)] overflow-hidden">
         <div
-          className="mx-auto flex-1 overflow-y-auto h-full  pb-2
+          className="mx-auto flex-1 overflow-y-auto h-full pb-2
+          [&::-webkit-scrollbar]:hidden
+          [-ms-overflow-style]:none
+          [scrollbar-width]:none"
+        >
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-semibold text-gray-900">Analytics</h1>
+            <div className="flex items-center space-x-4">
+              <DateRangePickerWrapper />
+              <ExportDropdown
+                showDropdown={showExportDropdown}
+                onToggle={toggleExportDropdown}
+              />
+            </div>
+          </div>
+
+          {/* Loading skeleton for chart */}
+          <div className="bg-white rounded-lg border border-gray-200 mb-8 shadow-sm">
+            <div className="p-6 pb-4">
+              <div className="flex items-baseline space-x-3 mb-2">
+                <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="h-4 w-48 bg-gray-200 rounded animate-pulse mb-4"></div>
+              <hr className="border-gray-200" />
+            </div>
+            <div className="px-6 pb-6">
+              <div className="h-80 bg-gray-100 rounded animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Loading skeleton for metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-lg border border-gray-200"
+              >
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-4"></div>
+                <div className="h-12 bg-gray-100 rounded animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-gray-50 h-[calc(100vh-103px)] overflow-hidden">
+        <div
+          className="mx-auto flex-1 overflow-y-auto h-full pb-2
+          [&::-webkit-scrollbar]:hidden
+          [-ms-overflow-style]:none
+          [scrollbar-width]:none"
+        >
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-semibold text-gray-900">Analytics</h1>
+            <div className="flex items-center space-x-4">
+              <DateRangePickerWrapper />
+              <ExportDropdown
+                showDropdown={showExportDropdown}
+                onToggle={toggleExportDropdown}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="text-lg font-medium text-gray-900 mb-2">
+              Failed to load analytics
+            </div>
+            <p className="text-gray-500 text-center mb-4">{error}</p>
+            <button
+              onClick={loadData}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state when no data - IMPROVED CONDITION
+  const hasAnalyticsData = hasData && chartData && chartData.length > 0;
+
+  if (!hasAnalyticsData) {
+    return (
+      <div className="bg-gray-50 h-[calc(100vh-103px)] overflow-hidden">
+        <div
+          className="mx-auto flex-1 overflow-y-auto h-full pb-2
           [&::-webkit-scrollbar]:hidden
           [-ms-overflow-style]:none
           [scrollbar-width]:none"
@@ -62,18 +153,6 @@ const Analytics = () => {
           </div>
 
           <EmptyState />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {metrics.map((metric, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-lg border border-gray-200"
-              >
-                <div className="text-sm text-gray-600 mb-2">{metric.title}</div>
-                <div className="h-16 bg-gray-100 rounded animate-pulse"></div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     );
@@ -108,17 +187,15 @@ const Analytics = () => {
           <div className="p-6 pb-4">
             <div className="flex items-baseline space-x-3 mb-2">
               <span className="text-2xl font-bold text-gray-900">
-                {customerEngagement.percentage}%
+                {customerEngagement?.percentage?.toFixed(2) ?? "0.00"}%
               </span>
               <div
-                className={`flex items-center space-x-1 px-2 t py-1.5 rounded-md  ${
-                  customerEngagement.isPositive
-                    ? "bg-[#DEF7EC] text-3xl font-bold"
-                    : "bg-red-50 text-3xl font-bold"
+                className={`flex items-center space-x-1 px-2 py-1.5 rounded-md ${
+                  customerEngagement.isPositive ? "bg-[#DEF7EC]" : "bg-red-50"
                 }`}
               >
                 <svg
-                  className={`w-4 h-3  ${
+                  className={`w-4 h-3 ${
                     customerEngagement.isPositive
                       ? "text-[#03543F]"
                       : "text-red-600 rotate-180"
@@ -133,12 +210,13 @@ const Analytics = () => {
                   />
                 </svg>
                 <span
-                  className={`text-[12px] font-medium  ${
+                  className={`text-xs font-medium ${
                     customerEngagement.isPositive
                       ? "text-[#03543F]"
                       : "text-red-600"
                   }`}
                 >
+                  {customerEngagement.isPositive ? "+" : ""}
                   {customerEngagement.change}%
                 </span>
               </div>

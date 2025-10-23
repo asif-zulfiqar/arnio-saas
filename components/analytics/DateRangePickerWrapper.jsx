@@ -1,26 +1,24 @@
-// components/Analytics/DateRangePickerWrapper.jsx
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import CalendarIcon from "@/app/assets/svgs/analytics/calendar.svg";
+import useAnalyticsStore from "@/store/analytics/AnalyticsStore";
 
-const DateRangePickerWrapper = ({
-  initialDateRange = { start: "Dec 31", end: "Jan 31" },
-  onDateRangeChange,
-}) => {
-  // Local state management to prevent external interference
+const DateRangePickerWrapper = () => {
+  const { dateRange, setDateRange } = useAnalyticsStore();
+
+  // Local state for calendar UI
   const [isOpen, setIsOpen] = useState(false);
-  const [dateRange, setDateRange] = useState(initialDateRange);
   const containerRef = useRef(null);
 
-  // Calendar state
+  // Calendar state - initialize from store
   const [currentView, setCurrentView] = useState("calendar");
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 5));
-  const [selectedStart, setSelectedStart] = useState(new Date(2024, 11, 31));
-  const [selectedEnd, setSelectedEnd] = useState(new Date(2025, 0, 31));
+  const [currentMonth, setCurrentMonth] = useState(new Date(dateRange.start));
+  const [selectedStart, setSelectedStart] = useState(dateRange.start);
+  const [selectedEnd, setSelectedEnd] = useState(dateRange.end);
   const [selectingRange, setSelectingRange] = useState(false);
   const [hoverDate, setHoverDate] = useState(null);
-  const [viewYear, setViewYear] = useState(2025);
+  const [viewYear, setViewYear] = useState(dateRange.start.getFullYear());
 
   const months = [
     "January",
@@ -52,6 +50,11 @@ const DateRangePickerWrapper = ({
     "Dec",
   ];
 
+  // Format date for display
+  const formatDateDisplay = (date) => {
+    return `${monthsShort[date.getMonth()]} ${date.getDate()}`;
+  };
+
   // Handle clicks outside to close
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -64,7 +67,6 @@ const DateRangePickerWrapper = ({
     };
 
     if (isOpen) {
-      // Add a small delay to prevent immediate closing
       const timer = setTimeout(() => {
         document.addEventListener("mousedown", handleClickOutside);
       }, 100);
@@ -75,6 +77,14 @@ const DateRangePickerWrapper = ({
       };
     }
   }, [isOpen]);
+
+  // Sync local state with store when dateRange changes
+  useEffect(() => {
+    setSelectedStart(dateRange.start);
+    setSelectedEnd(dateRange.end);
+    setCurrentMonth(new Date(dateRange.start));
+    setViewYear(dateRange.start.getFullYear());
+  }, [dateRange]);
 
   const handleToggle = (e) => {
     e.preventDefault();
@@ -118,21 +128,23 @@ const DateRangePickerWrapper = ({
       setSelectedEnd(null);
       setSelectingRange(true);
     } else {
+      let start, end;
       if (clickedDate < selectedStart) {
-        setSelectedEnd(selectedStart);
-        setSelectedStart(clickedDate);
+        start = clickedDate;
+        end = selectedStart;
       } else {
-        setSelectedEnd(clickedDate);
+        start = selectedStart;
+        end = clickedDate;
       }
+
+      setSelectedStart(start);
+      setSelectedEnd(end);
       setSelectingRange(false);
 
-      const start = clickedDate < selectedStart ? clickedDate : selectedStart;
-      const end = clickedDate < selectedStart ? selectedStart : clickedDate;
-      const startStr = `${monthsShort[start.getMonth()]} ${start.getDate()}`;
-      const endStr = `${monthsShort[end.getMonth()]} ${end.getDate()}`;
-      const newRange = { start: startStr, end: endStr };
-      setDateRange(newRange);
-      if (onDateRangeChange) onDateRangeChange(newRange);
+      // Update store with new date range - THIS WILL NOW UPDATE THE GRAPH
+      console.log("Setting date range:", { start, end });
+      setDateRange({ start, end });
+      setIsOpen(false); // Close calendar after selection
     }
   };
 
@@ -291,12 +303,7 @@ const DateRangePickerWrapper = ({
             setViewYear(today.getFullYear());
             setSelectedStart(today);
             setSelectedEnd(today);
-            const newRange = {
-              start: `${monthsShort[today.getMonth()]} ${today.getDate()}`,
-              end: `${monthsShort[today.getMonth()]} ${today.getDate()}`,
-            };
-            setDateRange(newRange);
-            if (onDateRangeChange) onDateRangeChange(newRange);
+            setDateRange({ start: today, end: today });
             setCurrentView("calendar");
           }}
         >
@@ -308,6 +315,11 @@ const DateRangePickerWrapper = ({
             setSelectedStart(null);
             setSelectedEnd(null);
             setSelectingRange(false);
+            // Reset to default range when clearing
+            const defaultStart = new Date(2024, 11, 31);
+            const defaultEnd = new Date(2025, 0, 31);
+            setDateRange({ start: defaultStart, end: defaultEnd });
+            setIsOpen(false);
           }}
         >
           Clear
@@ -392,7 +404,7 @@ const DateRangePickerWrapper = ({
     <div className="relative" ref={containerRef}>
       <button
         onClick={handleToggle}
-        className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        className="px-5 py-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Image
@@ -413,7 +425,8 @@ const DateRangePickerWrapper = ({
               lineHeight: "16px",
             }}
           >
-            {dateRange.start} - {dateRange.end}
+            {formatDateDisplay(dateRange.start)} -{" "}
+            {formatDateDisplay(dateRange.end)}
           </span>
           <ChevronDown
             className={`w-4 h-4 flex-shrink-0 ${
@@ -488,17 +501,8 @@ const DateRangePickerWrapper = ({
                     const today = new Date();
                     setSelectedStart(today);
                     setSelectedEnd(today);
-                    const newRange = {
-                      start: `${
-                        monthsShort[today.getMonth()]
-                      } ${today.getDate()}`,
-                      end: `${
-                        monthsShort[today.getMonth()]
-                      } ${today.getDate()}`,
-                    };
-                    setDateRange(newRange);
-                    if (onDateRangeChange) onDateRangeChange(newRange);
-                    setIsOpen(false); // Only close on Today button in calendar view
+                    setDateRange({ start: today, end: today });
+                    setIsOpen(false);
                   }}
                 >
                   Today
@@ -509,6 +513,11 @@ const DateRangePickerWrapper = ({
                     setSelectedStart(null);
                     setSelectedEnd(null);
                     setSelectingRange(false);
+                    // Reset to default range when clearing
+                    const defaultStart = new Date(2024, 11, 31);
+                    const defaultEnd = new Date(2025, 0, 31);
+                    setDateRange({ start: defaultStart, end: defaultEnd });
+                    setIsOpen(false);
                   }}
                 >
                   Clear

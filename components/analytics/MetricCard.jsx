@@ -1,37 +1,73 @@
+import useAnalyticsStore from "@/store/analytics/AnalyticsStore";
+
 export const MetricCard = ({ title, value, change, isPositive, hasChart }) => {
-  const staticSparklineData = {
-    "Messages Sent": [
-      15, 20, 18, 25, 22, 28, 24, 30, 27, 32, 29, 35, 31, 28, 33, 30, 35, 32,
-      28, 25,
-    ],
-    "Read Rate": [
-      8, 10, 9, 11, 10, 12, 11, 10, 9, 8, 7, 9, 10, 11, 10, 9, 8, 7, 8, 9,
-    ],
-    "Reply Rate": [
-      12, 14, 13, 15, 14, 16, 15, 17, 16, 14, 15, 13, 14, 15, 16, 14, 13, 12,
-      14, 15,
-    ],
-    "Conversion Rate (Orders)": [
-      55, 58, 56, 59, 57, 60, 58, 61, 59, 58, 57, 56, 58, 59, 60, 58, 57, 55,
-      56, 58,
-    ],
-    "Revenue Driven": [
-      500, 520, 540, 560, 580, 595, 575, 590, 585, 595, 590, 580, 585, 590, 595,
-      600, 595, 590, 585, 595,
-    ],
-    "Click-Through Rate (CTR)": [
-      10, 11, 12, 11, 13, 12, 14, 12, 13, 11, 12, 13, 14, 12, 11, 10, 11, 12,
-      13, 12,
-    ],
+  const { chartData } = useAnalyticsStore();
+
+  // Function to generate sparkline data from actual chart data
+  const getSparklineData = (title) => {
+    if (!chartData || chartData.length === 0) {
+      return Array.from({ length: 20 }, () => Math.random() * 40 + 20);
+    }
+
+    switch (title) {
+      case "Messages Sent":
+        return chartData.map((item) => item.iMessage || 0);
+
+      case "Read Rate":
+        // Calculate read rate from the data
+        return chartData.map((item) => {
+          const messagesSent = item.iMessage || 0;
+          const messagesRead = item.messagesRead || 0;
+          return messagesSent > 0 ? (messagesRead / messagesSent) * 100 : 0;
+        });
+
+      case "Reply Rate":
+        // Calculate reply rate from the data
+        return chartData.map((item) => {
+          const messagesSent = item.iMessage || 0;
+          const replies = item.replies || 0;
+          return messagesSent > 0 ? (replies / messagesSent) * 100 : 0;
+        });
+
+      case "Conversion Rate (Orders)":
+        // Calculate conversion rate from the data
+        return chartData.map((item) => {
+          const messagesSent = item.iMessage || 0;
+          const orders = item.orders || 0;
+          return messagesSent > 0 ? (orders / messagesSent) * 100 : 0;
+        });
+
+      case "Revenue Driven":
+        // Use revenue data directly
+        return chartData.map((item) => item.revenue || 0);
+
+      case "Click-Through Rate (CTR)":
+        // Calculate CTR from the data
+        return chartData.map((item) => {
+          const messagesSent = item.iMessage || 0;
+          const clicks = item.clicks || 0;
+          return messagesSent > 0 ? (clicks / messagesSent) * 100 : 0;
+        });
+
+      default:
+        return Array.from({ length: 20 }, () => Math.random() * 40 + 20);
+    }
   };
 
-  const sparklineData =
-    staticSparklineData[title] ||
-    Array.from({ length: 20 }, () => Math.random() * 40 + 20);
+  const sparklineData = getSparklineData(title);
 
   const createSparklinePath = (data, width, height) => {
+    if (!data || data.length === 0) return "";
+
     const max = Math.max(...data);
     const min = Math.min(...data);
+
+    // If all values are the same, create a flat line
+    if (max === min) {
+      const y = height / 2;
+      return `M 0 ${y} L ${width} ${y}`;
+    }
+
     const normalizedData = data.map(
       (point) => height - ((point - min) / (max - min)) * height
     );
@@ -58,15 +94,18 @@ export const MetricCard = ({ title, value, change, isPositive, hasChart }) => {
     .replace(/\s+/g, "")
     .replace(/[()]/g, "")}`;
 
+  // Determine if we should show the chart (only if we have data)
+  const shouldShowChart = hasChart && sparklineData && sparklineData.length > 0;
+
   return (
-    <div className="bg-white ">
+    <div className="bg-white">
       <div className="flex justify-between items-start mb-0">
-        <h3 className="text-sm text-gray-600">{title}</h3>
+        <h3 className="text-base text-gray-500">{title}</h3>
         <span
           className={`px-2 py-1 rounded-md text-xs font-medium ${
             isPositive
-              ? "text-green-700 bg-[#DEF7EC]"
-              : "text-red-700 bg-red-50"
+              ? "text-green-800 bg-[#DEF7EC]"
+              : "text-red-800 bg-red-100"
           }`}
         >
           {isPositive ? "+" : ""}
@@ -74,7 +113,7 @@ export const MetricCard = ({ title, value, change, isPositive, hasChart }) => {
         </span>
       </div>
       <div className="text-3xl font-bold text-gray-900 mb-4">{value}</div>
-      {hasChart && (
+      {shouldShowChart && (
         <div className="w-full h-[61px] mt-4 p-0">
           <svg
             width="100%"

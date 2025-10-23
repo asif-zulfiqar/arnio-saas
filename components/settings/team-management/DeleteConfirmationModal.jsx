@@ -42,7 +42,7 @@ const DeleteConfirmationModal = ({ onClose }) => {
         </button>
         <button
           onClick={handleConfirmDelete}
-          className="flex-1  px-[12px] py-[8px] bg-red-700 text-white font-inter text-[14px] font-medium rounded-lg hover:bg-red-500 transition-colors"
+          className="flex-1  px-[12px] py-[8px] bg-red-700 text-white font-inter text-[14px] font-medium rounded-lg hover:bg-red-500 transition-colors flex items-center justify-center whitespace-nowrap"
         >
           Yes, I'm sure
         </button>

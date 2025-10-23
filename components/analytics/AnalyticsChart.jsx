@@ -11,8 +11,8 @@ import {
 const CustomTooltip = ({ active, payload, label, coordinate }) => {
   if (!active || !payload || !payload.length || !coordinate) return null;
 
-  const iMessageData = payload.find((p) => p.dataKey === "iMessage");
-  const smsData = payload.find((p) => p.dataKey === "SMS");
+  const dataPoint = payload[0]?.payload;
+  if (!dataPoint) return null;
 
   // Dynamic positioning: show on right if too close to left edge, otherwise on left
   const tooltipWidth = 155;
@@ -27,6 +27,31 @@ const CustomTooltip = ({ active, payload, label, coordinate }) => {
     pointerEvents: "none",
     zIndex: 9999, // Higher z-index
   };
+
+  // Calculate rates for the tooltip
+  const iMessageSent = dataPoint.iMessage || 0;
+  const iMessageRead = dataPoint.messagesRead || 0;
+  const iMessageReplies = dataPoint.replies || 0;
+  const iMessageOrders = dataPoint.orders || 0;
+
+  const smsSent = dataPoint.SMS || 0;
+  const smsRead = dataPoint.smsRead || 0;
+  const smsReplies = dataPoint.smsReplies || 0;
+  const smsOrders = dataPoint.smsOrders || 0;
+
+  // Calculate percentages
+  const iMessageReadRate =
+    iMessageSent > 0 ? ((iMessageRead / iMessageSent) * 100).toFixed(1) : 0;
+  const iMessageReplyRate =
+    iMessageSent > 0 ? ((iMessageReplies / iMessageSent) * 100).toFixed(1) : 0;
+  const iMessageConversionRate =
+    iMessageSent > 0 ? ((iMessageOrders / iMessageSent) * 100).toFixed(1) : 0;
+
+  const smsReadRate = smsSent > 0 ? ((smsRead / smsSent) * 100).toFixed(1) : 0;
+  const smsReplyRate =
+    smsSent > 0 ? ((smsReplies / smsSent) * 100).toFixed(1) : 0;
+  const smsConversionRate =
+    smsSent > 0 ? ((smsOrders / smsSent) * 100).toFixed(1) : 0;
 
   return (
     <div style={tooltipStyle}>
@@ -45,32 +70,37 @@ const CustomTooltip = ({ active, payload, label, coordinate }) => {
           {label}
         </div>
 
-        {iMessageData && (
+        {iMessageSent > 0 && (
           <div className="px-4 py-2">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               <span className="text-sm text-gray-700">iMessage</span>
             </div>
             <div className="text-xs text-gray-500 space-y-1 pl-4">
-              <div>Sent 1,200</div>
-              <div>Opened 94%</div>
-              <div>Replied 54%</div>
-              <div>Converted 23%</div>
+              <div>Sent {iMessageSent.toLocaleString()}</div>
+              <div>Opened {iMessageReadRate}%</div>
+              <div>Replied {iMessageReplyRate}%</div>
+              <div>Converted {iMessageConversionRate}%</div>
+              {dataPoint.revenue > 0 && (
+                <div className="border-t border-gray-100 pt-1 mt-1">
+                  Revenue ${dataPoint.revenue.toFixed(2)}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {smsData && (
-          <div className="px-4 py-2">
+        {smsSent > 0 && (
+          <div className="px-4 py-2 border-t border-gray-100">
             <div className="flex items-center space-x-2 mb-1">
               <div className="w-2 h-2 rounded-full bg-green-500"></div>
               <span className="text-sm text-gray-700">SMS</span>
             </div>
             <div className="text-xs text-gray-500 space-y-1 pl-4">
-              <div>Sent 1,150</div>
-              <div>Opened 54%</div>
-              <div>Replied 22%</div>
-              <div>Converted 7%</div>
+              <div>Sent {smsSent.toLocaleString()}</div>
+              <div>Opened {smsReadRate}%</div>
+              <div>Replied {smsReplyRate}%</div>
+              <div>Converted {smsConversionRate}%</div>
             </div>
           </div>
         )}
@@ -80,17 +110,23 @@ const CustomTooltip = ({ active, payload, label, coordinate }) => {
 };
 
 const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
+  // Calculate max value for Y axis with some padding
+  const maxValue =
+    Math.max(
+      ...data.map((item) => Math.max(item.iMessage || 0, item.SMS || 0))
+    ) * 1.1;
+
   return (
-    <div className="bg-white ">
+    <div className="bg-white">
       <div className="mb-8">
         <div className="flex items-center space-x-6 mb-4">
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-            <span className="text-sm text-gray-700">iMessage</span>
+            <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+            <span className="text-sm text-gray-500">iMessage</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-sm text-gray-700">SMS</span>
+            <div className="w-2 h-2 rounded-full bg-[#32CD32]"></div>
+            <span className="text-sm text-gray-500">SMS</span>
           </div>
         </div>
       </div>
@@ -130,8 +166,7 @@ const AnalyticsChart = ({ data, hoveredPoint, onHover }) => {
               axisLine={false}
               tickLine={false}
               className="text-xs text-gray-500"
-              tickFormatter={(value) => `${value}%`}
-              domain={[0, 100]}
+              domain={[0, maxValue]}
             />
 
             <Tooltip
