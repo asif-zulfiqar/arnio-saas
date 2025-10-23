@@ -4,6 +4,7 @@ import SignupLayout from "@/components/auth/SignupLayout";
 import Button from "@/components/global/small/Button";
 import Dropdown from "@/components/global/small/Dropdown";
 import Input from "@/components/global/small/Input";
+import WorkspaceHandleInput from "@/components/global/small/WorkspaceHandleInput";
 import useSignupStore from "@/store/auth/signupStore";
 import useAuthStore from "@/store/auth/authStore";
 import Image from "next/image";
@@ -40,7 +41,8 @@ const Workspace = () => {
     workspaceHandle,
     billingCountry,
   } = useSignupStore();
-  const { createWorkspace, updateWorkspace, getUserWorkspaces, user } = useAuthStore();
+  const { createWorkspace, updateWorkspace, getUserWorkspaces, user } =
+    useAuthStore();
 
   const handleCountrySelect = (value) => {
     setBillingCountry(value);
@@ -67,14 +69,18 @@ const Workspace = () => {
 
   const watchCompanyName = watch("companyName");
   const watchWorkspaceHandle = watch("workspaceHandle");
-  
+
   // Track previous values to detect actual user input changes
   const prevCompanyNameRef = useRef(watchCompanyName);
   const prevWorkspaceHandleRef = useRef(watchWorkspaceHandle);
 
   // Clear general errors only when user actually changes input values
   useEffect(() => {
-    if (errors.general && (watchCompanyName !== prevCompanyNameRef.current || watchWorkspaceHandle !== prevWorkspaceHandleRef.current)) {
+    if (
+      errors.general &&
+      (watchCompanyName !== prevCompanyNameRef.current ||
+        watchWorkspaceHandle !== prevWorkspaceHandleRef.current)
+    ) {
       clearErrors("general");
     }
     prevCompanyNameRef.current = watchCompanyName;
@@ -89,33 +95,36 @@ const Workspace = () => {
       try {
         const response = await getUserWorkspaces(user.id);
         console.log("User workspaces response:", response);
-        
+
         // Handle different response structures
-        const workspaces = response?.data?.workspaces || response?.workspaces || response;
-        
+        const workspaces =
+          response?.data?.workspaces || response?.workspaces || response;
+
         if (workspaces && workspaces.length > 0) {
           const workspace = workspaces[0]; // Get first workspace
           setExistingWorkspace(workspace);
           setIsEditMode(true);
-          
+
           // Update signup store with existing workspace data
           setExistingWorkspaceData(workspace);
-          
+
           // Pre-fill form with existing data
           setValue("companyName", workspace.companyName || "");
           // Add prefix to existing handle
           const existingHandle = workspace.handle || "";
-          const fullHandle = existingHandle.startsWith("dashboard.arnio.co/") 
-            ? existingHandle 
+          const fullHandle = existingHandle.startsWith("dashboard.arnio.co/")
+            ? existingHandle
             : `dashboard.arnio.co/${existingHandle}`;
           setValue("workspaceHandle", fullHandle);
-          setBillingCountry(workspace.billingCountry || "United States of America");
-          
+          setBillingCountry(
+            workspace.billingCountry || "United States of America"
+          );
+
           // Set logo preview if exists
           if (workspace.logoUrl) {
             setLogoPreview(workspace.logoUrl);
           }
-          
+
           console.log("Found existing workspace:", workspace);
         }
       } catch (error) {
@@ -172,6 +181,15 @@ const Workspace = () => {
     }
   };
 
+  // Handle remove company logo
+  const handleRemoveLogo = () => {
+    setLogoPreview(null);
+    setLogoFile(null);
+    setCompanyLogo(null);
+    // Clear any logo-related errors
+    clearErrors("companyLogo");
+  };
+
   // Handle form submission
   const handleFormSubmit = async (data) => {
     if (!billingCountry) {
@@ -211,7 +229,7 @@ const Workspace = () => {
       console.log("Workspace data being sent:", workspaceData); // Debug log
 
       let result;
-      
+
       if (isEditMode && existingWorkspace) {
         // Update existing workspace
         result = await updateWorkspace(existingWorkspace.id, workspaceData);
@@ -225,9 +243,10 @@ const Workspace = () => {
         setCompanyName(data.companyName);
         setWorkspaceHandle(fullHandle); // Store the full handle with prefix
         setBillingCountry(billingCountry);
-        
+
         // Store workspace ID for team members step
-        const workspaceId = result.workspace?.id || result.workspaceId || existingWorkspace?.id;
+        const workspaceId =
+          result.workspace?.id || result.workspaceId || existingWorkspace?.id;
         setWorkspaceId(workspaceId);
 
         // Small delay to prevent blank screen flash
@@ -240,7 +259,12 @@ const Workspace = () => {
         clearErrors("general");
         setError("general", {
           type: "manual",
-          message: result.error || result.message || `Failed to ${isEditMode ? 'update' : 'create'} workspace. Please try again.`,
+          message:
+            result.error ||
+            result.message ||
+            `Failed to ${
+              isEditMode ? "update" : "create"
+            } workspace. Please try again.`,
         });
       }
     } catch (error) {
@@ -249,7 +273,10 @@ const Workspace = () => {
       clearErrors("general");
       setError("general", {
         type: "manual",
-        message: error.message || error.response?.data?.message || "Something went wrong. Please try again.",
+        message:
+          error.message ||
+          error.response?.data?.message ||
+          "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -266,10 +293,7 @@ const Workspace = () => {
       };
     }
 
-    if (
-      !watchCompanyName?.trim() ||
-      !watchWorkspaceHandle?.trim()
-    ) {
+    if (!watchCompanyName?.trim() || !watchWorkspaceHandle?.trim()) {
       return {
         disabled: true,
         bgColor: "bg-primary/80",
@@ -296,42 +320,53 @@ const Workspace = () => {
           className="space-y-6 mt-8"
         >
           {/* Company Logo */}
-          <div className="flex gap-3 mb-8">
-            <div className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="hidden"
-                id="logo-upload"
-              />
-              <label
-                htmlFor="logo-upload"
-                className="cursor-pointer size-[52px] border-2 border-dashed border-gray-200 bg-gray-100 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
-              >
-                {logoPreview ? (
-                  <Image
-                    src={logoPreview}
-                    alt="Company logo"
-                    width={52}
-                    height={52}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <div className="text-center">
-                    <span className="text-3xl text-gray-300">A</span>
-                  </div>
-                )}
-              </label>
+          <div className="mb-8">
+            <div className="flex gap-3">
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  id="logo-upload"
+                />
+                <label
+                  htmlFor="logo-upload"
+                  className="cursor-pointer size-[52px] border-2 border-dashed border-gray-200 bg-gray-100 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
+                >
+                  {logoPreview ? (
+                    <Image
+                      src={logoPreview}
+                      alt="Company logo"
+                      width={52}
+                      height={52}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <span className="text-3xl text-gray-300">A</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+              <div className="flex-1">
+                <label className="text-base font-medium text-gray-900 mb-1">
+                  Company logo
+                </label>
+                <p className="text-xs text-gray-500 max-w-[220px]">
+                  We support PNGs,JPEGs under 10MB Recommended size is 400x400px
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="text-base font-medium text-gray-900 mb-1">
-                Company logo
-              </label>
-              <p className="text-xs text-gray-500 max-w-[220px]">
-                We support PNGs,JPEGs under 10MB Recommended size is 400x400px
-              </p>
-            </div>
+            {logoPreview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  className="mt-2 w-[160px] h-[34px] text-center border border-gray-200 rounded-lg text-xs font-medium text-gray-900 hover:bg-gray-50 transition-colors"
+                >
+                  Remove profile picture
+                </button>
+              )}
             {errors.companyLogo && (
               <p className="mt-1 text-sm text-red-600">
                 {errors.companyLogo.message}
@@ -348,9 +383,9 @@ const Workspace = () => {
           />
 
           {/* Workspace Handle */}
-          <Input
+          <WorkspaceHandleInput
             label="Workspace handle"
-            placeholder="dashboard.arnio.co/my-workspace"
+            placeholder="my-workspace"
             error={errors.workspaceHandle?.message}
             {...register("workspaceHandle", validationRules.workspaceHandle)}
           />
@@ -373,7 +408,13 @@ const Workspace = () => {
           )}
 
           <Button
-            text={isLoading ? (isEditMode ? "Updating..." : "Creating...") : "Continue"}
+            text={
+              isLoading
+                ? isEditMode
+                  ? "Updating..."
+                  : "Creating..."
+                : "Continue"
+            }
             type="submit"
             disabled={getButtonState().disabled}
             bgColor={getButtonState().bgColor}

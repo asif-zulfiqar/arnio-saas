@@ -40,7 +40,7 @@ const CreateProfile = () => {
   const watchFirstName = watch("firstName");
   const watchLastName = watch("lastName");
   const watchPhone = watch("phone");
-  
+
   // Track previous values to detect actual user input changes
   const prevFirstNameRef = useRef(watchFirstName);
   const prevLastNameRef = useRef(watchLastName);
@@ -48,7 +48,12 @@ const CreateProfile = () => {
 
   // Clear general errors only when user actually changes input values
   useEffect(() => {
-    if (errors.general && (watchFirstName !== prevFirstNameRef.current || watchLastName !== prevLastNameRef.current || watchPhone !== prevPhoneRef.current)) {
+    if (
+      errors.general &&
+      (watchFirstName !== prevFirstNameRef.current ||
+        watchLastName !== prevLastNameRef.current ||
+        watchPhone !== prevPhoneRef.current)
+    ) {
       clearErrors("general");
     }
     prevFirstNameRef.current = watchFirstName;
@@ -62,16 +67,16 @@ const CreateProfile = () => {
       try {
         const response = await getProfile();
         console.log("Profile response:", response); // Debug log
-        
+
         // Handle different response structures
         const profile = response?.data || response?.user || response;
-        
+
         if (profile) {
           // Populate form with existing data
           setValue("firstName", profile.firstName || "");
           setValue("lastName", profile.lastName || "");
           setValue("phone", profile.phone || "");
-          
+
           // Set avatar if exists
           if (profile.avatar || profile.avatarUrl) {
             setAvatarPreview(profile.avatar || profile.avatarUrl);
@@ -141,6 +146,14 @@ const CreateProfile = () => {
     }
   };
 
+  // Handle remove profile picture
+  const handleRemoveAvatar = () => {
+    setAvatarPreview(null);
+    setAvatarFile(null);
+    // Clear any avatar-related errors
+    clearErrors("avatar");
+  };
+
   // Handle form submission
   const handleFormSubmit = async (data) => {
     setIsLoading(true);
@@ -170,7 +183,10 @@ const CreateProfile = () => {
         clearErrors("general");
         setError("general", {
           type: "manual",
-          message: result.error || result.message || "Profile update failed. Please try again.",
+          message:
+            result.error ||
+            result.message ||
+            "Profile update failed. Please try again.",
         });
       }
     } catch (error) {
@@ -179,7 +195,10 @@ const CreateProfile = () => {
       clearErrors("general");
       setError("general", {
         type: "manual",
-        message: error.message || error.response?.data?.message || "Something went wrong. Please try again.",
+        message:
+          error.message ||
+          error.response?.data?.message ||
+          "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -224,42 +243,53 @@ const CreateProfile = () => {
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Profile Picture Upload */}
-          <div className="flex gap-3 mb-8">
-            <div className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-                id="avatar-upload"
-              />
-              <label
-                htmlFor="avatar-upload"
-                className="cursor-pointer size-[52px] border-2 border-dashed border-gray-200 bg-gray-100 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
-              >
-                {avatarPreview ? (
-                  <Image
-                    src={avatarPreview}
-                    alt="Profile picture"
-                    width={52}
-                    height={52}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <div className="text-center">
-                    <span className="text-3xl text-gray-300">A</span>
-                  </div>
-                )}
-              </label>
+          <div className="mb-8">
+            <div className="flex gap-3">
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  id="avatar-upload"
+                />
+                <label
+                  htmlFor="avatar-upload"
+                  className="cursor-pointer size-[52px] border-2 border-dashed border-gray-200 bg-gray-100 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
+                >
+                  {avatarPreview ? (
+                    <Image
+                      src={avatarPreview}
+                      alt="Profile picture"
+                      width={52}
+                      height={52}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <span className="text-3xl text-gray-300">A</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium text-gray-900 mb-1">
+                  Upload profile picture
+                </label>
+                <p className="text-xs text-gray-500">
+                  SVG, PNG, JPG or GIF (MAX. 800x400px)
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-1">
-              Upload profile picture
-              </label>
-              <p className="text-xs text-gray-500">
-                SVG, PNG, JPG or GIF (MAX. 800x400px)
-              </p>
-            </div>
+            {avatarPreview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveAvatar}
+                  className="mt-2 w-[160px] h-[34px] text-center border border-gray-200 rounded-lg text-xs font-medium text-gray-900 hover:bg-gray-50 transition-colors"
+                >
+                  Remove profile picture
+                </button>
+              )}
             {errors.avatar && (
               <p className="mt-1 text-sm text-red-600">
                 {errors.avatar.message}
