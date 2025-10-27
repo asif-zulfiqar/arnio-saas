@@ -80,13 +80,15 @@ const SignupLayout = ({ children, step = 1 }) => {
 
   return (
     <section className="py-10 pb-12 min-h-screen w-screen bg-white flex flex-col scroll-0">
-      <Image
-        src="/images/arnio-logo.png"
-        alt="Arnio Logo"
-        width={118}
-        height={48}
-        className="mx-auto mb-10"
-      />
+      <Link href="/">
+        <Image
+          src="/images/arnio-logo.png"
+          alt="Arnio Logo"
+          width={118}
+          height={48}
+          className="mx-auto mb-10"
+        />
+      </Link>
       <section className="flex-1 flex">
         {/* Left side - Form */}
         <div className="flex-1 flex items-center justify-center px-4 relative">
@@ -100,7 +102,11 @@ const SignupLayout = ({ children, step = 1 }) => {
                 our products and services. You can unsubscribe at any time by
                 clicking the link in our emails. Learn more about how we use
                 your data in our{" "}
-                <Link href="https://arnio.co/legals/privacy-policy" target="_blank" className="underline">
+                <Link
+                  href="https://arnio.co/legals/privacy-policy"
+                  target="_blank"
+                  className="underline"
+                >
                   privacy policy
                 </Link>
               </p>

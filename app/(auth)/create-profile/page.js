@@ -5,7 +5,7 @@ import Button from "@/components/global/small/Button";
 import Input from "@/components/global/small/Input";
 import useSignupStore from "@/store/auth/signupStore";
 import useAuthStore from "@/store/auth/authStore";
-import { User, Phone } from "lucide-react";
+import { User } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
@@ -33,33 +33,27 @@ const CreateProfile = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
-      phone: "",
     },
   });
 
   const watchFirstName = watch("firstName");
   const watchLastName = watch("lastName");
-  const watchPhone = watch("phone");
 
   // Track previous values to detect actual user input changes
   const prevFirstNameRef = useRef(watchFirstName);
   const prevLastNameRef = useRef(watchLastName);
-  const prevPhoneRef = useRef(watchPhone);
 
   // Clear general errors only when user actually changes input values
   useEffect(() => {
     if (
       errors.general &&
       (watchFirstName !== prevFirstNameRef.current ||
-        watchLastName !== prevLastNameRef.current ||
-        watchPhone !== prevPhoneRef.current)
-    ) {
+        watchLastName !== prevLastNameRef.current)) {
       clearErrors("general");
     }
     prevFirstNameRef.current = watchFirstName;
     prevLastNameRef.current = watchLastName;
-    prevPhoneRef.current = watchPhone;
-  }, [watchFirstName, watchLastName, watchPhone, errors.general, clearErrors]);
+  }, [watchFirstName, watchLastName, errors.general, clearErrors]);
 
   // Fetch existing profile data on component mount
   useEffect(() => {
@@ -75,7 +69,6 @@ const CreateProfile = () => {
           // Populate form with existing data
           setValue("firstName", profile.firstName || "");
           setValue("lastName", profile.lastName || "");
-          setValue("phone", profile.phone || "");
 
           // Set avatar if exists
           if (profile.avatar || profile.avatarUrl) {
@@ -104,13 +97,6 @@ const CreateProfile = () => {
       minLength: {
         value: 2,
         message: "Last name must be at least 2 characters",
-      },
-    },
-    phone: {
-      required: "Phone number is required",
-      pattern: {
-        value: /^[\+]?[1-9][\d]{0,15}$/,
-        message: "Please enter a valid phone number",
       },
     },
   };
@@ -163,7 +149,6 @@ const CreateProfile = () => {
       const profileData = {
         firstName: data.firstName,
         lastName: data.lastName,
-        phone: data.phone,
         avatar: avatarFile, // File object for upload
       };
 
@@ -218,7 +203,6 @@ const CreateProfile = () => {
     if (
       !watchFirstName?.trim() ||
       !watchLastName?.trim() ||
-      !watchPhone?.trim()
     ) {
       return {
         disabled: true,
@@ -313,15 +297,6 @@ const CreateProfile = () => {
             icon={<User className="size-4" />}
             error={errors.lastName?.message}
             {...register("lastName", validationRules.lastName)}
-          />
-
-          {/* Phone Number */}
-          <Input
-            label="Phone Number"
-            placeholder="e.g. +(12)3456 789"
-            icon={<Phone className="size-4" />}
-            error={errors.phone?.message}
-            {...register("phone", validationRules.phone)}
           />
 
           {errors.general && (
