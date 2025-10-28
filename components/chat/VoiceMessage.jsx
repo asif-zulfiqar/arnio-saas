@@ -8,9 +8,41 @@ const VoiceMessage = ({ message, isUser }) => {
   const [duration, setDuration] = useState(message.duration || 0);
   const [waveformData, setWaveformData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [blobAudioUrl, setBlobAudioUrl] = useState(null);
   const audioRef = useRef(null);
 
-  // Generate waveform from audio
+  useEffect(() => {
+    const fetchAudioBlob = async () => {
+      if (!message?.audioUrl && !message?.fileUrl) return;
+
+      const audioSource = message.audioUrl || message.fileUrl;
+
+      try {
+        const response = await fetch(audioSource, {
+          mode: "cors",
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch audio: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        setBlobAudioUrl(blobUrl);
+      } catch (error) {
+        console.error("Error loading audio blob:", error);
+        setBlobAudioUrl(audioSource); // fallback
+      }
+    };
+
+    fetchAudioBlob();
+
+    return () => {
+      if (blobAudioUrl) URL.revokeObjectURL(blobAudioUrl);
+    };
+  }, [message?.audioUrl, message?.fileUrl]);
+
+  // Generate waveform
   const generateWaveformFromAudio = async (audioUrl) => {
     try {
       setIsLoading(true);
@@ -22,7 +54,7 @@ const VoiceMessage = ({ message, isUser }) => {
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
       const rawData = audioBuffer.getChannelData(0);
-      const samples = 30; // Number of bars for message display
+      const samples = 30;
       const blockSize = Math.floor(rawData.length / samples);
       const filteredData = [];
 
@@ -35,7 +67,6 @@ const VoiceMessage = ({ message, isUser }) => {
         filteredData.push(sum / blockSize);
       }
 
-      // Normalize the waveform data
       const maxVal = Math.max(...filteredData);
       const normalizedData = filteredData.map((val) =>
         Math.max((val / maxVal) * 0.9 + 0.1, 0.15)
@@ -46,7 +77,6 @@ const VoiceMessage = ({ message, isUser }) => {
       setIsLoading(false);
     } catch (error) {
       console.error("Error generating waveform:", error);
-      // Fallback to random waveform
       const fallbackData = Array.from(
         { length: 30 },
         () => Math.random() * 0.7 + 0.2
@@ -57,13 +87,14 @@ const VoiceMessage = ({ message, isUser }) => {
   };
 
   useEffect(() => {
-    if (message.audioUrl) {
-      generateWaveformFromAudio(message.audioUrl);
+    if (blobAudioUrl) {
+      generateWaveformFromAudio(blobAudioUrl);
     }
-  }, [message.audioUrl]);
+  }, [blobAudioUrl]);
 
+  // Audio event handling
   useEffect(() => {
-    if (audioRef.current && message.audioUrl) {
+    if (audioRef.current && blobAudioUrl) {
       const audio = audioRef.current;
 
       const updateTime = () => setCurrentTime(audio.currentTime);
@@ -99,7 +130,7 @@ const VoiceMessage = ({ message, isUser }) => {
         audio.removeEventListener("pause", handlePause);
       };
     }
-  }, [message.audioUrl]);
+  }, [blobAudioUrl]);
 
   const togglePlayPause = async () => {
     if (audioRef.current) {
@@ -117,9 +148,7 @@ const VoiceMessage = ({ message, isUser }) => {
   };
 
   const formatTime = (seconds) => {
-    if (!seconds || isNaN(seconds) || !isFinite(seconds)) {
-      return "0:00";
-    }
+    if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
@@ -135,9 +164,7 @@ const VoiceMessage = ({ message, isUser }) => {
           isUser ? "bg-primary text-white" : "bg-gray-100 text-gray-900"
         }`}
       >
-        {/* Voice Message Content */}
         <div className="flex items-center gap-3">
-          {/* Play/Pause Button */}
           <div className="flex-shrink-0">
             <button
               onClick={togglePlayPause}
@@ -161,13 +188,10 @@ const VoiceMessage = ({ message, isUser }) => {
             </button>
           </div>
 
-          {/* Waveform and Controls */}
           <div className="flex-1 min-w-0">
-            {/* Waveform Visualization */}
             <div className="flex items-center gap-0.5 mb-2 h-6">
               {isLoading
-                ? // Loading skeleton
-                  Array.from({ length: 30 }, (_, i) => (
+                ? Array.from({ length: 30 }, (_, i) => (
                     <div
                       key={i}
                       className={`rounded-full animate-pulse ${
@@ -201,7 +225,6 @@ const VoiceMessage = ({ message, isUser }) => {
                     );
                   })}
 
-              {/* Current position indicator */}
               {isPlaying && !isLoading && (
                 <div
                   className={`absolute w-0.5 h-6 ${
@@ -215,7 +238,6 @@ const VoiceMessage = ({ message, isUser }) => {
               )}
             </div>
 
-            {/* Time and Info */}
             <div className="flex items-center justify-between gap-1">
               <div className="flex items-center gap-1">
                 <Mic
@@ -245,9 +267,14 @@ const VoiceMessage = ({ message, isUser }) => {
           </div>
         </div>
 
-        {/* Hidden audio element */}
-        {message.audioUrl && (
-          <audio ref={audioRef} src={message.audioUrl} preload="metadata" />
+        {/* ✅ Fixed audio element */}
+        {blobAudioUrl && (
+          <audio
+            ref={audioRef}
+            src={blobAudioUrl}
+            preload="metadata"
+            crossOrigin="anonymous"
+          />
         )}
       </div>
     </div>

@@ -15,27 +15,15 @@ const PhoneNumberInput = ({ value, onChange }) => {
       return;
     }
 
-    // Always force prefix +1 and strip non-digits
-    let digits = val.replace(/\D/g, "");
-    if (!digits.startsWith("1")) {
-      digits = "1" + digits; // force US country code
-    }
-
-    // Limit to 11 digits max
-    digits = digits.slice(0, 11);
-    const normalized = `+${digits}`;
-
-    // Format once 11 digits are present
-    let formatted = normalized;
-    if (digits.length === 11) {
-      try {
-        const phoneNumber = parsePhoneNumberFromString(normalized, "US");
-        if (phoneNumber) {
-          formatted = phoneNumber.formatInternational();
-        }
-      } catch {
-        console.log("user entered more than 11 numbers");
+    // Optional: normalize + format cleanly using libphonenumber-js
+    let formatted = val;
+    try {
+      const phoneNumber = parsePhoneNumberFromString(val);
+      if (phoneNumber) {
+        formatted = phoneNumber.formatInternational();
       }
+    } catch (e) {
+      console.warn("Invalid phone input:", e.message);
     }
 
     setInternalValue(formatted);
@@ -46,10 +34,8 @@ const PhoneNumberInput = ({ value, onChange }) => {
     <div>
       <label className="text-sm font-medium text-gray-900">Phone Number</label>
       <PhoneInput
-        defaultCountry="US"
-        countries={["US"]}
         international
-        withCountryCallingCode
+        defaultCountry="US" // still defaults to US, but user can change
         value={internalValue}
         onChange={handleChange}
         placeholder="+1 202 444 3233"

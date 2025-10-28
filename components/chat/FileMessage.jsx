@@ -4,26 +4,25 @@ import { useState } from "react";
 
 const FileMessage = ({ message, isUser }) => {
   const [imageError, setImageError] = useState(false);
-
   const getFileIcon = (type, name) => {
-    if (type.startsWith('image/')) {
+    if (type && type.startsWith("image/")) {
       return <ImageIcon className="w-5 h-5 text-white" />;
     }
-    
-    const extension = name.split('.').pop()?.toLowerCase();
+
+    const extension = name ? name.split(".").pop()?.toLowerCase() : "";
     switch (extension) {
-      case 'pdf':
+      case "pdf":
         return <File className="w-5 h-5 text-white" />;
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return <File className="w-5 h-5 text-white" />;
-      case 'xls':
-      case 'xlsx':
+      case "xls":
+      case "xlsx":
         return <File className="w-5 h-5 text-white" />;
-      case 'ppt':
-      case 'pptx':
+      case "ppt":
+      case "pptx":
         return <File className="w-5 h-5 text-white" />;
-      case 'txt':
+      case "txt":
         return <File className="w-5 h-5 text-white" />;
       default:
         return <File className="w-5 h-5 text-white" />;
@@ -31,16 +30,16 @@ const FileMessage = ({ message, isUser }) => {
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const handleDownload = () => {
     if (message.fileUrl) {
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = message.fileUrl;
       link.download = message.fileName;
       document.body.appendChild(link);
@@ -51,21 +50,20 @@ const FileMessage = ({ message, isUser }) => {
 
   const handlePreview = () => {
     if (message.fileUrl) {
-      window.open(message.fileUrl, '_blank');
+      window.open(message.fileUrl, "_blank");
     }
   };
 
-  const isImage = message.fileType?.startsWith('image/');
+  const isImage = message.fileType?.startsWith("image/");
 
   return (
-    <div className={`max-w-xs lg:max-w-md ${isUser ? 'ml-auto' : ''}`}>
+    <div className={`max-w-xs lg:max-w-md ${isUser ? "ml-auto" : ""}`}>
       {/* File Content */}
-      <div className={`rounded-[20px] p-4 ${
-        isUser 
-          ? 'bg-primary text-white' 
-          : 'bg-gray-100 text-gray-900'
-      }`}>
-        
+      <div
+        className={`rounded-[20px] p-4 ${
+          isUser ? "bg-primary text-white" : "bg-gray-100 text-gray-900"
+        }`}
+      >
         {/* Image Preview */}
         {isImage && !imageError && (
           <div className="mb-3">
@@ -83,16 +81,20 @@ const FileMessage = ({ message, isUser }) => {
           <div className="flex-shrink-0">
             {getFileIcon(message.fileType, message.fileName)}
           </div>
-          
+
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-medium truncate ${
-              isUser ? 'text-white' : 'text-gray-900'
-            }`}>
+            <p
+              className={`text-sm font-medium truncate ${
+                isUser ? "text-white" : "text-gray-900"
+              }`}
+            >
               {message.fileName}
             </p>
-            <p className={`text-xs ${
-              isUser ? 'text-blue-100' : 'text-gray-500'
-            }`}>
+            <p
+              className={`text-xs ${
+                isUser ? "text-blue-100" : "text-gray-500"
+              }`}
+            >
               {formatFileSize(message.fileSize)}
             </p>
           </div>
@@ -102,21 +104,21 @@ const FileMessage = ({ message, isUser }) => {
             <button
               onClick={handlePreview}
               className={`p-1 rounded transition-colors ${
-                isUser 
-                  ? 'hover:bg-blue-600 text-blue-100' 
-                  : 'hover:bg-gray-200 text-gray-600'
+                isUser
+                  ? "hover:bg-blue-600 text-blue-100"
+                  : "hover:bg-gray-200 text-gray-600"
               }`}
               title="Preview"
             >
               <Eye className="w-4 h-4" />
             </button>
-            
+
             <button
               onClick={handleDownload}
               className={`p-1 rounded transition-colors ${
-                isUser 
-                  ? 'hover:bg-blue-600 text-blue-100' 
-                  : 'hover:bg-gray-200 text-gray-600'
+                isUser
+                  ? "hover:bg-blue-600 text-blue-100"
+                  : "hover:bg-gray-200 text-gray-600"
               }`}
               title="Download"
             >

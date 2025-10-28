@@ -8,7 +8,7 @@ import {
 import { Mic, Paperclip, Plus, Smile } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import ButtonWithTooltip, { Dropdown } from "./ButtonWithTooltip";
+import ButtonWithTooltip from "./ButtonWithTooltip";
 import { ArrowDown } from "@/app/assets/svgs/icons";
 import DeleteChat from "./DeleteChat";
 import FileAttachmentDropdown from "./FileAttachmentDropdown";
@@ -19,7 +19,6 @@ import EmojiPickerComponent from "./EmojiPicker";
 import VoiceRecorder from "./VoiceRecorder";
 
 const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isAiDraft, setIsAiDraft] = useState(false);
   const [isAttachmentDropdownOpen, setIsAttachmentDropdownOpen] =
     useState(false);
@@ -47,13 +46,16 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     getVoiceMessageState,
     setVoiceRecordingStream,
     setVoiceWaveformData,
+    loadMessages,
   } = useWorkspaceStore();
-
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const messageContainerRef = useRef(null);
+
   const activeConversation = getActiveConversation();
   const mediaRecorderRef = useRef(null);
   const recordingIntervalRef = useRef(null);
+  const [page, setPage] = useState(1);
 
   const handleAIInitialMessage = () => {
     if (!activeConversationId) return;
@@ -63,23 +65,9 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     setIsAiDraft(true);
   };
 
-  const handleCloseDropdown = () => {
-    setDropdownOpen(false);
-  };
-
-  const handleMoveChat = () => {
-    // Toggle dropdown visibility
-    setDropdownOpen((prevState) => !prevState);
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!activeConversationId) return;
-
     const fileUploads = getFileUploads(activeConversationId);
 
     // Check if we have content to send
@@ -93,6 +81,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
     if (hasText) {
       sendMessage(
         activeConversationId,
+        activeConversation?.phoneNumber,
         message.trim(),
         isAiDraft ? "ai" : "manual"
       );
@@ -104,10 +93,11 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
         if (upload.status === "success") {
           sendMessage(
             activeConversationId,
+            activeConversation?.phoneNumber,
             message.trim() || "", // Include text if any
             "manual",
             {
-              name: upload.name,
+              file: upload.file,
               size: upload.size,
               type: upload.type,
               url: upload.url,
@@ -123,11 +113,13 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
       const voiceState = getVoiceMessageState(activeConversationId);
       sendMessage(
         activeConversationId,
+        activeConversation?.phoneNumber,
         message.trim() || "", // Include text if any
         "manual",
         null,
         {
-          url: audioUrl,
+          audioUrl: audioUrl,
+          blob: recordedAudioBlob,
           duration: recordingDuration,
           waveformData: voiceState?.waveformData || null,
         }
@@ -230,12 +222,17 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
         startVoiceRecording(activeConversationId);
       }
 
-      // Start duration counter
       recordingIntervalRef.current = setInterval(() => {
-        setRecordingDuration((prev) => prev + 1);
-        if (activeConversationId) {
-          updateVoiceDuration(activeConversationId, prev + 1);
-        }
+        setRecordingDuration((prev) => {
+          const newDuration = prev + 1;
+          if (activeConversationId) {
+            // ✅ Defer the Zustand update until after render
+            requestAnimationFrame(() => {
+              updateVoiceDuration(activeConversationId, newDuration);
+            });
+          }
+          return newDuration;
+        });
       }, 1000);
     } catch (error) {
       console.error("Error starting recording:", error);
@@ -330,7 +327,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   };
 
   const isLastUserMessage = (currentMsg, messages) => {
-    for (let i = messages.length - 1; i >= 0; i--) {
+    for (let i = messages?.length - 1; i >= 0; i--) {
       if (messages[i].sender === "user") {
         return messages[i].id === currentMsg.id;
       }
@@ -339,16 +336,66 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [activeConversation?.messages]);
-
-  useEffect(() => {
     if (activeConversation) {
       setMessage(activeConversation.draftMessage || "");
     } else {
       setMessage("");
     }
   }, [activeConversationId, activeConversation?.draftMessage]);
+
+  useEffect(() => {
+    if (!activeConversation?.id) return;
+    // Load first page (only if not already loaded)
+    if (!activeConversation.messages?.length) {
+      loadMessages(activeConversation.id, { page: 1, limit: 20 });
+    }
+  }, [activeConversation?.id]);
+
+  // Example: scroll listener for loading more
+  const handleScroll = (e) => {
+    const el = e.target;
+
+    if (el.scrollTop === 0 && activeConversation.hasMoreMessages) {
+      const prevScrollHeight = el.scrollHeight;
+
+      const nextPage = page + 1;
+
+      loadMessages(activeConversation.id, {
+        page: nextPage,
+        append: true,
+      }).then(() => {
+        requestAnimationFrame(() => {
+          // After new messages are prepended, keep the user's view stable
+          const newScrollHeight = el.scrollHeight;
+          el.scrollTop = newScrollHeight - prevScrollHeight;
+        });
+      });
+
+      setPage(nextPage);
+    }
+  };
+
+  useEffect(() => {
+    if (activeConversation?.messages?.length) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }
+  }, [activeConversationId]);
+
+  const scrollToBottom = (behavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  };
+
+  useEffect(() => {
+    if (activeConversation?.messages?.length) {
+      scrollToBottom();
+    }
+  }, [activeConversation?.messages]);
+
+  useEffect(() => {
+    if (activeConversation?.isTyping) {
+      scrollToBottom("auto"); // faster, no smooth animation
+    }
+  }, [activeConversation?.isTyping]);
 
   // Show empty state when no active conversation
   if (!activeConversation) {
@@ -436,13 +483,17 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
             tooltipText="Open Profile"
             onClick={() => setIsProfileOpen(true)}
           />
-          <DeleteChat />
+          <DeleteChat contactId={activeConversation} />
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto scroll-0 p-6">
-        {activeConversation.messages.length === 0 ? (
+      <div
+        className="flex-1 overflow-y-auto scroll-0 p-6"
+        onScroll={handleScroll}
+        ref={messageContainerRef}
+      >
+        {!activeConversation?.messages ? (
           <div className="flex flex-col justify-center h-full">
             <p className="text-center text-base text-gray-500">
               No messages yet
@@ -469,7 +520,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {activeConversation.messages.map((msg, index) => {
+            {activeConversation?.messages?.map((msg, index) => {
               const showTimestamp = shouldShowTimestamp(
                 msg,
                 index,
@@ -486,54 +537,62 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                   )}
                   <div
                     className={`flex ${
-                      msg.sender === "user" ? "justify-end" : "justify-start"
+                      msg.isIncoming === false ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {msg.sender === "user" && (
+                    {msg?.isIncoming === false && (
                       <div className="flex flex-col items-end">
-                        {/* File Message */}
-                        {msg.type === "file" ? (
-                          <FileMessage message={msg} isUser={true} />
-                        ) : msg.type === "voice" ? (
-                          <VoiceMessage message={msg} isUser={true} />
-                        ) : (
-                          /* Text Message */
-                          <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
-                            <p className="text-sm">{msg.content}</p>
-                            {msg.origin === "ai" && (
-                              <span className="mt-2 text-xs text-[#C3DDFD] flex items-center gap-[6px]">
-                                <Image
-                                  src="/svgs/ai-icon-white.svg"
-                                  width={12}
-                                  height={14}
-                                  alt="icon"
-                                />
-                                Generated with AI
-                              </span>
+                        <div className="flex gap-2">
+                          <div className="flex flex-col items-end">
+                            {/* File Message */}
+                            {msg.type === "file" ? (
+                              <FileMessage message={msg} isUser={true} />
+                            ) : msg.type === "audio" ? (
+                              <VoiceMessage message={msg} isUser={true} />
+                            ) : (
+                              /* Text Message */
+                              <div className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-primary text-white">
+                                <p className="text-sm">{msg?.text}</p>
+
+                                {msg.origin === "ai" && (
+                                  <span className="mt-2 text-xs text-[#C3DDFD] flex items-center gap-[6px]">
+                                    <Image
+                                      src="/svgs/ai-icon-white.svg"
+                                      width={12}
+                                      height={14}
+                                      alt="icon"
+                                    />
+                                    Generated with AI
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {isLastUserMessage(
+                              msg,
+                              activeConversation.messages
+                            ) && (
+                              <div className="flex items-center gap-1 mt-1">
+                                <span className="text-xs text-gray-400">
+                                  {msg.status === "read" ? "Read" : "Delivered"}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  {formatTime(msg.timestamp)}
+                                </span>
+                              </div>
                             )}
                           </div>
-                        )}
-
-                        {isLastUserMessage(
-                          msg,
-                          activeConversation.messages
-                        ) && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-xs text-gray-400">
-                              {msg.status === "read" ? "Read" : "Delivered"}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {formatTime(msg.timestamp)}
-                            </span>
-                          </div>
-                        )}
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {msg.status === "read" ? "Read" : "Delivered"}
+                        </span>
                       </div>
                     )}
-                    {msg.sender !== "user" && (
+                    {msg?.isIncoming === true && (
                       <div className="flex gap-2">
                         <div className="size-8 rounded-full bg-primary flex items-center justify-center">
                           <span className="text-white font-medium text-sm">
-                            {getInitials(activeConversation.name)}
+                            {getInitials(activeConversation?.name)}
                           </span>
                         </div>
                         <div>
@@ -549,7 +608,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                           ) : (
                             /* Text Message */
                             <p className="max-w-xs lg:max-w-md px-6 py-5 rounded-[20px] bg-gray-100 text-gray-900 text-sm">
-                              {msg.content}
+                              {msg?.text}
                             </p>
                           )}
                         </div>
@@ -559,6 +618,20 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                 </div>
               );
             })}
+            {activeConversation?.isTyping && (
+              <div className="flex items-center gap-2 mt-2">
+                <div className="size-8 rounded-full bg-primary flex items-center justify-center">
+                  <span className="text-white font-medium text-sm">
+                    {getInitials(activeConversation?.name)}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1 bg-gray-100 text-gray-600 px-4 py-3 rounded-[20px]">
+                  <span className="dot dot-1">•</span>
+                  <span className="dot dot-2">•</span>
+                  <span className="dot dot-3">•</span>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}
@@ -572,7 +645,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
         >
           {/* File Previews */}
           {activeConversationId &&
-            getFileUploads(activeConversationId).length > 0 && (
+            getFileUploads(activeConversationId)?.length > 0 && (
               <div className="px-5 pt-4 space-y-2">
                 {getFileUploads(activeConversationId).map((upload) => (
                   <FilePreview
@@ -616,7 +689,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
                 }
               }}
               placeholder={`Write a ${
-                activeConversation.messages.length === 0 ? "message" : "reply"
+                activeConversation?.messages?.length === 0 ? "message" : "reply"
               } ...`}
               className="scroll-0 w-full border-transparent focus:outline-none text-sm text-gray-900 placeholder:text-gray-400 py-6 px-5 resize-none"
             ></textarea>
@@ -625,7 +698,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
           <div className="flex items-center justify-between px-5 pb-4 relative">
             <div className="flex items-center gap-4">
               {/* File Attachment Button */}
-              <div className="relative">
+              <div>
                 <button
                   type="button"
                   onClick={() =>
@@ -646,7 +719,7 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
               </div>
 
               {/* Emoji Picker Button */}
-              <div className="relative">
+              <div>
                 <button
                   type="button"
                   onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
@@ -664,25 +737,28 @@ const ConversationBox = ({ onStartConversation, setIsProfileOpen }) => {
               </div>
 
               {/* Voice Recording Button */}
-              <button
-                type="button"
-                onClick={startRecording}
-                disabled={isRecording}
-                className={`p-1 rounded transition-colors ${
-                  isRecording
-                    ? "text-red-500 cursor-not-allowed"
-                    : "text-gray-400 hover:text-primary"
-                }`}
-                title={
-                  isRecording
-                    ? "Recording in progress..."
-                    : "Record voice message"
-                }
-              >
-                <Mic
-                  className={`size-4 ${isRecording ? "animate-pulse" : ""}`}
-                />
-              </button>
+              {/* <div></div> */}
+              <div>
+                <button
+                  type="button"
+                  onClick={startRecording}
+                  disabled={isRecording}
+                  className={`p-1 rounded transition-colors ${
+                    isRecording
+                      ? "text-red-500 cursor-not-allowed"
+                      : "text-gray-400 hover:text-primary"
+                  }`}
+                  title={
+                    isRecording
+                      ? "Recording in progress..."
+                      : "Record voice message"
+                  }
+                >
+                  <Mic
+                    className={`size-4 ${isRecording ? "animate-pulse" : ""}`}
+                  />
+                </button>
+              </div>
             </div>
 
             <button

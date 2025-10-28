@@ -2,7 +2,7 @@
 import { ArrowDown } from "@/app/assets/svgs/icons";
 import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { Info } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import Button from "../global/small/Button";
 import Dropdown from "../global/small/Dropdown";
@@ -10,11 +10,7 @@ import Input from "../global/small/Input";
 import PhoneNumberInput from "../global/small/PhoneNumberInput";
 import ToggleButton from "../global/small/ToggleButton";
 import DuplicatePhone from "./DuplicatePhone";
-
-const phoneOptions = [
-  { value: "+17865617760", option: "+1 786  561 7760" },
-  { value: "+12342347760", option: "+1 234  234 7760" },
-];
+import useAuthStore from "@/store/auth/authStore";
 
 const AddContact = ({ onClose }) => {
   const [form, setForm] = useState({ name: "", phone: "" });
@@ -22,8 +18,20 @@ const AddContact = ({ onClose }) => {
   const [dropdownStatus, setDropdownStatus] = useState("info");
   const [generateAIMessage, setGenerateAIMessage] = useState(false);
   const [duplicateContact, setDuplicateContact] = useState(null);
+  const [selectedPhone, setSelectedPhone] = useState(null);
+
   const { addConversation, conversations, setActiveConversation } =
     useWorkspaceStore();
+
+  const { user, createContact } = useAuthStore();
+
+  const phoneOptions = useMemo(() => {
+    if (!user?.assignedLines || user.assignedLines.length === 0) return [];
+    return user.assignedLines.map((line) => ({
+      value: line,
+      option: line,
+    }));
+  }, [user]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -36,7 +44,7 @@ const AddContact = ({ onClose }) => {
 
   const handleSelect = (value) => {
     console.log("Selected phone number:", value);
-
+    setSelectedPhone(value);
     if (value === "+12342347760") {
       setDropdownStatus("error");
     } else {
@@ -51,6 +59,10 @@ const AddContact = ({ onClose }) => {
       return toast.error("All fields are required");
     }
 
+    if (!selectedPhone) {
+      return toast.error("Please select a number to send from");
+    }
+
     const existing = conversations.find(
       (c) => c.phoneNumber === form.phone.trim()
     );
@@ -63,9 +75,22 @@ const AddContact = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      addConversation(form.name.trim(), form.phone.trim(), generateAIMessage);
-      onClose();
+      // 🔹 Call backend API to create contact
+      const response = await createContact({
+        name: form.name.trim(),
+        phone: form.phone.replace(/\s+/g, "").trim(),
+        email: user?.email,
+        fromPhoneNumber: selectedPhone.trim(),
+      });
+
+      if (response.success) {
+        // Add locally for immediate UI feedback
+        addConversation(form.name.trim(), form.phone.trim(), generateAIMessage);
+        toast.success("Contact added successfully!");
+        onClose();
+      } else {
+        toast.error(response.error || "Failed to create contact");
+      }
     } catch (error) {
       console.error("Error adding contact:", error);
       toast.error("Failed to add contact. Please try again.");

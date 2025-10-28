@@ -1,28 +1,17 @@
-import Dropdown from "../global/small/Dropdown";
+import useAuthStore from "@/store/auth/authStore";
 
-const options = [
-  { value: "17865617760", option: "+1 786 561 7760" },
-  { value: "2345452342", option: "1 234 545 2342" },
-];
+const SentFrom = ({ activeConversation }) => {
+  const { user } = useAuthStore();
 
-const SentFrom = () => {
-  const handleSelect = (value) => {
-    console.log("Selected option:", value);
-  };
+  const fromNumber =
+    activeConversation?.fromPhoneNumber ||
+    user?.assignedLines?.[0] ||
+    "Not Assigned";
 
   return (
     <div className="mt-8">
       <h6 className="font-medium text-xs text-gray-500 mb-1">Sent From</h6>
-      <Dropdown
-        defaultText={options[0].option}
-        options={options}
-        onSelect={handleSelect}
-        width="140px"
-        bgColor="bg-transparent"
-        border="border-transparent"
-        color="text-gray-900"
-        cn="!mt-0 !px-0"
-      />
+      <div className="text-sm text-gray-900 font-medium">{fromNumber}</div>
     </div>
   );
 };

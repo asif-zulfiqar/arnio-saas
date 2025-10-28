@@ -455,49 +455,6 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Auto-login with verification tokens
-  autoLoginWithVerification: async (token, auth, refresh, session) => {
-    set({ isLoading: true, error: null });
-    
-    try {
-      const response = await authService.verifyEmailWithAutoLogin(token, auth, refresh, session);
-      
-      // Set authenticated state immediately
-      set({
-        isAuthenticated: true,
-        error: null,
-        isInitialized: true,
-      });
-
-      // Get user profile after auto-login
-      try {
-        const profileResponse = await authService.getProfile();
-        const completeUser = profileResponse?.user || profileResponse?.data || profileResponse;
-        
-        set({ user: completeUser, isLoading: false });
-        
-        return { success: true, user: completeUser };
-      } catch (profileError) {
-        console.error('Failed to fetch user profile after auto-login:', profileError);
-        // Use basic user data from verification response as fallback
-        const basicUser = response?.user || response?.data || response;
-        set({ user: basicUser, isLoading: false });
-        
-        return { success: true, user: basicUser };
-      }
-    } catch (error) {
-      const errorMessage = error.message || 'Auto-login failed. Please try again.';
-      set({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: errorMessage,
-        isInitialized: true,
-      });
-
-      return { success: false, error: errorMessage };
-    }
-  },
 }));
 
 export default useAuthStore;

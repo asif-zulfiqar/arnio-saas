@@ -1,4 +1,4 @@
-import { Copy, Check, CircleCheck } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -27,9 +27,12 @@ const CopyButton = ({ phoneNumber }) => {
           className="text-primary transition-transform duration-300 scale-110"
         />
       ) : (
-        <button>
-          <Image src="/svgs/copy-icon.svg" width={11} height={14} alt="icon" />
-        </button>
+        <Image
+          src="/svgs/copy-icon.svg"
+          width={11}
+          height={14}
+          alt="Copy icon"
+        />
       )}
     </button>
   );

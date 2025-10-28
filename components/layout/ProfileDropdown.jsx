@@ -6,22 +6,19 @@ import { useRef, useState } from "react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import useAuthStore from "@/store/auth/authStore";
 
-const ProfileDropdown = ({ userImages = [] }) => {
+const ProfileDropdown = ({ user }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { logout } = useAuthStore();
 
-  // Use outside click hook to close dropdown
   useOutsideClick(dropdownRef, () => setIsDropdownOpen(false));
-
-  const displayImages = userImages.slice(0, 4); // Show max 4 images
 
   const handleProfileSettings = () => {
     console.log("Navigate to Profile Settings");
     setIsDropdownOpen(false);
   };
 
-  const handleSignOut = async() => {
+  const handleSignOut = async () => {
     try {
       await logout();
       setIsDropdownOpen(false);
@@ -31,27 +28,38 @@ const ProfileDropdown = ({ userImages = [] }) => {
     }
   };
 
+  // Generate initials if no avatar
+  const getInitials = () => {
+    if (!user) return "";
+    const first = user.firstName?.[0] || "";
+    const last = user.lastName?.[0] || "";
+    return (first + last).toUpperCase();
+  };
+
   return (
-    <div 
-      className="relative" 
+    <div
+      className="relative"
       ref={dropdownRef}
       onMouseEnter={() => setIsDropdownOpen(true)}
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
-      {/* Profile Icons Container */}
+      {/* Profile Avatar */}
       <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-        {displayImages.map((image, index) => (
+        {user?.avatarUrl ? (
           <Image
-            key={index}
-            src={image}
-            alt="user image"
+            src={user?.avatarUrl}
+            alt="User avatar"
             width={32}
             height={32}
-            className={`size-[32px] rounded-full object-cover border-2 border-white ${
-              index > 0 ? "-ml-2" : ""
-            }`}
+            className="rounded-full object-cover border border-gray-200"
           />
-        ))}
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+            <span className="text-xs font-medium text-gray-700">
+              {getInitials()}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Dropdown Menu */}
@@ -62,7 +70,7 @@ const ProfileDropdown = ({ userImages = [] }) => {
             onClick={handleProfileSettings}
             className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-700 transition-colors"
           >
-              <ProfileSettingIcon />
+            <ProfileSettingIcon />
             <span className="text-sm text-gray-700">Profile Settings</span>
           </button>
 

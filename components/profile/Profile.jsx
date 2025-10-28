@@ -1,7 +1,6 @@
 import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { getInitials } from "@/utils/utils";
 import { X } from "lucide-react";
-import { useRef } from "react";
 import CiaraAiAgent from "./CiaraAiAgent";
 import CopyButton from "./CopyButton";
 import SentFrom from "./SentFrom";
@@ -10,31 +9,10 @@ import { ArrowDown } from "@/app/assets/svgs/icons";
 const Profile = ({ setIsProfileOpen }) => {
   const conversations = useWorkspaceStore((s) => s.conversations);
   const activeConversationId = useWorkspaceStore((s) => s.activeConversationId);
-  const updateConversationProfile = useWorkspaceStore(
-    (s) => s.updateConversationProfile
-  );
 
   const activeConversation = conversations.find(
     (c) => c.id === activeConversationId
   );
-
-  console.log("Active Conversation:", activeConversation, activeConversationId);
-
-  const fileInputRef = useRef(null);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      updateConversationProfile(activeConversation.id, {
-        profilePic: reader.result,
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const triggerFile = () => fileInputRef.current?.click();
 
   return (
     <div className="relative h-full">
@@ -83,7 +61,10 @@ const Profile = ({ setIsProfileOpen }) => {
       </div>
       {/* Profile End */}
 
-      <SentFrom />
+      <SentFrom
+        activeConversationId={activeConversationId}
+        activeConversation={activeConversation}
+      />
       <CiaraAiAgent />
     </div>
   );

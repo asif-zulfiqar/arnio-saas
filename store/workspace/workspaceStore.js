@@ -1,7 +1,241 @@
-import { generateDummyConversations } from "@/data/data";
 import { create } from "zustand";
+import { contactService } from "@/lib/api/auth";
 
+const FILE_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://staging.arnio.co/api/v1";
 const useWorkspaceStore = create((set, get) => ({
+  loadContacts: async (options = {}) => {
+    const {
+      page = 1,
+      limit = 20,
+      search = "all",
+      status = "active",
+      labels = "any",
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      append = false,
+    } = options;
+
+    try {
+      const response = await contactService.getAllContacts({
+        page,
+        limit,
+        search,
+        status,
+        labels,
+        sortBy,
+        sortOrder,
+      });
+
+      const data = response?.data || response;
+      const contacts = Array.isArray(data.contacts) ? data.contacts : data;
+
+      const mappedConversations = contacts.map((c) => {
+        // Handle last message safely
+        let lastMessageText = "";
+        let lastMessageTime = null;
+
+        if (typeof c.lastMessage === "string") {
+          lastMessageText = c.lastMessage;
+        } else if (c.lastMessage && typeof c.lastMessage === "object") {
+          lastMessageText = c.lastMessage.message || c.lastMessage.text || "";
+          lastMessageTime =
+            c.lastMessage.timestamp ||
+            c.lastMessage.createdAt ||
+            c.updatedAt ||
+            new Date();
+        }
+
+        // Format initial messages from backend
+        const formattedMessages = Array.isArray(c.messages)
+          ? c.messages
+              .map((msg) => {
+                const direction = (msg.direction || "").toLowerCase();
+                const isIncoming =
+                  direction === "inbound" || direction === "in";
+                let type = "text";
+                let attachment = null;
+
+                if (
+                  Array.isArray(msg.attachments) &&
+                  msg.attachments.length > 0
+                ) {
+                  const att = msg.attachments[0];
+                  attachment = {
+                    fileName: att.transferName || att.fileName || "",
+                    mimeType: att.mimeType || "",
+                    url: `${FILE_BASE_URL}/contacts/${c.id}/attachments/${att.guid}`,
+                    size: att.size || att.totalBytes || null,
+                  };
+                  const mime = attachment.mimeType || "";
+                  if (mime.startsWith("audio/") || mime.startsWith("video/"))
+                    type = "audio";
+                  else if (
+                    mime.startsWith("image/") ||
+                    mime.startsWith("application/")
+                  )
+                    type = "file";
+                }
+
+                return {
+                  id: msg.id,
+                  text: msg.message ?? msg.text ?? "",
+                  isIncoming,
+                  type,
+                  fileUrl: attachment?.url || "",
+                  fileType: attachment?.mimeType || "",
+                  fileName: attachment?.fileName || "",
+                  fileSize: attachment?.size || 0,
+                  timestamp: msg.timestamp || msg.createdAt || null,
+                  status: msg.status?.read
+                    ? "read"
+                    : msg.status?.delivered
+                    ? "delivered"
+                    : "sent",
+                  service: msg.service || null,
+
+                  // Add these for audio
+                  audioUrl:
+                    type === "audio" ? attachment?.url || "" : undefined,
+                  duration: null, // optional, can be set when played
+                };
+              })
+              .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+          : [];
+
+        return {
+          id: c.id,
+          name: c.name || "Unknown",
+          phoneNumber: c.phone || "",
+          email: c.email || "",
+          deviceType: c.isIMessageAvailable ? "apple" : "android",
+          lastMessage: lastMessageText,
+          lastMessageTime: lastMessageTime
+            ? new Date(lastMessageTime)
+            : c.updatedAt
+            ? new Date(c.updatedAt)
+            : new Date(),
+          unreadCount: c.unreadCount || 0,
+          status: c.status || "ACTIVE",
+          fromPhoneNumber: c.fromPhoneNumber || null,
+          messages: formattedMessages, // store initial messages
+          hasMoreMessages: formattedMessages.length >= 20, // assume pagination if more exist
+        };
+      });
+
+      if (append) {
+        set((state) => ({
+          conversations: [...state.conversations, ...mappedConversations],
+          pagination: {
+            page: data.page || page,
+            limit: data.limit || limit,
+            total: data.total || state.pagination.total,
+          },
+        }));
+      } else {
+        set({
+          conversations: mappedConversations,
+          pagination: {
+            page: data.page || page,
+            limit: data.limit || limit,
+            total: data.total || mappedConversations.length,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load contacts:", error);
+    }
+  },
+
+  // Load messages for a specific contact (from backend)
+  // inside your store
+  loadMessages: async (contactId, options = {}) => {
+    const { page = 1, limit = 20, append = false } = options;
+
+    try {
+      const response = await contactService.getMessages({
+        contactId,
+        page,
+        limit,
+      });
+      const messages = response?.messages || [];
+
+      const formattedMessages = messages.map((msg) => {
+        const direction = (msg.direction || "").toLowerCase();
+        const isIncoming = direction === "inbound" || direction === "in";
+        let type = "text";
+        let attachment = null;
+
+        if (Array.isArray(msg.attachments) && msg.attachments.length > 0) {
+          const att = msg.attachments[0];
+          attachment = {
+            fileName: att.transferName || att.fileName || "",
+            mimeType: att.mimeType || "",
+            url: `${API_BASE_URL}/contacts/${contactId}/attachments/${att.guid}`,
+            size: att.size || att.totalBytes || null,
+          };
+          const mime = attachment.mimeType || "";
+          if (mime.startsWith("audio/") || mime.startsWith("video/"))
+            type = "audio";
+          else if (mime.startsWith("image/") || mime.startsWith("application/"))
+            type = "file";
+        }
+
+        return {
+          id: msg.id,
+          text: msg.message ?? msg.text ?? "",
+          isIncoming,
+          type,
+          fileUrl: attachment?.url || "",
+          fileType: attachment?.mimeType || "",
+          fileName: attachment?.fileName || "",
+          fileSize: attachment?.size || 0,
+          timestamp: msg.timestamp || msg.createdAt || null,
+          status: msg.status?.read
+            ? "read"
+            : msg.status?.delivered
+            ? "delivered"
+            : "sent",
+          service: msg.service || null,
+          audioUrl: type === "audio" ? attachment?.url || "" : undefined,
+          duration: null, // optional, can be set when played
+        };
+      });
+
+      const sortedMessages = formattedMessages.sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+      );
+
+      set((state) => ({
+        conversations: state.conversations.map((conv) => {
+          if (conv.id !== contactId) return conv;
+
+          const existing = conv.messages || [];
+          const hasMore = messages.length === limit;
+
+          let newMessages;
+          if (append) {
+            // Only add messages that don't already exist
+            const existingIds = new Set(existing.map((m) => m.id));
+            const filtered = sortedMessages.filter(
+              (m) => !existingIds.has(m.id)
+            );
+            newMessages = [...filtered, ...existing];
+          } else {
+            newMessages = sortedMessages;
+          }
+
+          return {
+            ...conv,
+            messages: newMessages,
+            hasMoreMessages: hasMore,
+          };
+        }),
+      }));
+    } catch (error) {
+      console.error("Failed to load messages:", error);
+    }
+  },
+
   // Workspace Information
   currentWorkspace: {
     id: "workspace-1",
@@ -29,7 +263,7 @@ const useWorkspaceStore = create((set, get) => ({
       permissions: ["read", "write", "admin"],
     },
     {
-      id: "user-2", 
+      id: "user-2",
       name: "Jane Smith",
       email: "jane@meadowfield.com",
       role: "member",
@@ -40,7 +274,7 @@ const useWorkspaceStore = create((set, get) => ({
     },
     {
       id: "user-3",
-      name: "Mike Johnson", 
+      name: "Mike Johnson",
       email: "mike@meadowfield.com",
       role: "member",
       avatar: "/images/user3.jpg",
@@ -51,7 +285,7 @@ const useWorkspaceStore = create((set, get) => ({
     {
       id: "user-4",
       name: "Sarah Wilson",
-      email: "sarah@meadowfield.com", 
+      email: "sarah@meadowfield.com",
       role: "member",
       avatar: "/images/user4.jpg",
       status: "offline",
@@ -73,7 +307,7 @@ const useWorkspaceStore = create((set, get) => ({
   },
 
   // Conversations (migrated from conversation store)
-  conversations: generateDummyConversations(10),
+  conversations: [],
   activeConversationId: null,
   searchTerm: "",
 
@@ -152,7 +386,7 @@ const useWorkspaceStore = create((set, get) => ({
   voiceMessages: {}, // conversationId -> voice message state
 
   // ===== CONVERSATION METHODS (migrated from conversationStore) =====
-  
+
   addConversation: (name, phoneNumber, generateAiMessage = false) => {
     const id = `convo-${Date.now()}`;
     const newConversation = {
@@ -193,76 +427,137 @@ const useWorkspaceStore = create((set, get) => ({
     return id;
   },
 
-  setActiveConversation: (conversationId) => {
-    set({ activeConversationId: conversationId });
+  setActiveConversation: async (conversation) => {
+    const state = get();
+    // const { loadMessages } = get();
 
-    set((state) => ({
-      conversations: state.conversations.map((conv) =>
-        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
-      ),
-    }));
+    try {
+      // Set the active conversation ID first
+      set({ activeConversationId: conversation.id });
+
+      // Then load its messages
+      // await loadMessages(conversation.id);
+    } catch (error) {
+      console.error("Failed to load conversation:", error);
+    }
   },
 
-  sendMessage: (conversationId, content, origin = "manual", attachments = null, voiceMessage = null) => {
-    const messageId = `msg-${Date.now()}`;
-    const message = {
-      id: messageId,
-      content,
-      sender: "user",
-      timestamp: new Date(),
-      status: "delivered",
-      origin,
-      sentBy: get().currentUser.id,
-      type: attachments ? "file" : voiceMessage ? "voice" : "text",
-      ...(attachments && {
-        fileName: attachments.name,
-        fileSize: attachments.size,
-        fileType: attachments.type,
-        fileUrl: attachments.url,
-      }),
-      ...(voiceMessage && {
-        audioUrl: voiceMessage.url,
-        duration: voiceMessage.duration,
-        waveformData: voiceMessage.waveformData, // Add waveform data
-      }),
+  getActiveConversation: () => {
+    const state = get();
+    return (
+      state.conversations.find(
+        (conv) =>
+          conv.id === state.activeConversationId ||
+          conv.phoneNumber === state.activeConversationId
+      ) || null
+    );
+  },
+
+  sendMessage: async (
+    conversationId,
+    activeConversation,
+    text,
+    origin = "manual",
+    fileData = null,
+    voiceData = null
+  ) => {
+    const state = get();
+
+    // 1. Prepare payload
+    const payload = {
+      phoneNumber: activeConversation,
+      message: text,
+      contactId: conversationId,
     };
 
-    set((state) => {
-      const updatedConversations = state.conversations.map((conv) =>
+    if (fileData?.file) payload.file = fileData.file;
+    if (voiceData?.blob) payload.voiceData = voiceData;
+
+    // 2. Optimistically add message to local state
+    const newMsg = {
+      id: Date.now().toString(),
+      isIncoming: false,
+      fileName: fileData?.file?.name,
+      text: text || fileData?.file?.type || "Voice Message",
+      type: fileData ? "file" : voiceData ? "audio" : "text",
+      fileUrl: fileData?.url || null, // 👈 use blob URL for instant preview
+
+      origin,
+      fileSize: fileData?.size,
+      status: "sending",
+      timestamp: new Date().toISOString(),
+      audioUrl: voiceData?.audioUrl,
+    };
+
+    set({
+      conversations: state.conversations.map((conv) =>
         conv.id === conversationId
-          ? {
-              ...conv,
-              messages: [...conv.messages, message],
-              lastMessage: content,
-              lastMessageTime: new Date(),
-            }
+          ? { ...conv, messages: [...(conv.messages || []), newMsg] }
           : conv
-      );
-
-      const sortedConversations = [
-        updatedConversations.find((c) => c.id === conversationId),
-        ...updatedConversations.filter((c) => c.id !== conversationId),
-      ];
-
-      return { conversations: sortedConversations };
+      ),
     });
 
-    setTimeout(() => {
-      set((state) => ({
-        conversations: state.conversations.map((conv) =>
+    // 3. Send to backend
+    try {
+      const result = await contactService.sendMessage(payload);
+
+      // Update message status → "sent"
+      set({
+        conversations: get().conversations.map((conv) =>
           conv.id === conversationId
             ? {
                 ...conv,
-                messages: conv.messages.map((msg) =>
-                  msg.id === messageId ? { ...msg, status: "read" } : msg
+                messages: conv.messages.map((m) =>
+                  m.id === newMsg.id
+                    ? {
+                        ...m,
+                        status: "sent",
+                        fileUrl:
+                          result?.fileGuid && conversationId
+                            ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/contacts/${conversationId}/attachments/${result.fileGuid}`
+                            : m.fileUrl, // keep blob URL until backend response
+                      }
+                    : m
                 ),
               }
             : conv
         ),
-      }));
+      });
+      console.log("Message sent:", result);
+    } catch (err) {
+      console.error("Send failed:", err);
+      set({
+        conversations: get().conversations.map((conv) =>
+          conv.id === conversationId
+            ? {
+                ...conv,
+                messages: conv.messages.map((m) =>
+                  m.id === newMsg.id ? { ...m, status: "failed" } : m
+                ),
+              }
+            : conv
+        ),
+      });
+    }
+  },
 
-      get().receiveMessage(conversationId, get().generateAutoReply(content));
-    }, 8000 + Math.random() * 2000);
+  deleteConversation: async (contactId) => {
+    try {
+      await contactService.deleteChat(contactId);
+      // Remove conversation from local state
+      set((state) => {
+        const updatedConversations = state.conversations.filter(
+          (c) => c.id !== contactId
+        );
+        return {
+          conversations: updatedConversations,
+          activeConversationId: null,
+        };
+      });
+    } catch (error) {
+      console.error("Failed to delete conversation:", error);
+      alert("Failed to delete chat. Please try again.");
+    }
   },
 
   receiveMessage: (conversationId, content) => {
@@ -421,36 +716,33 @@ const useWorkspaceStore = create((set, get) => ({
     );
   },
 
-  getActiveConversation: () => {
-    const state = get();
-    return state.conversations.find(
-      (conv) => conv.id === state.activeConversationId
-    );
-  },
-
   // ===== ANALYTICS METHODS (migrated from analyticsStore) =====
 
   setDateRange: (range) => set({ dateRange: range }),
-  toggleCalendar: () => set((state) => ({ 
-    ui: { ...state.ui, showCalendar: !state.ui.showCalendar }
-  })),
-  toggleExportDropdown: () => set((state) => ({ 
-    ui: { ...state.ui, showExportDropdown: !state.ui.showExportDropdown }
-  })),
-  setHoveredPoint: (point) => set((state) => ({ 
-    ui: { ...state.ui, hoveredPoint: point }
-  })),
-  setHasData: (hasData) => set((state) => ({ 
-    ui: { ...state.ui, hasData }
-  })),
+  toggleCalendar: () =>
+    set((state) => ({
+      ui: { ...state.ui, showCalendar: !state.ui.showCalendar },
+    })),
+  toggleExportDropdown: () =>
+    set((state) => ({
+      ui: { ...state.ui, showExportDropdown: !state.ui.showExportDropdown },
+    })),
+  setHoveredPoint: (point) =>
+    set((state) => ({
+      ui: { ...state.ui, hoveredPoint: point },
+    })),
+  setHasData: (hasData) =>
+    set((state) => ({
+      ui: { ...state.ui, hasData },
+    })),
 
   loadData: async () => {
-    set((state) => ({ 
-      ui: { ...state.ui, hasData: false }
+    set((state) => ({
+      ui: { ...state.ui, hasData: false },
     }));
     setTimeout(() => {
-      set((state) => ({ 
-        ui: { ...state.ui, hasData: true }
+      set((state) => ({
+        ui: { ...state.ui, hasData: true },
       }));
     }, 1000);
   },
@@ -460,20 +752,22 @@ const useWorkspaceStore = create((set, get) => ({
   // Get team member avatars for profile dropdown
   getTeamMemberAvatars: () => {
     const state = get();
-    return state.teamMembers.map(member => member.avatar);
+    return state.teamMembers.map((member) => member.avatar);
   },
 
   // Get online team members
   getOnlineTeamMembers: () => {
     const state = get();
-    return state.teamMembers.filter(member => member.status === "online");
+    return state.teamMembers.filter((member) => member.status === "online");
   },
 
   // Update team member status
   updateTeamMemberStatus: (memberId, status) => {
     set((state) => ({
-      teamMembers: state.teamMembers.map(member =>
-        member.id === memberId ? { ...member, status, lastActive: new Date() } : member
+      teamMembers: state.teamMembers.map((member) =>
+        member.id === memberId
+          ? { ...member, status, lastActive: new Date() }
+          : member
       ),
     }));
   },
@@ -498,7 +792,7 @@ const useWorkspaceStore = create((set, get) => ({
   // Remove team member
   removeTeamMember: (memberId) => {
     set((state) => ({
-      teamMembers: state.teamMembers.filter(member => member.id !== memberId),
+      teamMembers: state.teamMembers.filter((member) => member.id !== memberId),
     }));
   },
 
@@ -515,13 +809,15 @@ const useWorkspaceStore = create((set, get) => ({
   // Get conversations assigned to current user
   getMyConversations: () => {
     const state = get();
-    return state.conversations.filter(conv => conv.assignedTo === state.currentUser.id);
+    return state.conversations.filter(
+      (conv) => conv.assignedTo === state.currentUser.id
+    );
   },
 
   // Assign conversation to team member
   assignConversation: (conversationId, memberId) => {
     set((state) => ({
-      conversations: state.conversations.map(conv =>
+      conversations: state.conversations.map((conv) =>
         conv.id === conversationId ? { ...conv, assignedTo: memberId } : conv
       ),
     }));
@@ -533,9 +829,11 @@ const useWorkspaceStore = create((set, get) => ({
     return {
       ...state.analytics,
       totalTeamMembers: state.teamMembers.length,
-      onlineTeamMembers: state.teamMembers.filter(m => m.status === "online").length,
+      onlineTeamMembers: state.teamMembers.filter((m) => m.status === "online")
+        .length,
       totalConversations: state.conversations.length,
-      activeConversations: state.conversations.filter(c => c.unreadCount > 0).length,
+      activeConversations: state.conversations.filter((c) => c.unreadCount > 0)
+        .length,
     };
   },
 
@@ -543,7 +841,9 @@ const useWorkspaceStore = create((set, get) => ({
 
   // Add file to upload queue
   addFileUpload: (conversationId, file) => {
-    const uploadId = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const uploadId = `upload-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
     const fileUpload = {
       id: uploadId,
       file,
@@ -591,10 +891,10 @@ const useWorkspaceStore = create((set, get) => ({
       if (progress >= 100) {
         progress = 100;
         clearInterval(interval);
-        
+
         // Simulate success or failure (90% success rate)
         const isSuccess = Math.random() > 0.1;
-        
+
         set((state) => ({
           fileUploads: {
             ...state.fileUploads,

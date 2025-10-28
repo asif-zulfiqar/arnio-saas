@@ -1,16 +1,28 @@
 import { useOutsideClick } from "@/hooks/useOutsideClick";
+import { useWorkspaceStore } from "@/store/workspace/workspaceStore";
 import { EllipsisVertical } from "lucide-react";
 import { useRef, useState } from "react";
 
-const DeleteChat = () => {
+const DeleteChat = ({ contactId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef(null);
-
+  const deleteConversation = useWorkspaceStore(
+    (state) => state.deleteConversation
+  );
   useOutsideClick(buttonRef, () => setIsOpen(false));
 
-  const handleDeleteChat = () => {
-    setIsOpen(false);
+  const handleDeleteChat = async () => {
+    if (!contactId) return;
+    if (!confirm("Are you sure you want to delete this chat?")) return;
+
+    try {
+      await deleteConversation(contactId);
+      setIsOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
+
   return (
     <button
       className="relative group"

@@ -19,7 +19,7 @@ const CreateProfile = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const { setCurrentStep } = useSignupStore();
-  const { updateProfile, getProfile, autoLoginWithVerification } = useAuthStore();
+  const { updateProfile, getProfile } = useAuthStore();
 
   // React Hook Form setup
   const {
@@ -57,30 +57,41 @@ const CreateProfile = () => {
     prevLastNameRef.current = watchLastName;
   }, [watchFirstName, watchLastName, errors.general, clearErrors]);
 
-  // Handle email verification with auto-login
+  // Handle email verification by setting cookies from URL parameters
   useEffect(() => {
-    const handleEmailVerification = async () => {
+    const handleEmailVerification = () => {
       const token = searchParams.get('token');
       const auth = searchParams.get('auth');
       const refresh = searchParams.get('refresh');
       const session = searchParams.get('session');
 
-      // If we have verification tokens, perform auto-login
+      // If we have verification tokens, set them as cookies for auto-login
       if (token && auth && refresh && session) {
         setIsVerifying(true);
+        
         try {
-          const result = await autoLoginWithVerification(token, auth, refresh, session);
+          console.log("Setting verification cookies from URL parameters");
           
-          if (result.success) {
-            console.log("Auto-login successful:", result.user);
-            // User is now logged in, continue with normal flow
-          } else {
-            console.error("Auto-login failed:", result.error);
-            // If auto-login fails, continue with normal flow
-          }
+          // Set cookies with the tokens from URL parameters
+          // These cookies will be used by the backend for authentication
+          document.cookie = `authToken=${auth}; expires=${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()}; path=/; secure; samesite=none`;
+          document.cookie = `refreshToken=${refresh}; expires=${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString()}; path=/; secure; samesite=none`;
+          document.cookie = `connect.sid=${session}; expires=${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()}; path=/; secure; samesite=none`;
+          
+          console.log("Cookies set successfully");
+          
+          // Clear the URL parameters to clean up the URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          // Reload the page to trigger authentication with the new cookies
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+          
         } catch (error) {
-          console.error("Auto-login error:", error);
-          // If auto-login fails, continue with normal flow
+          console.error("Error setting cookies:", error);
+          // If cookie setting fails, redirect to login
+          router.push('/login');
         } finally {
           setIsVerifying(false);
         }
@@ -88,7 +99,7 @@ const CreateProfile = () => {
     };
 
     handleEmailVerification();
-  }, [searchParams, autoLoginWithVerification]);
+  }, [searchParams, router]);
 
   // Fetch existing profile data on component mount
   useEffect(() => {
@@ -238,9 +249,7 @@ const CreateProfile = () => {
 
     if (
       !watchFirstName?.trim() ||
-      !watchLastName?.trim() ||
-      !watchPhone?.trim()
-    ) {
+      !watchLastName?.trim()    ) {
       return {
         disabled: true,
         bgColor: "bg-primary/80",
@@ -254,6 +263,25 @@ const CreateProfile = () => {
       color: "text-white",
     };
   };
+
+  // Show loading state while verifying
+  if (isVerifying) {
+    return (
+      <SignupLayout step={2}>
+        <div className="w-full text-center">
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+          <h1 className="text-xl font-semibold text-gray-900 mb-4">
+            Verifying your email...
+          </h1>
+          <p className="text-sm text-gray-500">
+            Please wait while we verify your email and log you in.
+          </p>
+        </div>
+      </SignupLayout>
+    );
+  }
 
   return (
     <SignupLayout step={2}>

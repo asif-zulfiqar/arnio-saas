@@ -1,7 +1,7 @@
 "use client";
-import { useRef, useState } from "react";
+
+import { useRef } from "react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
-import { File, Image as ImageIcon } from "lucide-react";
 
 const FileAttachmentDropdown = ({ isOpen, onClose, onFileSelect, onPhotoSelect }) => {
   const dropdownRef = useRef(null);
@@ -42,7 +42,7 @@ const FileAttachmentDropdown = ({ isOpen, onClose, onFileSelect, onPhotoSelect }
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
+        accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,audio/*"
         onChange={handleFileChange}
         className="hidden"
       />
