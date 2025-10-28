@@ -13,7 +13,7 @@ import useAuthStore from "@/store/auth/authStore";
 
 const Login = () => {
   const router = useRouter();
-  const { login, googleLogin, isLoading } = useAuthStore();
+  const { login, googleLogin, isLoading, enableRememberMe } = useAuthStore();
   const [step, setStep] = useState(1);
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -86,6 +86,16 @@ const Login = () => {
       });
 
       if (result.success) {
+        // If remember me is checked, enable it
+        if (rememberMe) {
+          try {
+            await enableRememberMe();
+          } catch (rememberMeError) {
+            console.error('Remember me failed:', rememberMeError);
+            // Don't block login if remember me fails
+          }
+        }
+
         // Check user onboarding status and redirect directly to appropriate step
         const user = result.user;
         

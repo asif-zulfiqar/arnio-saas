@@ -7,17 +7,19 @@ import useSignupStore from "@/store/auth/signupStore";
 import useAuthStore from "@/store/auth/authStore";
 import { User } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 
 const CreateProfile = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
   const { setCurrentStep } = useSignupStore();
-  const { updateProfile, getProfile } = useAuthStore();
+  const { updateProfile, getProfile, autoLoginWithVerification } = useAuthStore();
 
   // React Hook Form setup
   const {
@@ -55,6 +57,39 @@ const CreateProfile = () => {
     prevLastNameRef.current = watchLastName;
   }, [watchFirstName, watchLastName, errors.general, clearErrors]);
 
+  // Handle email verification with auto-login
+  useEffect(() => {
+    const handleEmailVerification = async () => {
+      const token = searchParams.get('token');
+      const auth = searchParams.get('auth');
+      const refresh = searchParams.get('refresh');
+      const session = searchParams.get('session');
+
+      // If we have verification tokens, perform auto-login
+      if (token && auth && refresh && session) {
+        setIsVerifying(true);
+        try {
+          const result = await autoLoginWithVerification(token, auth, refresh, session);
+          
+          if (result.success) {
+            console.log("Auto-login successful:", result.user);
+            // User is now logged in, continue with normal flow
+          } else {
+            console.error("Auto-login failed:", result.error);
+            // If auto-login fails, continue with normal flow
+          }
+        } catch (error) {
+          console.error("Auto-login error:", error);
+          // If auto-login fails, continue with normal flow
+        } finally {
+          setIsVerifying(false);
+        }
+      }
+    };
+
+    handleEmailVerification();
+  }, [searchParams, autoLoginWithVerification]);
+
   // Fetch existing profile data on component mount
   useEffect(() => {
     const fetchProfile = async () => {
@@ -69,6 +104,7 @@ const CreateProfile = () => {
           // Populate form with existing data
           setValue("firstName", profile.firstName || "");
           setValue("lastName", profile.lastName || "");
+          setValue("phone", profile.phone || "");
 
           // Set avatar if exists
           if (profile.avatar || profile.avatarUrl) {
@@ -192,7 +228,7 @@ const CreateProfile = () => {
 
   // Get button state
   const getButtonState = () => {
-    if (isLoading) {
+    if (isLoading || isVerifying) {
       return {
         disabled: true,
         bgColor: "bg-primary/80",
@@ -203,6 +239,7 @@ const CreateProfile = () => {
     if (
       !watchFirstName?.trim() ||
       !watchLastName?.trim() ||
+      !watchPhone?.trim()
     ) {
       return {
         disabled: true,
@@ -306,7 +343,13 @@ const CreateProfile = () => {
           )}
 
           <Button
-            text={isLoading ? "Creating Profile..." : "Continue"}
+            text={
+              isVerifying 
+                ? "Verifying email..." 
+                : isLoading 
+                  ? "Creating Profile..." 
+                  : "Continue"
+            }
             type="submit"
             disabled={getButtonState().disabled}
             bgColor={getButtonState().bgColor}

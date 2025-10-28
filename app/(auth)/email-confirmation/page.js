@@ -6,23 +6,40 @@ import useAuthStore from "@/store/auth/authStore";
 import useSignupStore from "@/store/auth/signupStore";
 import { Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const EmailConfirmation = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [error, setError] = useState("");
   const { email } = useSignupStore();
-  const { resendVerification } = useAuthStore();
+  const { resendVerification, autoLoginWithVerification } = useAuthStore();
 
-  // Redirect if no email in store
+  // Check for verification tokens and handle auto-login
   useEffect(() => {
-    if (!email) {
-      router.push("/signup");
-    }
-  }, [email, router]);
+    const handleAutoLogin = async () => {
+      const token = searchParams.get('token');
+      const auth = searchParams.get('auth');
+      const refresh = searchParams.get('refresh');
+      const session = searchParams.get('session');
+
+      // If we have verification tokens, redirect to create-profile page with tokens
+      if (token && auth && refresh && session) {
+        router.push(`/create-profile?token=${token}&auth=${auth}&refresh=${refresh}&session=${session}`);
+        return;
+      }
+
+      // If no email in store and no verification tokens, redirect to signup
+      if (!email) {
+        router.push("/signup");
+      }
+    };
+
+    handleAutoLogin();
+  }, [email, router, searchParams]);
 
   // Resend cooldown timer
   useEffect(() => {

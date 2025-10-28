@@ -39,7 +39,7 @@ const TeamMembers = () => {
     defaultValues: {
       email: "",
       fullName: "",
-      role: "AGENT",
+      role: "USER",
     },
   });
 
